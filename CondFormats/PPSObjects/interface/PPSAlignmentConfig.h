@@ -229,4 +229,6 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
     return os;
 }
 
+TYPELOOKUP_DATA_REG(PPSAlignmentConfig);
+
 #endif 
