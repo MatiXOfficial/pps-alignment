@@ -13,6 +13,9 @@
 #ifndef CondFormats_PPSObjects_PPSAlignmentConfig_h
 #define CondFormats_PPSObjects_PPSAlignmentConfig_h
 
+#include "CondFormats/Serialization/interface/Serializable.h"
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
+
 #include <vector>
 #include <string>
 #include <map>
@@ -156,6 +159,8 @@ private:
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges_;
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges_;
+
+    COND_SERIALIZABLE;
 };
 
 //---------------------------------------------------------------------------------------------

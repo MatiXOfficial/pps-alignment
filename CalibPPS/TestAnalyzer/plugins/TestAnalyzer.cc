@@ -1,21 +1,3 @@
-// -*- C++ -*-
-//
-// Package:    CalibPPS/TestAnalyzer
-// Class:      TestAnalyzer
-//
-/**\class TestAnalyzer TestAnalyzer.cc CalibPPS/TestAnalyzer/plugins/TestAnalyzer.cc
- Description: [one line class summary]
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Mateusz Kocot
-//         Created:  Tue, 21 Jul 2020 09:29:28 GMT
-//
-//
-
-#define THIS_IS_AN_EVENTSETUP_EXAMPLE
-
 // system include files
 #include <memory>
 
@@ -45,22 +27,17 @@ public:
   ~TestAnalyzer() {};
 
 private:
-  void beginJob() override {};
   void analyze(const edm::Event&, const edm::EventSetup&) override;
-  void endJob() override {};
 
-
-  // ----------member data ---------------------------
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-  edm::ESGetToken<PPSAlignmentConfig, PPSAlignmentConfigRcd> configToken_;
-#endif
+  // edm::ESGetToken<PPSAlignmentConfig, PPSAlignmentConfigRcd> configToken_;
 };
 
-TestAnalyzer::TestAnalyzer(const edm::ParameterSet& iConfig) {
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-  configToken_ = esConsumes<PPSAlignmentConfig, PPSAlignmentConfigRcd>();
-#endif
-}
+// TestAnalyzer::TestAnalyzer(const edm::ParameterSet& iConfig) : 
+//   configToken_(esConsumes<PPSAlignmentConfig, PPSAlignmentConfigRcd>()) 
+//   {}
+
+TestAnalyzer::TestAnalyzer(const edm::ParameterSet& iConfig) {}
+
 
 //
 // member functions
@@ -70,10 +47,10 @@ TestAnalyzer::TestAnalyzer(const edm::ParameterSet& iConfig) {
 void TestAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
 
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-  auto setup = iSetup.getData(configToken_);
-  // std::cout << setup.fill() << std::endl;
-#endif
+  // auto setup = iSetup.getData(configToken_);
+
+  ESHandle<PPSAlignmentConfig> config;
+  iSetup.get<PPSAlignmentConfigRcd>().get(config);
 }
 
 //define this as a plug-in

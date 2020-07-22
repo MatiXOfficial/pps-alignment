@@ -8,10 +8,14 @@
  *
  ****************************************************************************/
 
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/SourceFactory.h"
 #include "FWCore/Framework/interface/ModuleFactory.h"
 
-#include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/ESProducer.h"
+#include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
+#include "FWCore/Framework/interface/ESProducts.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
@@ -22,13 +26,19 @@
 
 //---------------------------------------------------------------------------------------------
 
-class PPSAlignmentConfigESSource : public edm::ESProducer
+class PPSAlignmentConfigESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder
 {
 public:
     PPSAlignmentConfigESSource(const edm::ParameterSet &);
     ~PPSAlignmentConfigESSource() override = default;
 
     std::unique_ptr<PPSAlignmentConfig> produce(const PPSAlignmentConfigRcd &);
+
+protected:
+	/// sets infinite validity of this data
+	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
+						const edm::IOVSyncValue&,
+						edm::ValidityInterval&) override;
 
 private:
     unsigned int fill;
@@ -142,11 +152,14 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		const auto &ps = c_ay.getParameter<edm::ParameterSet>("rp_" + p.second);
 		alignment_y_ranges[p.first] = SelectionRange(ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max"));
 	}
+
+	setWhatProduced(this);
+	findingRecord<PPSAlignmentConfigRcd>();
 }
 
 //---------------------------------------------------------------------------------------------
 
-std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PPSAlignmentConfigRcd &)
+std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PPSAlignmentConfigRcd &iRecord)
 {
     auto p = std::make_unique<PPSAlignmentConfig>();
 
@@ -177,9 +190,23 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
     p->setAlignment_y_ranges(alignment_y_ranges);
 
-    // edm::LogInfo("PPSAlignmentConfigESSource::produce") << "\n" << (*p);
+    edm::LogInfo("PPSAlignmentConfigESSource::produce") << "\n" << (*p);
 
     return p;
+}
+
+//---------------------------------------------------------------------------------------------
+
+void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetupRecordKey& key,
+                                                 const edm::IOVSyncValue& iosv,
+                                                 edm::ValidityInterval& oValidity) 
+{
+  edm::LogInfo("PPSAlignmentConfigESSource")
+      << ">> PPSAlignmentConfigESSource::setIntervalFor(" << key.name() << ")\n"
+      << "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
+
+  edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
+  oValidity = infinity;
 }
 
 //---------------------------------------------------------------------------------------------
