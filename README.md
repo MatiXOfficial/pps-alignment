@@ -13,3 +13,13 @@ scram b
 cd CalibPPS/ESProducers/test
 cmsRun test_PPSAlignmentConfigESSource.py
 ```
+## Relevant files
+- DQM plugins
+  - `CalibPPS/Alignment/plugins`
+- Event setup class
+  - `CondFormats/PPSObjects/interface/PPSAlignmentConfig.h`
+- ESProducer
+  - `CalibPPS/ESProducers/plugins/PPSAlignmentConfigESSource.cc`
+- ES Record
+  - `CondFormats/DataRecord/interface/PPSAlignmentConfigRcd.h`
+  - `CondFormats/DataRecord/src/PPSAlignmentConfigRcd.cc`
