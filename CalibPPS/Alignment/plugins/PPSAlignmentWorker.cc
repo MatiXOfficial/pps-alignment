@@ -14,6 +14,8 @@
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
 
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Utilities/interface/ESGetToken.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -23,15 +25,19 @@
 
 #include "DataFormats/CTPPSDetId/interface/TotemRPDetId.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLite.h"
+#include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLiteFwd.h"
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/CTPPSReco/interface/TotemRPLocalTrack.h"
+
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
+#include "CondFormats/DataRecord/interface/PPSAlignmentConfigRcd.h"
 
 #include <vector>
 #include <string>
 #include <cmath>
 
 #include "TVectorD.h"
+#include "TH2D.h"
 
 //----------------------------------------------------------------------------------------------------
 
@@ -92,10 +98,26 @@ private:
 
     struct Profile
     {
+        MonitorElement *h = nullptr;
         std::vector<Stat> st;
+
+        MonitorElement *h_entries = nullptr;
+        MonitorElement *h_mean = nullptr;
+        MonitorElement *h_stddev = nullptr;
+
+        Profile(DQMStore::IBooker &iBooker, MonitorElement *_h);
+
+        void Fill(double x, double y);
+        void Write() const;
+    };
+
+    struct SectorData
+    {
+
     };
 
     // ------------ member data ------------
+    edm::EDGetTokenT<CTPPSLocalTrackLiteCollection> tracksToken_;
 };
 
 // -------------------------------- Stat methods --------------------------------
@@ -328,15 +350,18 @@ void PPSAlignmentWorker::Stat::printCorrelation() const
 
 // -------------------------------- PPSAlignmentWorker methods --------------------------------
 
-PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig)
-{
+PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig) 
+    : tracksToken_(consumes<CTPPSLocalTrackLiteCollection>(iConfig.getParameter<edm::InputTag>("tagTracks")))
+{}
 
-}
-
-// ------------ methods called for each event  ------------
+// ------------ method called for each event  ------------
 void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 {
+    edm::ESHandle<PPSAlignmentConfig> config;
+    iSetup.get<PPSAlignmentConfigRcd>().get(config);
 
+    edm::Handle<CTPPSLocalTrackLiteCollection> tracks;
+    iEvent.getByToken(tracksToken_, tracks);
 }
 
 

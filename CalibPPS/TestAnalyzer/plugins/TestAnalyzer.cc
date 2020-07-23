@@ -3,7 +3,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/one/EDAnalyzer.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -21,7 +21,7 @@
 // class declaration
 //
 
-class TestAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
+class TestAnalyzer : public edm::EDAnalyzer {
 public:
   explicit TestAnalyzer(const edm::ParameterSet&);
   ~TestAnalyzer() {};
