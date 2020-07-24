@@ -52,6 +52,8 @@ private:
 
     void analyze(const edm::Event &, const edm::EventSetup &) override;
 
+    void writeCutPlot(TH2D *h, double a, double c, double si, const std::string &label);
+
     // ------------ structures ------------
     struct Stat
     {
@@ -98,17 +100,17 @@ private:
 
     struct Profile
     {
-        MonitorElement *h = nullptr;
+        TH2D *h = nullptr;
         std::vector<Stat> st;
 
         MonitorElement *h_entries = nullptr;
         MonitorElement *h_mean = nullptr;
         MonitorElement *h_stddev = nullptr;
 
-        Profile(DQMStore::IBooker &iBooker, MonitorElement *_h);
+        Profile(DQMStore::IBooker &iBooker, TH2D *_h);
 
-        void Fill(double x, double y);
-        void Write() const;
+        void fill(double x, double y);
+        void write() const;
     };
 
     struct SectorData
@@ -120,7 +122,15 @@ private:
     edm::EDGetTokenT<CTPPSLocalTrackLiteCollection> tracksToken_;
 };
 
+//----------------------------------------------------------------------------------------------------
+
+void PPSAlignmentWorker::writeCutPlot(DQMStore::IBooker &iBooker, TH2D *h, double a, double c, double si, const std::string &label)
+{
+    
+}
+
 // -------------------------------- Stat methods --------------------------------
+
 PPSAlignmentWorker::Stat::Stat() {}
 PPSAlignmentWorker::Stat::Stat(unsigned int dim_)
 {
@@ -345,6 +355,49 @@ void PPSAlignmentWorker::Stat::printCorrelation() const
             printf("   %+.3f", correlation(i, j));
 
         printf("\n");
+    }
+}
+
+// -------------------------------- Profile methods --------------------------------
+
+PPSAlignmentWorker::Profile::Profile(DQMStore::IBooker &iBooker, TH2D *h_)
+    : h(h_), st(h->GetNbinsX(), Stat(1))
+{
+    const int bins = h->GetXaxis()->GetNbins();
+    const double xMin = h->GetXaxis()->GetXmin();
+    const double xMax = h->GetXaxis()->GetXmax();
+
+    h_entries = iBooker.book1D("h_entries", ";x", bins, xMin, xMax);
+    h_mean = iBooker.book1D("h_mean", ";x", bins, xMin, xMax);
+    h_stddev = iBooker.book1D("h_sttdev", ";x", bins, xMin, xMax);
+}
+
+void PPSAlignmentWorker::Profile::fill(double x, double y)
+{
+    int bi = h->GetXaxis()->FindBin(x);
+
+    if (bi < 1 || bi > h->GetNbinsX())
+        return;
+
+    int vi = bi - 1;
+    st[vi].fill(y);
+}
+
+void PPSAlignmentWorker::Profile::write() const
+{
+    const int bins = h->GetXaxis()->GetNbins();
+
+    for (int bi = 1; bi <= bins; bi++)
+    {
+        int vi = bi - 1;
+
+        h_entries->setBinContent(bi, st[vi].entries());
+
+        h_mean->setBinContent(bi, st[vi].mean(0));
+        h_mean->setBinError(bi, st[vi].meanUnc(0));
+
+        h_stddev->setBinContent(bi, st[vi].stdDev(0));
+        h_stddev->setBinError(bi, st[vi].stdDevUncGauss(0));
     }
 }
 
