@@ -2,8 +2,8 @@
 
 ## Installation
 ```
-scram project CMSSW_11_2_X_2020-07-16-1100
-cd CMSSW_11_2_X_2020-07-16-1100/src
+scram project CMSSW_11_2_0_pre2
+cd CMSSW_11_2_0_pre2/src
 cmsenv
 git clone https://github.com/MatiXOfficial/pps-alignment.git .
 scram b
@@ -11,7 +11,7 @@ scram b
 ## Event Setup example (does not work)
 ```
 cd CalibPPS/ESProducers/test
-cmsRun test_PPSAlignmentConfigESSource.py
+cmsRun test_PPSAlignmentConfigESSource_cfg.py
 ```
 ## Relevant files
 - DQM plugins
