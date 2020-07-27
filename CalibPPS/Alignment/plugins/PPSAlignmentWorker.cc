@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *  CalibPPS/Alignment.plugins/PPSAlignmentWorker.cc
+ *  CalibPPS/Alignment/plugins/PPSAlignmentWorker.cc
  *
  *  Description : PPS Alignment DQM worker
  *
@@ -26,7 +26,6 @@
 #include "DataFormats/CTPPSDetId/interface/TotemRPDetId.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLite.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLiteFwd.h"
-#include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/CTPPSReco/interface/TotemRPLocalTrack.h"
 
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
@@ -160,8 +159,8 @@ private:
 
         std::map<unsigned int, SlicePlots> x_slice_plots_N, x_slice_plots_F;
 
-        SectorData(const std::string &name_, unsigned int rpIdUp_, unsigned int rpIdDw_, const SectorConfig &scfg_);
-        void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup);
+        void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, std::string name_, 
+                  unsigned int rpIdUp_, unsigned int rpIdDw_, const SectorConfig &scfg_);
 
         unsigned int process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks);
         void write() const;
@@ -169,6 +168,9 @@ private:
 
     // ------------ member data ------------
     edm::EDGetTokenT<CTPPSLocalTrackLiteCollection> tracksToken_;
+
+    SectorData sectorData45;
+    SectorData sectorData56;
 
     unsigned long eventCount = 0;
     unsigned long eventSelCount45 = 0;
@@ -465,14 +467,16 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooke
     p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp_p_y_diffFN_vs_y);
 }
 
-PPSAlignmentWorker::SectorData::SectorData(const std::string &name_, unsigned int rpIdUp_, unsigned int rpIdDw_, const SectorConfig &scfg_)
-    : name(name_), rpIdUp(rpIdUp_), rpIdDw(rpIdDw_), scfg(scfg_)
-{}
-
-void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup)
+void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, std::string name_, 
+                                          unsigned int rpIdUp_, unsigned int rpIdDw_, const SectorConfig &scfg_)
 {
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+
+    name = name_;
+    rpIdUp = rpIdUp_;
+    rpIdDw = rpIdDw_;
+    scfg = scfg_;
 
     // binning
     const double bin_size_x = 142.3314E-3; // mm
@@ -487,6 +491,7 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	const double y_min = -20., y_max = +20.;
 
     // hit distributions
+    iBooker.setCurrentFolder("PPS/common");
 	m_h1_x_bef_sel[rpIdUp] = iBooker.book1D("m_h1_x_bef_sel, up", ";x", 10*n_bins_x, x_min_str, x_max_str);
 	m_h1_x_bef_sel[rpIdDw] = iBooker.book1D("m_h1_x_bef_sel, dw", ";x", 10*n_bins_x, x_min_pix, x_max_pix);
 
@@ -647,13 +652,6 @@ unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSet
 
 				p_x_diffFN_vs_x_N->Fill(trUp.x(), trDw.x() - trUp.x());
 
-				// const auto &range = cfg.alignment_y_alt_ranges[rpIdUp]; // obsolete
-				// if (trUp.getX() > range.x_min && trUp.getX() < range.x_max)
-				// {
-				// 	p_y_diffFN_vs_y_N->Fill(trUp.y(), trDw.y() - trUp.y());
-				// 	p_y_diffFN_vs_y_F->Fill(trDw.y(), trDw.y() - trUp.y());
-				// }
-
 				idx = (trUp.x() - scfg.nr_x_slice_min) / scfg.nr_x_slice_w;
 				if (idx >= 0 && idx < scfg.nr_x_slice_n)
 				{
@@ -685,17 +683,20 @@ PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig)
 // ------------ method called for each event  ------------
 void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 {
-    edm::ESHandle<PPSAlignmentConfig> cfg;
-    iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+    const auto &tracks = iEvent.get(tracksToken_);
 
-    edm::Handle<CTPPSLocalTrackLiteCollection> tracks;
-    iEvent.getByToken(tracksToken_, tracks);
+    sectorData45.process(iSetup, tracks);
+    sectorData56.process(iSetup, tracks);
 }
 
 
-void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &ibook, edm::Run const &run, edm::EventSetup const &iSetup)
+void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, edm::EventSetup const &iSetup)
 {
+    edm::ESHandle<PPSAlignmentConfig> cfg;
+    iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
+    sectorData45.init(iBooker, iSetup, "sector 45", 3, 23, cfg->sectorConfig45());
+    sectorData56.init(iBooker, iSetup, "sector 56", 3, 23, cfg->sectorConfig56());
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentWorker);
