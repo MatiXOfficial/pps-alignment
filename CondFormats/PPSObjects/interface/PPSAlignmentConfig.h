@@ -210,7 +210,7 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
     os << "* sector 45\n" << c.sectorConfig45_;
     os << "* sector 56\n" << c.sectorConfig56_ << "\n";
 
-    os << "* matching\n";
+    os << "* matching\n" << std::setprecision(3);
     os << "    reference datasets (" << c.matchingReferenceDatasets_.size() << "):\n";
     for (const auto &ds : c.matchingReferenceDatasets_)
         os << "        " << ds << "\n";
@@ -221,15 +221,15 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 
     os << "\n" << "* alignment_x_meth_o\n";
 	for (const auto &p : c.alignment_x_meth_o_ranges_)
-		os << "        RP " << p.first << ": sh_min = " << p.second.x_min << ", sh_max = " << p.second.x_max << "\n";
+		os << "    RP " << p.first << ": x_min = " << p.second.x_min << ", x_max = " << p.second.x_max << "\n";
 
     os << "\n" << "* alignment_x_relative\n";
 	for (const auto &p : c.alignment_x_relative_ranges_)
-		os << "        RP " << p.first << ": sh_min = " << p.second.x_min << ", sh_max = " << p.second.x_max << "\n";
+		os << "    RP " << p.first << ": x_min = " << p.second.x_min << ", x_max = " << p.second.x_max << "\n";
 
     os << "\n" << "* alignment_y\n";
 	for (const auto &p : c.alignment_y_ranges_)
-		os << "        RP " << p.first << ": sh_min = " << p.second.x_min << ", sh_max = " << p.second.x_max << "\n";
+		os << "    RP " << p.first << ": x_min = " << p.second.x_min << ", x_max = " << p.second.x_max << "\n";
 
     return os;
 }
