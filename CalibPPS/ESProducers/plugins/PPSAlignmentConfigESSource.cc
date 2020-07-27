@@ -159,7 +159,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 
 //---------------------------------------------------------------------------------------------
 
-std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PPSAlignmentConfigRcd &iRecord)
+std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PPSAlignmentConfigRcd &)
 {
     auto p = std::make_unique<PPSAlignmentConfig>();
 
@@ -201,14 +201,12 @@ void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetu
                                                  const edm::IOVSyncValue& iosv,
                                                  edm::ValidityInterval& oValidity) 
 {
-  edm::LogInfo("PPSAlignmentConfigESSource")
-      << ">> PPSAlignmentConfigESSource::setIntervalFor(" << key.name() << ")\n"
-      << "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
+	edm::LogInfo("PPSAlignmentConfigESSource")
+    	<< ">> PPSAlignmentConfigESSource::setIntervalFor(" << key.name() << ")\n"
+    	<< "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
 
-  edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
-  oValidity = infinity;
+  	edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
+  	oValidity = infinity;
 }
 
-//---------------------------------------------------------------------------------------------
-
-DEFINE_FWK_EVENTSETUP_MODULE(PPSAlignmentConfigESSource); 
+DEFINE_FWK_EVENTSETUP_SOURCE(PPSAlignmentConfigESSource); 

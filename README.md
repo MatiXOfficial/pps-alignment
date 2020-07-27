@@ -6,9 +6,9 @@ scram project CMSSW_11_2_0_pre2
 cd CMSSW_11_2_0_pre2/src
 cmsenv
 git clone https://github.com/MatiXOfficial/pps-alignment.git .
-scram b
+scram b -j
 ```
-## Event Setup example (does not work)
+## Event Setup example
 ```
 cd CalibPPS/ESProducers/test
 cmsRun test_PPSAlignmentConfigESSource_cfg.py

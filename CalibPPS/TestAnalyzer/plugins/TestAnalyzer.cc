@@ -28,13 +28,7 @@ public:
 
 private:
   void analyze(const edm::Event&, const edm::EventSetup&) override;
-
-  // edm::ESGetToken<PPSAlignmentConfig, PPSAlignmentConfigRcd> configToken_;
 };
-
-// TestAnalyzer::TestAnalyzer(const edm::ParameterSet& iConfig) : 
-//   configToken_(esConsumes<PPSAlignmentConfig, PPSAlignmentConfigRcd>()) 
-//   {}
 
 TestAnalyzer::TestAnalyzer(const edm::ParameterSet& iConfig) {}
 
@@ -47,10 +41,9 @@ TestAnalyzer::TestAnalyzer(const edm::ParameterSet& iConfig) {}
 void TestAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
 
-  // auto setup = iSetup.getData(configToken_);
-
   ESHandle<PPSAlignmentConfig> config;
   iSetup.get<PPSAlignmentConfigRcd>().get(config);
+  std::cout << *config << std::endl;
 }
 
 //define this as a plug-in
