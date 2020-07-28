@@ -28,7 +28,7 @@
 #include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLiteFwd.h"
 #include "DataFormats/CTPPSReco/interface/TotemRPLocalTrack.h"
 
-#include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
+// #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
 
 #include <vector>
 #include <string>
@@ -42,7 +42,7 @@ public:
     ~PPSAlignmentHarvester() override {};
 
 private:
-
+    void dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &) override {}
 
     // ------------ member data ------------
 };
