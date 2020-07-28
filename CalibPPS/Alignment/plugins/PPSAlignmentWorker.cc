@@ -491,7 +491,6 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	const double y_min = -20., y_max = +20.;
 
     // hit distributions
-    iBooker.setCurrentFolder("PPS/common");
 	m_h1_x_bef_sel[rpIdUp] = iBooker.book1D("m_h1_x_bef_sel, up", ";x", 10*n_bins_x, x_min_str, x_max_str);
 	m_h1_x_bef_sel[rpIdDw] = iBooker.book1D("m_h1_x_bef_sel, dw", ";x", 10*n_bins_x, x_min_pix, x_max_pix);
 
@@ -694,6 +693,8 @@ void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run con
 {
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+
+    iBooker.setCurrentFolder("PPS/Common");
 
     sectorData45.init(iBooker, iSetup, "sector 45", 3, 23, cfg->sectorConfig45());
     sectorData56.init(iBooker, iSetup, "sector 56", 3, 23, cfg->sectorConfig56());
