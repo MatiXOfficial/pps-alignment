@@ -62,10 +62,10 @@ private:
         std::vector<std::string> labels;
 
         Stat();
-        Stat(unsigned int dim_);
+        Stat(unsigned int _dim);
 
-        void init(unsigned int dim_ = 1);
-        void setLabels(const std::vector<std::string> &labels_);
+        void init(unsigned int _dim = 1);
+        void setLabels(const std::vector<std::string> &_labels);
 
         template<class T>
         void fill(const T &v);
@@ -106,7 +106,7 @@ private:
         MonitorElement *h_stddev;
 
         Profile();
-        Profile(TH2D *h_);
+        Profile(TH2D *_h);
         void init(DQMStore::IBooker &iBooker);
         void fill(double x, double y);
         void write() const;
@@ -159,8 +159,8 @@ private:
 
         std::map<unsigned int, SlicePlots> x_slice_plots_N, x_slice_plots_F;
 
-        void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, std::string name_, 
-                  unsigned int rpIdUp_, unsigned int rpIdDw_, const SectorConfig &scfg_);
+        void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, std::string _name, 
+                  unsigned int _rpIdUp, unsigned int _rpIdDw, const SectorConfig &_scfg);
 
         unsigned int process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks);
         void write() const;
@@ -180,14 +180,14 @@ private:
 // -------------------------------- Stat methods --------------------------------
 
 PPSAlignmentWorker::Stat::Stat() {}
-PPSAlignmentWorker::Stat::Stat(unsigned int dim_)
+PPSAlignmentWorker::Stat::Stat(unsigned int _dim)
 {
-    init(dim_);
+    init(_dim);
 }
 
-void PPSAlignmentWorker::Stat::init(unsigned int dim_)
+void PPSAlignmentWorker::Stat::init(unsigned int _dim)
 {
-    dim = dim_;
+    dim = _dim;
     S1 = 0.;
 
     Sv.resize(dim);
@@ -202,11 +202,11 @@ void PPSAlignmentWorker::Stat::init(unsigned int dim_)
     Sxxyy.resize(dim, tmp);
 }
 
-void PPSAlignmentWorker::Stat::setLabels(const std::vector<std::string> &labels_)
+void PPSAlignmentWorker::Stat::setLabels(const std::vector<std::string> &_labels)
 {
     labels.resize(dim);
     for (unsigned int i = 0; i < dim; i++)
-        labels[i] = labels_[i];
+        labels[i] = _labels[i];
 }
 
 template<class T>
@@ -409,8 +409,8 @@ void PPSAlignmentWorker::Stat::printCorrelation() const
 // -------------------------------- Profile methods --------------------------------
 PPSAlignmentWorker::Profile::Profile()  {}
 
-PPSAlignmentWorker::Profile::Profile(TH2D *h_)
-    : h(h_)
+PPSAlignmentWorker::Profile::Profile(TH2D *_h)
+    : h(_h)
 {
     st.resize(h->GetNbinsX(), Stat(1));
 }
@@ -467,16 +467,16 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooke
     p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp_p_y_diffFN_vs_y);
 }
 
-void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, std::string name_, 
-                                          unsigned int rpIdUp_, unsigned int rpIdDw_, const SectorConfig &scfg_)
+void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, std::string _name, 
+                                          unsigned int _rpIdUp, unsigned int _rpIdDw, const SectorConfig &_scfg)
 {
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
-    name = name_;
-    rpIdUp = rpIdUp_;
-    rpIdDw = rpIdDw_;
-    scfg = scfg_;
+    name = _name;
+    rpIdUp = _rpIdUp;
+    rpIdDw = _rpIdDw;
+    scfg = _scfg;
 
     // binning
     const double bin_size_x = 142.3314E-3; // mm
