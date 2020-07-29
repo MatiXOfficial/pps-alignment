@@ -54,7 +54,9 @@ public:
     ~PPSAlignmentHarvester() override {};
 
 private:
-    void dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &) override {};
+    void dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &) override;
+    void dqmEndLuminosityBlock(DQMStore::IBooker &, DQMStore::IGetter &,
+                               edm::LuminosityBlock const &, edm::EventSetup const &);
 
     // ------------ structures ------------
     struct AlignmentResult
@@ -91,6 +93,8 @@ private:
     double findMax();
     TGraphErrors* buildModeGraph(const TH2D *h2_y_vs_x, bool aligned, unsigned int fill, 
                                  unsigned int xangle, unsigned int rp);
+
+    void yAlignment(DQMStore::IBooker &, DQMStore::IGetter &, const edm::EventSetup &);
 
     // ------------ other member data ------------
     std::string folder_;
@@ -276,6 +280,11 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(const TH2D *h2_y_vs_x, bool 
     return g_y_mode_vs_x;
 }
 
+void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
+{
+
+}
+
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
 
 PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
@@ -285,9 +294,14 @@ PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
     ff_fit = new TF1("ff_fit", "[0] * exp(-(x-[1])*(x-[1])/2./[2]/[2]) + [3] + [4]*x");
 }
 
-// void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter)
-// {
+void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter)
+{}
 
-// }
+void PPSAlignmentHarvester::dqmEndLuminosityBlock(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter,
+                                                  edm::LuminosityBlock const &, edm::EventSetup const &iSetup)
+{
+    yAlignment(iBooker, iGetter, iSetup);
+}
+
 
 DEFINE_FWK_MODULE(PPSAlignmentHarvester);
