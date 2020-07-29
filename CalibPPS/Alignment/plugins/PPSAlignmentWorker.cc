@@ -175,6 +175,8 @@ private:
     unsigned long eventCount = 0;
     unsigned long eventSelCount45 = 0;
     unsigned long eventSelCount56 = 0;
+
+    std::string folder_;
 };
 
 // -------------------------------- Stat methods --------------------------------
@@ -676,7 +678,8 @@ unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSet
 // -------------------------------- PPSAlignmentWorker methods --------------------------------
 
 PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig) 
-    : tracksToken_(consumes<CTPPSLocalTrackLiteCollection>(iConfig.getParameter<edm::InputTag>("tagTracks")))
+    : tracksToken_(consumes<CTPPSLocalTrackLiteCollection>(iConfig.getParameter<edm::InputTag>("tagTracks"))),
+      folder_(iConfig.getParameter<std::string>("folder"))
 {}
 
 // ------------ method called for each event  ------------
@@ -694,7 +697,7 @@ void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run con
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
-    iBooker.setCurrentFolder("PPS/Common");
+    iBooker.setCurrentFolder(folder_);
 
     sectorData45.init(iBooker, iSetup, "sector 45", 3, 23, cfg->sectorConfig45());
     sectorData56.init(iBooker, iSetup, "sector 56", 3, 23, cfg->sectorConfig56());

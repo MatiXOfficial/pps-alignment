@@ -1,8 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
 
-process = cms.Process('Alignment')
-
 ppsAlignmentWorker = DQMEDAnalyzer("PPSAlignmentWorker",
-	tagTracks = cms.InputTag("ctppsLocalTrackLiteProducer")
+	tagTracks = cms.InputTag("ctppsLocalTrackLiteProducer"),
+	folder = cms.string("CalibPPS/Common")
 )
