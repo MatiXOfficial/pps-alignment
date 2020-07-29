@@ -31,6 +31,8 @@ struct SelectionRange
     double x_max;
 
     SelectionRange(double x_min = 0., double x_max = 0.) : x_min(x_min), x_max(x_max) {}
+
+    COND_SERIALIZABLE;
 };
 
 //---------------------------------------------------------------------------------------------
@@ -47,6 +49,8 @@ struct SectorConfig
 	double nr_x_slice_min, nr_x_slice_w;
 	int fr_x_slice_n;
 	double fr_x_slice_min, fr_x_slice_w;
+
+    COND_SERIALIZABLE;
 };
 
 //---------------------------------------------------------------------------------------------

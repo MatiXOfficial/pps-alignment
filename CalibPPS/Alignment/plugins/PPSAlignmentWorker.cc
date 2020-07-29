@@ -497,19 +497,19 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	m_h1_x_bef_sel[rpIdDw] = new TH1D("", ";x", 10 * n_bins_x, x_min_pix, x_max_pix);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/before selection/" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_bef_sel[rpIdUp] = iBooker.book2D("m_h2_y_vs_x_bef_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_bef_sel[rpIdUp] = iBooker.book2D("h2_y_vs_x_bef_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/" + _name + "/before selection/" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_bef_sel[rpIdDw] = iBooker.book2D("m_h2_y_vs_x_bef_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_bef_sel[rpIdDw] = iBooker.book2D("h2_y_vs_x_bef_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/multiplicity selection/" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_mlt_sel[rpIdUp] = iBooker.book2D("m_h2_y_vs_x_mlt_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_mlt_sel[rpIdUp] = iBooker.book2D("h2_y_vs_x_mlt_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/" + _name + "/multiplicity selection/" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_mlt_sel[rpIdDw] = iBooker.book2D("m_h2_y_vs_x_mlt_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_mlt_sel[rpIdDw] = iBooker.book2D("h2_y_vs_x_mlt_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/profiles" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_aft_sel[rpIdUp] = iBooker.book2D("m_h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_aft_sel[rpIdUp] = iBooker.book2D("h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/" + _name + "/profiles" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_aft_sel[rpIdDw] = iBooker.book2D("m_h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_aft_sel[rpIdDw] = iBooker.book2D("h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
 
 	m_g_y_vs_x_aft_sel[rpIdUp] = new TGraph();
 	m_g_y_vs_x_aft_sel[rpIdDw] = new TGraph();

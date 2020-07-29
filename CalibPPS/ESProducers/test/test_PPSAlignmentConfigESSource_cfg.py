@@ -109,44 +109,6 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 		)
 	),
 
-	x_alignment_meth_x = cms.PSet(
-	rp_L_2_F = cms.PSet(
-		x_min = cms.double(49),
-		x_max = cms.double(57.),
-	),
-	rp_L_1_F = cms.PSet(
-		x_min = cms.double(11.),
-		x_max = cms.double(18.),
-	),
-	rp_R_1_F = cms.PSet(
-		x_min = cms.double(7.5),
-		x_max = cms.double(18.),
-	),
-	rp_R_2_F = cms.PSet(
-		x_min = cms.double(47.),
-		x_max = cms.double(57.),
-	)
-	),
-
-	x_alignment_meth_y = cms.PSet(
-	rp_L_2_F = cms.PSet(
-		x_min = cms.double(46.),
-		x_max = cms.double(49.),
-	),
-	rp_L_1_F = cms.PSet(
-		x_min = cms.double(7.5),
-		x_max = cms.double(10.5),
-	),
-	rp_R_1_F = cms.PSet(
-		x_min = cms.double(6),
-		x_max = cms.double(9.),
-	),
-	rp_R_2_F = cms.PSet(
-		x_min = cms.double(45.),
-		x_max = cms.double(49.),
-	)
-	),
-
 	x_alignment_meth_o = cms.PSet(
 	rp_L_2_F = cms.PSet(
 		x_min = cms.double(47.),
@@ -201,25 +163,6 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	rp_R_2_F = cms.PSet(
 		x_min = cms.double(44.5),
 		x_max = cms.double(49.0),
-	)
-	),
-
-	y_alignment_alt = cms.PSet(
-	rp_L_2_F = cms.PSet(
-		x_min = cms.double(0.),
-		x_max = cms.double(0.),
-	),
-	rp_L_1_F = cms.PSet(
-		x_min = cms.double(7.),
-		x_max = cms.double(19.),
-	),
-	rp_R_1_F = cms.PSet(
-		x_min = cms.double(6),
-		x_max = cms.double(17.),
-	),
-	rp_R_2_F = cms.PSet(
-		x_min = cms.double(0.),
-		x_max = cms.double(0.),
 	)
 	)
 )
