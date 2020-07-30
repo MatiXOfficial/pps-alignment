@@ -8,18 +8,13 @@ cmsenv
 git clone https://github.com/MatiXOfficial/pps-alignment.git .
 scram b -j 8
 ```
+## Run test
+```
+cd CalibPPS/Alignment/test
+cmsRun test_PPSAlignment_cfg.py
+```
 ## Event Setup example
 ```
 cd CalibPPS/ESProducers/test
 cmsRun test_PPSAlignmentConfigESSource_cfg.py
 ```
-<!-- ## Relevant files
-- DQM plugins
-  - `CalibPPS/Alignment/plugins`
-- Event setup class
-  - `CondFormats/PPSObjects/interface/PPSAlignmentConfig.h`
-- ESProducer
-  - `CalibPPS/ESProducers/plugins/PPSAlignmentConfigESSource.cc`
-- ES Record
-  - `CondFormats/DataRecord/interface/PPSAlignmentConfigRcd.h`
-  - `CondFormats/DataRecord/src/PPSAlignmentConfigRcd.cc` -->
