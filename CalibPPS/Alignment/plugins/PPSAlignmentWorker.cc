@@ -15,7 +15,6 @@
 #include "DQMServices/Core/interface/MonitorElement.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Utilities/interface/ESGetToken.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -26,7 +25,6 @@
 #include "DataFormats/CTPPSDetId/interface/TotemRPDetId.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLite.h"
 #include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLiteFwd.h"
-#include "DataFormats/CTPPSReco/interface/TotemRPLocalTrack.h"
 
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
 #include "CondFormats/DataRecord/interface/PPSAlignmentConfigRcd.h"

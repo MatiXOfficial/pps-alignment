@@ -14,13 +14,10 @@
 #define CondFormats_PPSObjects_PPSAlignmentConfig_h
 
 #include "CondFormats/Serialization/interface/Serializable.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include <vector>
 #include <string>
 #include <map>
-#include <cmath>
-#include <iomanip>
 #include <iostream>
 
 //---------------------------------------------------------------------------------------------
