@@ -93,7 +93,7 @@ private:
     TF1 *ff_fit;
 
     double findMax();
-    TGraphErrors* buildModeGraph(const TH2D *h2_y_vs_x, bool aligned, unsigned int fill, 
+    TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
                                  unsigned int xangle, unsigned int rp);
 
     void yAlignment(DQMStore::IBooker &, DQMStore::IGetter &, const edm::EventSetup &);
@@ -190,7 +190,7 @@ double PPSAlignmentHarvester::findMax()
     return xMax;
 }
 
-TGraphErrors* PPSAlignmentHarvester::buildModeGraph(const TH2D *h2_y_vs_x, bool aligned, unsigned int fill, 
+TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
                                                     unsigned int xangle, unsigned int rp)
 {
     std::map<unsigned int, double> mymf; // probably to be removed
@@ -226,14 +226,14 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(const TH2D *h2_y_vs_x, bool 
     const double yMaxFit = mymf[rp];
     TGraphErrors *g_y_mode_vs_x = new TGraphErrors();
 
-    for (int bix = 1; bix <= h2_y_vs_x->GetNbinsX(); bix++)
+    for (int bix = 1; bix <= h2_y_vs_x->getNbinsX(); bix++)
     {
-        const double x = h2_y_vs_x->GetXaxis()->GetBinCenter(bix);
-        const double x_unc = h2_y_vs_x->GetXaxis()->GetBinWidth(bix) / 2;
+        const double x = h2_y_vs_x->getTH2D()->GetXaxis()->GetBinCenter(bix);
+        const double x_unc = h2_y_vs_x->getTH2D()->GetXaxis()->GetBinWidth(bix) / 2;
 
         char buf[100];
         sprintf(buf, "h_y_x=%.3f", x);
-		TH1D *h_y = h2_y_vs_x->ProjectionY(buf, bix, bix);
+		TH1D *h_y = h2_y_vs_x->getTH2D()->ProjectionY(buf, bix, bix);
 
         if (h_y->GetEntries() < 300)
 			continue;
@@ -317,9 +317,8 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
     // processing
     for (const auto &rpd : rpData)
     {
-        // iBooker.setCurrentFolder(_folder + "/" + rpd.n;
         edm::LogInfo("y alignment") << rpd.name << "\n";
-        auto *h2_y_vs_x = iGetter.get(folder_ + "/" + rpd.sectorName + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x")->getTH2D();
+        auto *h2_y_vs_x = iGetter.get(folder_ + "/" + rpd.sectorName + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
 
         if (h2_y_vs_x == nullptr)
         {

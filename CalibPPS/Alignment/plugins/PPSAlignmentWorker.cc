@@ -462,7 +462,7 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots() {}
 PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooker)
 {
     h_y = iBooker.book1D("h_y", ";y", 100, -10., 10.);
-    h2_y_diffFN_vs_y = iBooker.book2D("h2_y_diffFN_vs_y", ";y;x_{F} - y_{N}", 100, -10., 10., 100, -2., 2.);
+    h2_y_diffFN_vs_y = iBooker.book2DD("h2_y_diffFN_vs_y", ";y;x_{F} - y_{N}", 100, -10., 10., 100, -2., 2.);
     auto tmp_p_y_diffFN_vs_y = new TProfile("", ";y;x_{F} - y_{N}", 100, -10., 10.);
     p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp_p_y_diffFN_vs_y);
 }
@@ -495,19 +495,19 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	m_h1_x_bef_sel[rpIdDw] = new TH1D("", ";x", 10 * n_bins_x, x_min_pix, x_max_pix);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/before selection/" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_bef_sel[rpIdUp] = iBooker.book2D("h2_y_vs_x_bef_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_bef_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/" + _name + "/before selection/" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_bef_sel[rpIdDw] = iBooker.book2D("h2_y_vs_x_bef_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_bef_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/multiplicity selection/" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_mlt_sel[rpIdUp] = iBooker.book2D("h2_y_vs_x_mlt_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_mlt_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/" + _name + "/multiplicity selection/" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_mlt_sel[rpIdDw] = iBooker.book2D("h2_y_vs_x_mlt_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_mlt_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
 
-    iBooker.setCurrentFolder(folder + "/" + _name + "/profiles" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_aft_sel[rpIdUp] = iBooker.book2D("h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
-    iBooker.setCurrentFolder(folder + "/" + _name + "/profiles" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_aft_sel[rpIdDw] = iBooker.book2D("h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+    iBooker.setCurrentFolder(folder + "/" + _name + "/profiles/" + cfg->rpTags()[rpIdUp]);
+	m_h2_y_vs_x_aft_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+    iBooker.setCurrentFolder(folder + "/" + _name + "/profiles/" + cfg->rpTags()[rpIdDw]);
+	m_h2_y_vs_x_aft_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
 
 	m_g_y_vs_x_aft_sel[rpIdUp] = new TGraph();
 	m_g_y_vs_x_aft_sel[rpIdDw] = new TGraph();
@@ -516,16 +516,16 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
     iBooker.setCurrentFolder(folder + "/" + _name + "/cuts/cut_h");
     h_q_cut_h_bef = iBooker.book1D("h_q_cut_h_bef", ";cq_h", 400, -2., 2.);
 	h_q_cut_h_aft = iBooker.book1D("h_q_cut_h_aft", ";cq_h", 400, -2., 2.);
-	h2_cut_h_bef = iBooker.book2D("h2_cut_h_bef", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, x_min_pix, x_max_pix);
-	h2_cut_h_aft = iBooker.book2D("h2_cut_h_aft", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, x_min_pix, x_max_pix);
+	h2_cut_h_bef = iBooker.book2DD("h2_cut_h_bef", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, x_min_pix, x_max_pix);
+	h2_cut_h_aft = iBooker.book2DD("h2_cut_h_aft", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, x_min_pix, x_max_pix);
 	auto tmp_p_cut_h_aft = new TProfile("", ";x_up;mean of x_dw", n_bins_x, x_min_str, x_max_str);
     p_cut_h_aft = iBooker.bookProfile("p_cut_h_aft", tmp_p_cut_h_aft);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/cuts/cut_v");
 	h_q_cut_v_bef = iBooker.book1D("h_q_cut_v_bef", ";cq_v", 400, -2., 2.);
 	h_q_cut_v_aft = iBooker.book1D("h_q_cut_v_aft", ";cq_v", 400, -2., 2.);
-	h2_cut_v_bef = iBooker.book2D("h2_cut_v_bef", ";y_up;y_dw", n_bins_y, y_min, y_max, n_bins_y, y_min, y_max);
-	h2_cut_v_aft = iBooker.book2D("h2_cut_v_aft", ";y_up;y_dw", n_bins_y, y_min, y_max, n_bins_y, y_min, y_max);
+	h2_cut_v_bef = iBooker.book2DD("h2_cut_v_bef", ";y_up;y_dw", n_bins_y, y_min, y_max, n_bins_y, y_min, y_max);
+	h2_cut_v_aft = iBooker.book2DD("h2_cut_v_aft", ";y_up;y_dw", n_bins_y, y_min, y_max, n_bins_y, y_min, y_max);
 	auto tmp_p_cut_v_aft = new TProfile("", ";y_up;mean of y_dw", n_bins_y, y_min, y_max);
     p_cut_v_aft = iBooker.bookProfile("p_cut_v_aft", tmp_p_cut_v_aft);
 
@@ -550,7 +550,7 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
         char buf[100];
         sprintf(buf, "%.1f-%.1f", xMin, xMax);
 
-        iBooker.setCurrentFolder(folder + "/" + _name + "/near_far/x slices, N" + buf);
+        iBooker.setCurrentFolder(folder + "/" + _name + "/near_far/x slices, N/" + buf);
         x_slice_plots_N.insert({i, SlicePlots(iBooker)});
     }
 
@@ -562,7 +562,7 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
         char buf[100];
         sprintf(buf, "%.1f-%.1f", xMin, xMax);
 
-        iBooker.setCurrentFolder(folder + "/" + _name + "/near_far/x slices, F" + buf);
+        iBooker.setCurrentFolder(folder + "/" + _name + "/near_far/x slices, F/" + buf);
         x_slice_plots_F.insert({i, SlicePlots(iBooker)});
     }
 }
