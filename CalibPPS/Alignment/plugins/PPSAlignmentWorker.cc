@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
+#include "DQMServices/Core/interface/DQMOneEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
 
@@ -39,7 +39,7 @@
 
 //----------------------------------------------------------------------------------------------------
 
-class PPSAlignmentWorker : public DQMEDAnalyzer
+class PPSAlignmentWorker : public DQMOneEDAnalyzer<>
 {
 public:
     PPSAlignmentWorker(const edm::ParameterSet &);
@@ -47,8 +47,8 @@ public:
 
 private:
     void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
-
     void analyze(const edm::Event &, const edm::EventSetup &) override;
+    void dqmEndRun(edm::Run const &, edm::EventSetup const &) override;
 
     // ------------ structures ------------
     struct Stat
@@ -106,7 +106,7 @@ private:
         Profile();
         Profile(DQMStore::IBooker &iBooker, TH2D *_h);
         void fill(double x, double y);
-        void write() const;
+        void fillEndRun() const;
     };
 
     struct SectorData
@@ -160,7 +160,7 @@ private:
                   unsigned int _rpIdUp, unsigned int _rpIdDw, const SectorConfig &_scfg, const std::string &folder);
 
         unsigned int process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks);
-        void write() const;
+        void fillEndRun() const;
     };
 
     // ------------ member data ------------
@@ -433,7 +433,7 @@ void PPSAlignmentWorker::Profile::fill(double x, double y)
     st[vi].fill(y);
 }
 
-void PPSAlignmentWorker::Profile::write() const
+void PPSAlignmentWorker::Profile::fillEndRun() const
 {
     const int bins = h->GetXaxis()->GetNbins();
 
@@ -675,6 +675,13 @@ unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSet
 
 				p_x_diffFN_vs_x_N->Fill(trUp.x(), trDw.x() - trUp.x());
 
+                const auto &range = cfg->alignment_y_ranges()[rpIdUp];          // probably redundant    
+				if (trUp.x() > range.x_min && trUp.x() < range.x_max)           //
+				{                                                               //
+					p_y_diffFN_vs_y_N->Fill(trUp.y(), trDw.y() - trUp.y());     //
+					p_y_diffFN_vs_y_F->Fill(trDw.y(), trDw.y() - trUp.y());     //
+				}                                                               //
+
 				idx = (trUp.x() - scfg.nr_x_slice_min) / scfg.nr_x_slice_w;
 				if (idx >= 0 && idx < scfg.nr_x_slice_n)
 				{
@@ -695,6 +702,14 @@ unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSet
     }
 
     return pairsSelected;
+}
+
+void PPSAlignmentWorker::SectorData::fillEndRun() const
+{
+    for (const auto &p : m_p_y_vs_x_aft_sel)
+    {
+        p.second.fillEndRun();
+    }
 }
 
 // -------------------------------- PPSAlignmentWorker methods --------------------------------
@@ -721,6 +736,12 @@ void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run con
 
     sectorData45.init(iBooker, iSetup, "sector 45", 3, 23, cfg->sectorConfig45(), folder_);
     sectorData56.init(iBooker, iSetup, "sector 56", 103, 123, cfg->sectorConfig56(), folder_);
+}
+
+void PPSAlignmentWorker::dqmEndRun(edm::Run const &, edm::EventSetup const &)
+{
+    sectorData45.fillEndRun();
+    sectorData56.fillEndRun();
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentWorker);
