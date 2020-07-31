@@ -2,16 +2,28 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('testAlignment')
 
-# minimal logger settings
+process.load('FWCore.MessageService.MessageLogger_cfi')
+
 process.MessageLogger = cms.Service("MessageLogger",
-	statistics = cms.untracked.vstring(),
-	destinations = cms.untracked.vstring("cout"),
+	destinations = cms.untracked.vstring('alignment_out', 
+										 'alignment_log', 
+										 'cout'
+										 ),
+	categories = cms.untracked.vstring('y_alignment_results', 
+									   'y_alignment'
+									   ),
+	alignment_out = cms.untracked.PSet(
+		threshold = cms.untracked.string("INFO"),
+		INFO = cms.untracked.PSet(limit = cms.untracked.int32(0)),
+		y_alignment_results = cms.untracked.PSet(limit = cms.untracked.int32(1000))
+	),
+	alignment_log = cms.untracked.PSet(
+		threshold = cms.untracked.string("INFO")
+	),
 	cout = cms.untracked.PSet(
-		threshold = cms.untracked.string("WARNING")
+		threshold = cms.untracked.string('WARNING')
 	)
 )
-
-process.load('FWCore.MessageService.MessageLogger_cfi')
 
 # load DQM framework
 process.load("DQM.Integration.config.environment_cfi")
@@ -24,7 +36,7 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring('root://eostotem.cern.ch//eos/cms/store/group/phys_pps/reconstruction/2018/physics_runs/rec-hit-version1/fill7334_xangle160_beta0.30_EGamma.root')
 )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(50000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(60000))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	fill = cms.uint32(7334),

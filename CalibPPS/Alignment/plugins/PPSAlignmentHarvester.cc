@@ -316,12 +316,11 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
     // processing
     for (const auto &rpd : rpData)
     {
-        edm::LogInfo("y_alignment") << rpd.name << "\n";
         auto *h2_y_vs_x = iGetter.get(folder_ + "/worker/" + rpd.sectorName + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
 
         if (h2_y_vs_x == nullptr)
         {
-            edm::LogInfo("y_alignment") << "    cannot load data, skipping\n";
+            edm::LogWarning("y_alignment") << "    cannot load data for " << rpd.name << ", skipping";
             continue;
         }
 
@@ -332,8 +331,6 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
         const double xMin = cfg->alignment_y_ranges()[rpd.id].x_min;
 		const double xMax = cfg->alignment_y_ranges()[rpd.id].x_max;
-        edm::LogInfo("y_alignment") << "    x_min = " << std::fixed << std::setprecision(3) << xMin
-        << ", x_max = " << xMax << "\n";
 
         double sh_x = rpd.sh_x;
         double slope = rpd.slope;
@@ -350,7 +347,10 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
         const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
 		const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
 
-        edm::LogInfo("y_alignment") << "    slope (fitted)" << std::fixed << std::setprecision(3) << a << "\n";
+        edm::LogInfo("y_alignment") << rpd.name << std::fixed << std::setprecision(3) << ":\n"
+        << "    x_min = " << xMin << ", x_max = " << xMax << "\n"
+        << "    sh_x = " << sh_x << ", slope (fix) = " << slope << "\n"
+        << "    slope (fitted) = " << a;
 
         results["y_alignment"][rpd.id] = AlignmentResult(0., 0., b, b_unc, 0., 0.);
 
@@ -373,7 +373,6 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
     // write results
     edm::LogInfo("y_alignment_results") << results;
-    std::cout << "y alignment results:\n" << results;
 }
 
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
