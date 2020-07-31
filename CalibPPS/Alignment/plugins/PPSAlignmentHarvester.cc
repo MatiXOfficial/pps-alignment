@@ -56,8 +56,7 @@ public:
 
 private:
     void dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &) override;
-    void dqmEndLuminosityBlock(DQMStore::IBooker &, DQMStore::IGetter &,
-                               edm::LuminosityBlock const &, edm::EventSetup const &);
+    void dqmEndRun(DQMStore::IBooker &, DQMStore::IGetter &, edm::Run const &, edm::EventSetup const &);
 
     // ------------ structures ------------
     struct AlignmentResult
@@ -111,10 +110,10 @@ PPSAlignmentHarvester::AlignmentResult::AlignmentResult(double _sh_x, double _sh
 
 std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResult ar)
 {
-    os << std::showpos << std::fixed << std::setprecision(3) << "sh_x=" << ar.sh_x 
-    << ",sh_x_unc=" << ar.sh_x_unc << ",sh_y=" << ar.sh_y << std::setprecision(4) << ",rot_x=" << ar.rot_x 
-    << ",rot_x_unc=" << ar.rot_x_unc << ",rot_y=" << ar.rot_y << ",rot_y_unc=" << ar.rot_y_unc
-    << ",rot_z=" << ar.rot_z << ",rot_z_unc=" << ar.rot_z_unc << "\n";
+    os << std::showpos << std::fixed << std::setprecision(3) << "sh_x=" << ar.sh_x << ",sh_x_unc=" 
+    << ar.sh_x_unc << ",sh_y=" << ar.sh_y << ",sh_y_unc=" << ar.sh_y_unc << std::setprecision(4) 
+    << ",rot_x=" << ar.rot_x << ",rot_x_unc=" << ar.rot_x_unc << ",rot_y=" << ar.rot_y 
+    << ",rot_y_unc=" << ar.rot_y_unc << ",rot_z=" << ar.rot_z << ",rot_z_unc=" << ar.rot_z_unc << "\n";
     return os;
 }
 
@@ -317,8 +316,8 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
     // processing
     for (const auto &rpd : rpData)
     {
-        edm::LogInfo("y alignment") << rpd.name << "\n";
-        auto *h2_y_vs_x = iGetter.get(folder_ + "/" + rpd.sectorName + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
+        edm::LogInfo("y_alignment") << rpd.name << "\n";
+        auto *h2_y_vs_x = iGetter.get(folder_ + "/worker/" + rpd.sectorName + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
 
         if (h2_y_vs_x == nullptr)
         {
@@ -374,6 +373,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
     // write results
     edm::LogInfo("y_alignment_results") << results;
+    std::cout << "y alignment results:\n" << results;
 }
 
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
@@ -388,8 +388,8 @@ PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
 void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter)
 {}
 
-void PPSAlignmentHarvester::dqmEndLuminosityBlock(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter,
-                                                  edm::LuminosityBlock const &, edm::EventSetup const &iSetup)
+void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
+                                      edm::Run const &, edm::EventSetup const &iSetup)
 {
     yAlignment(iBooker, iGetter, iSetup);
 }
