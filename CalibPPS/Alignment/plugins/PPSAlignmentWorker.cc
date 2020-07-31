@@ -104,8 +104,7 @@ private:
         MonitorElement *h_stddev;
 
         Profile();
-        Profile(TH2D *_h);
-        void init(DQMStore::IBooker &iBooker);
+        Profile(DQMStore::IBooker &iBooker, TH2D *_h);
         void fill(double x, double y);
         void write() const;
     };
@@ -119,7 +118,7 @@ private:
         SectorConfig scfg;
 
         // hit distributions
-        std::map<unsigned int, TH1D*> m_h1_x_bef_sel;
+        std::map<unsigned int, MonitorElement*> m_h1_x_bef_sel;
 
         std::map<unsigned int, MonitorElement*> m_h2_y_vs_x_bef_sel;
 
@@ -409,14 +408,11 @@ void PPSAlignmentWorker::Stat::printCorrelation() const
 // -------------------------------- Profile methods --------------------------------
 PPSAlignmentWorker::Profile::Profile()  {}
 
-PPSAlignmentWorker::Profile::Profile(TH2D *_h)
+PPSAlignmentWorker::Profile::Profile(DQMStore::IBooker &iBooker, TH2D *_h)
     : h(_h)
 {
     st.resize(h->GetNbinsX(), Stat(1));
-}
 
-void PPSAlignmentWorker::Profile::init(DQMStore::IBooker &iBooker)
-{
     const int bins = h->GetXaxis()->GetNbins();
     const double xMin = h->GetXaxis()->GetXmin();
     const double xMax = h->GetXaxis()->GetXmax();
@@ -491,23 +487,22 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	const double y_min = -20., y_max = +20.;
 
     // hit distributions
-	m_h1_x_bef_sel[rpIdUp] = new TH1D("", ";x", 10 * n_bins_x, x_min_str, x_max_str);
-	m_h1_x_bef_sel[rpIdDw] = new TH1D("", ";x", 10 * n_bins_x, x_min_pix, x_max_pix);
-
     iBooker.setCurrentFolder(folder + "/worker/" + _name + "/before selection/" + cfg->rpTags()[rpIdUp]);
+    m_h1_x_bef_sel[rpIdUp] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_str, x_max_str);
 	m_h2_y_vs_x_bef_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/worker/" + _name + "/before selection/" + cfg->rpTags()[rpIdDw]);
 	m_h2_y_vs_x_bef_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+    m_h1_x_bef_sel[rpIdDw] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_pix, x_max_pix);
 
     iBooker.setCurrentFolder(folder + "/worker/" + _name + "/multiplicity selection/" + cfg->rpTags()[rpIdUp]);
 	m_h2_y_vs_x_mlt_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/worker/" + _name + "/multiplicity selection/" + cfg->rpTags()[rpIdDw]);
 	m_h2_y_vs_x_mlt_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
 
-    iBooker.setCurrentFolder(folder + "/worker/" + _name + "/profiles/" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_aft_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
-    iBooker.setCurrentFolder(folder + "/worker/" + _name + "/profiles/" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_aft_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x_aft_sel", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+    iBooker.setCurrentFolder(folder + "/worker/" + _name + "/after selection/" + cfg->rpTags()[rpIdUp]);
+	m_h2_y_vs_x_aft_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+    iBooker.setCurrentFolder(folder + "/worker/" + _name + "/after selection/" + cfg->rpTags()[rpIdDw]);
+	m_h2_y_vs_x_aft_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
 
 	m_g_y_vs_x_aft_sel[rpIdUp] = new TGraph();
 	m_g_y_vs_x_aft_sel[rpIdDw] = new TGraph();
@@ -530,8 +525,10 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
     p_cut_v_aft = iBooker.bookProfile("p_cut_v_aft", tmp_p_cut_v_aft);
 
     // profiles
-    m_p_y_vs_x_aft_sel.insert({rpIdUp, Profile(m_h2_y_vs_x_aft_sel[rpIdUp]->getTH2D())});
-    m_p_y_vs_x_aft_sel.insert({rpIdDw, Profile(m_h2_y_vs_x_aft_sel[rpIdDw]->getTH2D())});
+    iBooker.setCurrentFolder(folder + "/worker/" + _name + "/profiles/" + cfg->rpTags()[rpIdUp]);
+    m_p_y_vs_x_aft_sel.insert({rpIdUp, Profile(iBooker, m_h2_y_vs_x_aft_sel[rpIdUp]->getTH2D())});
+    iBooker.setCurrentFolder(folder + "/worker/" + _name + "/profiles/" + cfg->rpTags()[rpIdDw]);
+    m_p_y_vs_x_aft_sel.insert({rpIdDw, Profile(iBooker, m_h2_y_vs_x_aft_sel[rpIdDw]->getTH2D())});
 
     // near-far plots
     iBooker.setCurrentFolder(folder + "/worker/" + _name + "/near_far");
