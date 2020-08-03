@@ -88,6 +88,9 @@ private:
     };
     friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResultsCollection arc);
 
+    // ------------ x alignment relative ------------
+    void xAlignmentRelative(DQMStore::IGetter &, const edm::EventSetup &);
+
     // ------------ y alignment ------------
     TF1 *ff_fit;
 
@@ -95,7 +98,7 @@ private:
     TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
                                  unsigned int xangle, unsigned int rp);
 
-    void yAlignment(DQMStore::IBooker &, DQMStore::IGetter &, const edm::EventSetup &);
+    void yAlignment(DQMStore::IGetter &, const edm::EventSetup &);
 
     // ------------ other member data ------------
     std::string folder_;
@@ -162,6 +165,97 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResul
     return os;
 }
 
+// -------------------------------- x alignment relative methods --------------------------------
+
+void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
+{
+    // bool useAuxFits = true;
+
+    edm::ESHandle<PPSAlignmentConfig> cfg;
+    iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+
+    struct SectorData
+    {
+        std::string name;
+        unsigned int id_N, id_F;
+        std::string rp_N, rp_F;
+        double slope;
+        double sh_x_N;
+    };
+
+    std::vector<SectorData> sectorData = {
+        { "sector 45",   3,  23, "L_1_F", "L_2_F", (cfg->xangle() == 160) ? +0.006 : +0.008, -3.6 },
+        { "sector 56", 103, 123, "R_1_F", "R_2_F", (cfg->xangle() == 160) ? -0.015 : -0.012, -2.8 }
+    };
+
+    // prepare results
+    AlignmentResultsCollection results;
+
+    TF1 *ff = new TF1("ff", "[0] + [1]*(x - [2])");
+	TF1 *ff_sl_fix = new TF1("ff_sl_fix", "[0] + [1]*(x - [2])");
+
+    // processing
+    for (const auto &sd : sectorData)
+    {
+        auto *p_x_diffFN_vs_x_N = iGetter.get(folder_ + "/worker/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
+
+        if (p_x_diffFN_vs_x_N == nullptr)
+        {
+            edm::LogWarning("x_alignment_relative") << "    cannot load data, skipping";
+            continue;
+        }
+
+        if (p_x_diffFN_vs_x_N->getEntries() < 100)
+        {
+            edm::LogInfo("x_alignment_relative") << "    insufficient data, skipping";
+            continue;
+        }
+
+        const double xMin = cfg->alignment_x_relative_ranges()[sd.id_N].x_min;
+		const double xMax = cfg->alignment_x_relative_ranges()[sd.id_N].x_max;
+
+        edm::LogInfo("x_alignment_relative") << sd.name << std::fixed << std::setprecision(3) << ":\n"
+        << "    x_min = " << xMin << ", x_max = " << xMax;
+
+        double slope = sd.slope;
+		double sh_x_N = sd.sh_x_N;
+
+        // if (useAuxFits)
+        // {
+        // }
+
+        ff->SetParameters(0., slope, 0.);
+		ff->FixParameter(2, -sh_x_N);
+		ff->SetLineColor(2);
+		p_x_diffFN_vs_x_N->getTProfile()->Fit(ff, "Q", "", xMin, xMax);
+
+		const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
+		const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
+
+        results["x_alignment_relative"][sd.id_N] = AlignmentResult(+b/2., b_unc/2., 0., 0., 0., 0.);
+		results["x_alignment_relative"][sd.id_F] = AlignmentResult(-b/2., b_unc/2., 0., 0., 0., 0.);
+
+		ff_sl_fix->SetParameters(0., slope, 0.);
+		ff_sl_fix->FixParameter(1, slope);
+		ff_sl_fix->FixParameter(2, -sh_x_N);
+		ff_sl_fix->SetLineColor(4);
+		p_x_diffFN_vs_x_N->getTProfile()->Fit(ff_sl_fix, "Q+", "", xMin, xMax);
+
+		const double b_fs = ff_sl_fix->GetParameter(0), b_fs_unc = ff_sl_fix->GetParError(0);
+
+		results["x_alignment_relative_sl_fix"][sd.id_N] = AlignmentResult(+b_fs/2., b_fs_unc/2., 0., 0., 0., 0.);
+		results["x_alignment_relative_sl_fix"][sd.id_F] = AlignmentResult(-b_fs/2., b_fs_unc/2., 0., 0., 0., 0.);
+
+		TGraph *g_results = new TGraph();
+		g_results->SetPoint(0, sh_x_N, 0.);
+		g_results->SetPoint(1, a, a_unc);
+		g_results->SetPoint(2, b, b_unc);
+		g_results->SetPoint(3, b_fs, b_fs_unc);
+    }
+
+    // write results
+    edm::LogInfo("x_alignment_relative_results") << results;
+}
 
 // -------------------------------- y alignment methods --------------------------------
 
@@ -284,7 +378,7 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
     return g_y_mode_vs_x;
 }
 
-void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
+void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
 {
     // bool useAuxFits = true;
 
@@ -327,7 +421,10 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
         auto *g_y_cen_vs_x = buildModeGraph(h2_y_vs_x, cfg->aligned(), cfg->fill(), cfg->xangle(), rpd.id);
 
         if (g_y_cen_vs_x->GetN() < 5)
+        {
+            edm::LogInfo("y_alignment") << "    insufficient data, skipping";
             continue;
+        }
 
         const double xMin = cfg->alignment_y_ranges()[rpd.id].x_min;
 		const double xMax = cfg->alignment_y_ranges()[rpd.id].x_max;
@@ -390,7 +487,8 @@ void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGet
 void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
                                       edm::Run const &, edm::EventSetup const &iSetup)
 {
-    yAlignment(iBooker, iGetter, iSetup);
+    xAlignmentRelative(iGetter, iSetup);
+    yAlignment(iGetter, iSetup);
 }
 
 

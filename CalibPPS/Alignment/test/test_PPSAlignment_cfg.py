@@ -9,12 +9,15 @@ process.MessageLogger = cms.Service("MessageLogger",
 										 'alignment_log', 
 										 'cout'
 										 ),
-	categories = cms.untracked.vstring('y_alignment_results', 
-									   'y_alignment'
+	categories = cms.untracked.vstring('x_alignment_relative',
+									   'x_alignment_relative_results',
+									   'y_alignment',
+									   'y_alignment_results', 
 									   ),
 	alignment_out = cms.untracked.PSet(
 		threshold = cms.untracked.string("INFO"),
 		INFO = cms.untracked.PSet(limit = cms.untracked.int32(0)),
+		x_alignment_relative_results = cms.untracked.PSet(limit = cms.untracked.int32(1000)),
 		y_alignment_results = cms.untracked.PSet(limit = cms.untracked.int32(1000))
 	),
 	alignment_log = cms.untracked.PSet(
@@ -36,7 +39,7 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring('root://eostotem.cern.ch//eos/cms/store/group/phys_pps/reconstruction/2018/physics_runs/rec-hit-version1/fill7334_xangle160_beta0.30_EGamma.root')
 )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(60000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(40000))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	fill = cms.uint32(7334),
