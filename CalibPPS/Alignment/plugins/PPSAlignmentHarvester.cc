@@ -34,6 +34,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <regex>
 
 #include <Math/Rotation3D.h>
 #include <Math/RotationZYX.h>
@@ -45,6 +46,7 @@
 #include "TCanvas.h"
 #include "TF1.h"
 #include "TProfile.h"
+#include "TFile.h"
 
 //----------------------------------------------------------------------------------------------------
 
@@ -71,22 +73,30 @@ private:
         AlignmentResult(double _sh_x = 0., double _sh_x_unc = 0., double _sh_y = 0., 
                         double _sh_y_unc = 0., double _rot_z = 0., double _rot_z_unc = 0.);
 
-        CTPPSLocalTrackLite apply(const CTPPSLocalTrackLite &tr) const;
+        CTPPSLocalTrackLite apply(const CTPPSLocalTrackLite &) const;
     };
-    friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResult ar);
+    friend std::ostream &operator<<(std::ostream &, PPSAlignmentHarvester::AlignmentResult);
 
     struct AlignmentResults : public std::map<unsigned int, AlignmentResult>
     {
         // int add();
-        CTPPSLocalTrackLiteCollection apply(const CTPPSLocalTrackLiteCollection &input) const;
+        CTPPSLocalTrackLiteCollection apply(const CTPPSLocalTrackLiteCollection &) const;
     };
-    friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResults ar);
+    friend std::ostream &operator<<(std::ostream &, PPSAlignmentHarvester::AlignmentResults);
 
     struct AlignmentResultsCollection : public std::map<std::string, AlignmentResults>
     {
         // int load():
     };
-    friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResultsCollection arc);
+    friend std::ostream &operator<<(std::ostream &, PPSAlignmentHarvester::AlignmentResultsCollection);
+
+    // ------------ x alignment ------------
+    TF1 *ff_pol1;
+    TF1 *ff_pol2;
+
+    int fitProfile(TProfile *, double, double, double &, double &);
+
+    void xAlignment(DQMStore::IGetter &, const edm::EventSetup &);
 
     // ------------ x alignment relative ------------
     void xAlignmentRelative(DQMStore::IGetter &, const edm::EventSetup &);
@@ -95,8 +105,7 @@ private:
     TF1 *ff_fit;
 
     double findMax();
-    TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
-                                 unsigned int xangle, unsigned int rp);
+    TGraphErrors* buildModeGraph(MonitorElement *, bool, unsigned int, unsigned int, unsigned int);
 
     void yAlignment(DQMStore::IGetter &, const edm::EventSetup &);
 
@@ -165,6 +174,72 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResul
     return os;
 }
 
+// -------------------------------- x alignment methods --------------------------------
+
+int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc)
+{
+    if (p->GetEntries() < 50)
+		return 1;
+
+	unsigned int n_reasonable = 0;
+	for (int bi = 1; bi <= p->GetNbinsX(); bi++)
+	{
+		if (p->GetBinEntries(bi) < 5)
+		{
+			p->SetBinContent(bi, 0.);
+			p->SetBinError(bi, 0.);
+		} 
+        else 
+        {
+			n_reasonable++;
+		}
+	}
+
+	if (n_reasonable < 10)
+		return 2;
+
+	double xMin = x_mean - x_rms, xMax = x_mean + x_rms;
+
+	ff_pol1->SetParameter(0., 0.);
+	p->Fit(ff_pol1, "Q", "", xMin, xMax);
+
+	sl = ff_pol1->GetParameter(1);
+	sl_unc = ff_pol1->GetParError(1);
+
+	return 0;
+}
+
+void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
+{
+    edm::ESHandle<PPSAlignmentConfig> cfg;
+    iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+
+    // list of RPs and their settings
+	struct RPData
+	{
+		std::string name;
+		unsigned int id;
+		std::string sectorName;
+		std::string position;
+	};
+
+	std::vector<RPData> rpData = {
+		{ "L_2_F", 23,  "sector 45", "F" },
+		{ "L_1_F", 3,   "sector 45", "N" },
+		{ "R_1_F", 103, "sector 56", "N" },
+		{ "R_2_F", 123, "sector 56", "F" }
+	};
+
+    // prepare results
+	AlignmentResultsCollection results;
+
+    for (auto ref : cfg->matchingReferenceDatasets())
+    {
+        edm::LogInfo("x_alignment") << "reference dataset: " << ref;
+        
+    }
+}
+
 // -------------------------------- x alignment relative methods --------------------------------
 
 void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
@@ -197,7 +272,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const
     // processing
     for (const auto &sd : sectorData)
     {
-        auto *p_x_diffFN_vs_x_N = iGetter.get(folder_ + "/worker/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
+        auto *p_x_diffFN_vs_x_N = iGetter.get(folder_ + "/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
 
         if (p_x_diffFN_vs_x_N == nullptr)
         {
@@ -410,7 +485,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
     // processing
     for (const auto &rpd : rpData)
     {
-        auto *h2_y_vs_x = iGetter.get(folder_ + "/worker/" + rpd.sectorName + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
+        auto *h2_y_vs_x = iGetter.get(folder_ + "/" + rpd.sectorName + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
 
         if (h2_y_vs_x == nullptr)
         {
@@ -477,6 +552,10 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
     : folder_(iConfig.getParameter<std::string>("folder"))
 {
+    // ------------ x alignment ------------
+    ff_pol1 = new TF1("ff_pol1", "[0] + [1]*x");
+    ff_pol2 = new TF1("ff_pol2", "[0] + [1]*x + [2]*x*x");
+
     // ------------ y alignment ------------
     ff_fit = new TF1("ff_fit", "[0] * exp(-(x-[1])*(x-[1])/2./[2]/[2]) + [3] + [4]*x");
 }
@@ -487,9 +566,9 @@ void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGet
 void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
                                       edm::Run const &, edm::EventSetup const &iSetup)
 {
+    xAlignment(iGetter, iSetup);
     xAlignmentRelative(iGetter, iSetup);
     yAlignment(iGetter, iSetup);
 }
-
 
 DEFINE_FWK_MODULE(PPSAlignmentHarvester);

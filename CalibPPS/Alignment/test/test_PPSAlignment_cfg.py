@@ -9,7 +9,9 @@ process.MessageLogger = cms.Service("MessageLogger",
 										 'alignment_log', 
 										 'cout'
 										 ),
-	categories = cms.untracked.vstring('x_alignment_relative',
+	categories = cms.untracked.vstring('x_alignment',
+									   'x_alignment_results',
+									   'x_alignment_relative',
 									   'x_alignment_relative_results',
 									   'y_alignment',
 									   'y_alignment_results', 
@@ -17,6 +19,7 @@ process.MessageLogger = cms.Service("MessageLogger",
 	alignment_out = cms.untracked.PSet(
 		threshold = cms.untracked.string("INFO"),
 		INFO = cms.untracked.PSet(limit = cms.untracked.int32(0)),
+		x_alignment_results = cms.untracked.PSet(limit = cms.untracked.int32(1000)),
 		x_alignment_relative_results = cms.untracked.PSet(limit = cms.untracked.int32(1000)),
 		y_alignment_results = cms.untracked.PSet(limit = cms.untracked.int32(1000))
 	),
