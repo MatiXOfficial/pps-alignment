@@ -34,7 +34,6 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include <regex>
 
 #include <Math/Rotation3D.h>
 #include <Math/RotationZYX.h>
@@ -43,10 +42,11 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TGraphErrors.h"
-#include "TCanvas.h"
 #include "TF1.h"
 #include "TProfile.h"
 #include "TFile.h"
+#include "TKey.h"
+#include "TSpline.h"
 
 //----------------------------------------------------------------------------------------------------
 
@@ -95,6 +95,9 @@ private:
     TF1 *ff_pol2;
 
     int fitProfile(TProfile *, double, double, double &, double &);
+    TGraphErrors* buildGraphFromDirectory(TDirectory *, bool, unsigned int);
+    TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &, const std::vector<MonitorElement*> &, bool, unsigned int);
+    int doMatch(TGraphErrors *, TGraphErrors *, const SelectionRange &, const SelectionRange &, double, double, double &, double &);
 
     void xAlignment(DQMStore::IGetter &, const edm::EventSetup &);
 
@@ -209,6 +212,241 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 	return 0;
 }
 
+TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, bool aligned, unsigned int rpId)
+{
+    TGraphErrors *g = new TGraphErrors();
+
+	TIter next(dir->GetListOfKeys());
+	TObject *o;
+	while ((o = next()))
+	{
+		TKey *k = (TKey *) o;
+
+		std::string name = k->GetName();
+		size_t d = name.find("-");
+		const double x_min = std::stod(name.substr(0, d));
+		const double x_max = std::stod(name.substr(d+1));
+
+		//printf("  %s, %.3f, %.3f\n", name.c_str(), x_min, x_max);
+
+		TDirectory *d_slice = (TDirectory *) k->ReadObj();
+
+		TH1D *h_y = (TH1D *) d_slice->Get("h_y");
+		TProfile *p_y_diffFN_vs_y = (TProfile *) d_slice->Get("p_y_diffFN_vs_y");
+
+		double y_cen = h_y->GetMean();
+		double y_width = h_y->GetRMS();
+
+		if (aligned)
+		{
+			y_cen += ((rpId < 100) ? -0.2 : -0.4);
+		}
+        else 
+        {
+			y_cen += ((rpId < 100) ? -0.3 : -0.8);
+			y_width *= ((rpId < 100) ? 1.1 : 1.0);
+		}
+
+		double sl=0., sl_unc=0.;
+		int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
+		if (fr != 0)
+			continue;
+
+		int idx = g->GetN();
+		g->SetPoint(idx, (x_max + x_min)/2., sl);
+		g->SetPointError(idx, (x_max - x_min)/2., sl_unc);
+	}
+
+	return g;
+}
+
+TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const std::vector<MonitorElement*> &mes, 
+                                                                   bool aligned, unsigned int rpId)
+{
+    TGraphErrors *g = new TGraphErrors();
+
+    for (auto *me : mes)
+    {
+        if (me->getName() == "h_y")
+        {
+            std::string parentPath = me->getPathname();
+            size_t parentPos = parentPath.substr(0, parentPath.size() - 1).find_last_of("/") + 1;
+            std::string parentName = parentPath.substr(parentPos);
+            size_t d = parentName.find("-");
+            const double xMin = std::stod(parentName.substr(0, d));
+            const double xMax = std::stod(parentName.substr(d + 1));
+
+            TH1D *h_y = me->getTH1D();
+
+            auto *p_y_diffFN_vs_y_monitor = iGetter.get(parentPath + "p_y_diffFN_vs_y");
+            if (p_y_diffFN_vs_y_monitor == nullptr)
+            {
+                edm::LogWarning("x_alignment") << "could not find p_y_diffFN_vs_y in: " << parentPath;
+                continue;
+            }
+            TProfile *p_y_diffFN_vs_y = p_y_diffFN_vs_y_monitor->getTProfile();
+
+            double y_cen = h_y->GetMean();
+            double y_width = h_y->GetRMS();
+
+            if (aligned)
+            {
+                y_cen += (rpId < 100) ? -0.2 : -0.4;
+            }   
+            else
+            {
+                y_cen += (rpId < 100) ? -0.3 : -0.8;
+                y_width *= (rpId < 100) ? 1.1 : 1.0;
+            }
+            
+            double sl = 0., sl_unc = 0.;
+            int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
+            if (fr != 0)
+                continue;
+
+            int idx = g->GetN();
+            g->SetPoint(idx, (xMax + xMin) / 2., sl);
+            g->SetPointError(idx, (xMax - xMin) / 2., sl_unc);
+        }
+    }
+
+    return g;
+}
+
+int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, const SelectionRange &range_test,
+		                           double sh_min, double sh_max, double &sh_best, double &sh_best_unc)
+{
+    // require minimal number of points
+	if (g_ref->GetN() < 5 || g_test->GetN() < 5)
+		return 1;
+
+	// print config
+    edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
+    << "ref: x_min = " << range_ref.x_min << ", x_max = " << range_ref.x_max << "\n"
+    << "test: x_min = " << range_test.x_min << ", x_max = " << range_test.x_max;
+
+	// make spline from g_ref
+	TSpline3 *s_ref = new TSpline3("s_ref", g_ref->GetX(), g_ref->GetY(), g_ref->GetN());
+
+	// book match-quality graphs
+	TGraph *g_n_points = new TGraph(); g_n_points->SetName("g_n_points"); g_n_points->SetTitle(";sh;N");
+	TGraph *g_chi_sq = new TGraph(); g_chi_sq->SetName("g_chi_sq"); g_chi_sq->SetTitle(";sh;S2");
+	TGraph *g_chi_sq_norm = new TGraph(); g_chi_sq_norm->SetName("g_chi_sq_norm"); g_chi_sq_norm->SetTitle(";sh;S2 / N");
+
+	// optimalisation variables
+	double S2_norm_best = 1E100;
+
+	double sh_step = 0.010;	// mm
+	for (double sh = sh_min; sh <= sh_max; sh += sh_step)
+	{
+		// calculate chi^2
+		int n_points = 0;
+		double S2 = 0.;
+
+		for (int i = 0; i < g_test->GetN(); ++i)
+		{
+			const double x_test = g_test->GetX()[i];
+			const double y_test = g_test->GetY()[i];
+			const double y_test_unc = g_test->GetErrorY(i);
+
+			const double x_ref = x_test + sh;
+
+			if (x_ref < range_ref.x_min || x_ref > range_ref.x_max || x_test < range_test.x_min || x_test > range_test.x_max)
+				continue;
+
+			const double y_ref = s_ref->Eval(x_ref);
+
+			int js = -1, jg = -1;
+			double xs = -1E100, xg = +1E100;
+			for (int j = 0; j < g_ref->GetN(); ++j)
+			{
+				const double x = g_ref->GetX()[j];
+				if (x < x_ref && x > xs)
+				{
+					xs = x;
+					js = j;
+				}
+				if (x > x_ref && x < xg)
+				{
+					xg = x;
+					jg = j;
+				}
+			}
+			if (jg == -1)
+				jg = js;
+
+			const double y_ref_unc = ( g_ref->GetErrorY(js) + g_ref->GetErrorY(jg) ) / 2.;
+
+			n_points++;
+			const double S2_inc = pow(y_test - y_ref, 2.) / (y_ref_unc*y_ref_unc + y_test_unc*y_test_unc);
+			S2 += S2_inc;
+		}
+
+		// update best result
+		double S2_norm = S2 / n_points;
+
+		if (S2_norm < S2_norm_best)
+		{
+			S2_norm_best = S2_norm;
+			sh_best = sh;
+		}
+
+		// fill in graphs
+		int idx = g_n_points->GetN();
+		g_n_points->SetPoint(idx, sh, n_points);
+		g_chi_sq->SetPoint(idx, sh, S2);
+		g_chi_sq_norm->SetPoint(idx, sh, S2_norm);
+	}
+
+	// determine uncertainty
+	double fit_range = 0.5;	// mm
+	g_chi_sq->Fit(ff_pol2, "Q", "", sh_best - fit_range, sh_best + fit_range);
+	sh_best_unc = 1. / sqrt(ff_pol2->GetParameter(2));
+
+	// print results
+    edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
+    << "sh_best = (" << sh_best << " +- " << sh_best_unc << " mm";
+
+	// // save graphs
+	// g_n_points->Write();
+	// g_chi_sq->Write();
+	// g_chi_sq_norm->Write();
+
+	// // save results
+	// TGraph *g_results = new TGraph();
+	// g_results->SetName("g_results");
+	// g_results->SetPoint(0, sh_best, sh_best_unc);
+	// g_results->SetPoint(1, range_ref.x_min, range_ref.x_max);
+	// g_results->SetPoint(2, range_test.x_min, range_test.x_max);
+	// g_results->Write();
+
+	// // save debug canvas
+	// TGraphErrors *g_test_shifted = new TGraphErrors(*g_test);
+	// for (int i = 0; i < g_test_shifted->GetN(); ++i)
+	// {
+	// 	g_test_shifted->GetX()[i] += sh_best;
+	// }
+
+	// TCanvas *c_cmp = new TCanvas("c_cmp");
+	// g_ref->SetLineColor(1);
+	// g_ref->SetName("g_ref");
+	// g_ref->Draw("apl");
+
+	// g_test->SetLineColor(4);
+	// g_test->SetName("g_test");
+	// g_test->Draw("pl");
+
+	// g_test_shifted->SetLineColor(2);
+	// g_test_shifted->SetName("g_test_shifted");
+	// g_test_shifted->Draw("pl");
+	// c_cmp->Write();
+
+	// clean up
+	delete s_ref;
+
+	return 0;
+}
+
 void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
 {
     edm::ESHandle<PPSAlignmentConfig> cfg;
@@ -236,8 +474,50 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::Ev
     for (auto ref : cfg->matchingReferenceDatasets())
     {
         edm::LogInfo("x_alignment") << "reference dataset: " << ref;
-        
+
+        TFile *f_ref = TFile::Open(ref.c_str());
+
+        ///////////// temporary solution ////////////////////////////////////////
+        bool cfg_ref_aligned = true;
+        std::map<unsigned int, SelectionRange> cfg_ref_alignment_x_meth_o_ranges;
+        cfg_ref_alignment_x_meth_o_ranges[23] = SelectionRange(5., 15.);
+        cfg_ref_alignment_x_meth_o_ranges[3] = SelectionRange(5., 15.);
+        cfg_ref_alignment_x_meth_o_ranges[103] = SelectionRange(4., 12.);
+        cfg_ref_alignment_x_meth_o_ranges[123] = SelectionRange(4., 12.);
+        //////////////////////////////////////////////////////////////////////////
+
+        for (const auto &rpd : rpData)
+        {
+            auto *d_ref = (TDirectory *) f_ref->Get((rpd.sectorName + "/near_far/x slices, " + rpd.position).c_str());
+            auto mes_test = iGetter.getAllContents(folder_ + "/" + rpd.sectorName + "/near_far/x slices, " + rpd.position);
+
+            if (d_ref == nullptr)
+            {
+                edm::LogWarning("x_alignment") << "could not load d_ref";
+                continue;
+            }
+
+            if (mes_test.empty())
+            {
+                edm::LogWarning("x_alignment") << "could not load mes_test";
+                continue;
+            }
+
+            TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, cfg_ref_aligned, rpd.id);
+            TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, mes_test, cfg->aligned(), rpd.id);
+
+            const auto &shiftRange = cfg->matchingShiftRanges()[rpd.id];
+            double sh = 0., sh_unc = 0.;
+            int r = doMatch(g_ref, g_test, cfg_ref_alignment_x_meth_o_ranges[rpd.id], 
+                            cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
+                            shiftRange.x_max, sh, sh_unc);
+            if (r == 0)
+                results["x_alignment_meth_o"][rpd.id] = AlignmentResult(sh, sh_unc);
+        }
+        delete f_ref;
     }
+
+    edm::LogInfo("x_alignment_results") << results;
 }
 
 // -------------------------------- x alignment relative methods --------------------------------

@@ -42,7 +42,7 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring('root://eostotem.cern.ch//eos/cms/store/group/phys_pps/reconstruction/2018/physics_runs/rec-hit-version1/fill7334_xangle160_beta0.30_EGamma.root')
 )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(40000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	fill = cms.uint32(7334),
@@ -114,7 +114,7 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 		),
 
 	matching = cms.PSet(
-		reference_datasets = cms.vstring("default"),
+		reference_datasets = cms.vstring("/eos/user/k/kocotm/Documents/Alignment_data/alig-version3/fill_6554/xangle_130_beta_0.30/DS1/distributions.root"),
 
 		rp_L_2_F = cms.PSet(
 			sh_min = cms.double(-43),

@@ -141,7 +141,7 @@ private:
 
         // near-far plots
         MonitorElement *p_x_diffFN_vs_x_N;
-        MonitorElement *p_y_diffFN_vs_y_N;
+        // MonitorElement *p_y_diffFN_vs_y_N;   // obsolete
         MonitorElement *p_y_diffFN_vs_y_F;
 
         struct SlicePlots
@@ -417,9 +417,9 @@ PPSAlignmentWorker::Profile::Profile(DQMStore::IBooker &iBooker, TH2D *_h)
     const double xMin = h->GetXaxis()->GetXmin();
     const double xMax = h->GetXaxis()->GetXmax();
 
-    h_entries = iBooker.book1D("h_entries", ";x", bins, xMin, xMax);
-    h_mean = iBooker.book1D("h_mean", ";x", bins, xMin, xMax);
-    h_stddev = iBooker.book1D("h_sttdev", ";x", bins, xMin, xMax);
+    h_entries = iBooker.book1DD("h_entries", ";x", bins, xMin, xMax);
+    h_mean = iBooker.book1DD("h_mean", ";x", bins, xMin, xMax);
+    h_stddev = iBooker.book1DD("h_sttdev", ";x", bins, xMin, xMax);
 }
 
 void PPSAlignmentWorker::Profile::fill(double x, double y)
@@ -457,7 +457,7 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots() {}
 
 PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooker)
 {
-    h_y = iBooker.book1D("h_y", ";y", 100, -10., 10.);
+    h_y = iBooker.book1DD("h_y", ";y", 100, -10., 10.);
     h2_y_diffFN_vs_y = iBooker.book2DD("h2_y_diffFN_vs_y", ";y;x_{F} - y_{N}", 100, -10., 10., 100, -2., 2.);
     auto tmp_p_y_diffFN_vs_y = new TProfile("", ";y;x_{F} - y_{N}", 100, -10., 10.);
     p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp_p_y_diffFN_vs_y);
@@ -509,16 +509,16 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 
     // cut plots
     iBooker.setCurrentFolder(folder + "/" + _name + "/cuts/cut_h");
-    h_q_cut_h_bef = iBooker.book1D("h_q_cut_h_bef", ";cq_h", 400, -2., 2.);
-	h_q_cut_h_aft = iBooker.book1D("h_q_cut_h_aft", ";cq_h", 400, -2., 2.);
+    h_q_cut_h_bef = iBooker.book1DD("h_q_cut_h_bef", ";cq_h", 400, -2., 2.);
+	h_q_cut_h_aft = iBooker.book1DD("h_q_cut_h_aft", ";cq_h", 400, -2., 2.);
 	h2_cut_h_bef = iBooker.book2DD("h2_cut_h_bef", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, x_min_pix, x_max_pix);
 	h2_cut_h_aft = iBooker.book2DD("h2_cut_h_aft", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, x_min_pix, x_max_pix);
 	auto tmp_p_cut_h_aft = new TProfile("", ";x_up;mean of x_dw", n_bins_x, x_min_str, x_max_str);
     p_cut_h_aft = iBooker.bookProfile("p_cut_h_aft", tmp_p_cut_h_aft);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/cuts/cut_v");
-	h_q_cut_v_bef = iBooker.book1D("h_q_cut_v_bef", ";cq_v", 400, -2., 2.);
-	h_q_cut_v_aft = iBooker.book1D("h_q_cut_v_aft", ";cq_v", 400, -2., 2.);
+	h_q_cut_v_bef = iBooker.book1DD("h_q_cut_v_bef", ";cq_v", 400, -2., 2.);
+	h_q_cut_v_aft = iBooker.book1DD("h_q_cut_v_aft", ";cq_v", 400, -2., 2.);
 	h2_cut_v_bef = iBooker.book2DD("h2_cut_v_bef", ";y_up;y_dw", n_bins_y, y_min, y_max, n_bins_y, y_min, y_max);
 	h2_cut_v_aft = iBooker.book2DD("h2_cut_v_aft", ";y_up;y_dw", n_bins_y, y_min, y_max, n_bins_y, y_min, y_max);
 	auto tmp_p_cut_v_aft = new TProfile("", ";y_up;mean of y_dw", n_bins_y, y_min, y_max);
@@ -534,10 +534,10 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
     iBooker.setCurrentFolder(folder + "/" + _name + "/near_far");
 	auto tmp_p_x_diffFN_vs_x_N = new TProfile("", ";x_{N};x_{F} - x_{N}", 100, 0., 20.);
     p_x_diffFN_vs_x_N = iBooker.bookProfile("p_x_diffFN_vs_x_N", tmp_p_x_diffFN_vs_x_N);
-	auto tmp_p_y_diffFN_vs_y_N = new TProfile("", ";y_{N};y_{F} - y_{N}", 200, -10., 10.);
-    p_y_diffFN_vs_y_N = iBooker.bookProfile("p_y_diffFN_vs_y_N", tmp_p_y_diffFN_vs_y_N);
-	auto tmp_p_y_diffFN_vs_y_F = new TProfile("", ";y_{F};y_{F} - y_{N}", 200, -10., 10.);
-    p_y_diffFN_vs_y_F = iBooker.bookProfile("p_y_diffFN_vs_y_F", tmp_p_y_diffFN_vs_y_F);
+	// auto tmp_p_y_diffFN_vs_y_N = new TProfile("", ";y_{N};y_{F} - y_{N}", 200, -10., 10.);   // obsolete
+    // p_y_diffFN_vs_y_N = iBooker.bookProfile("p_y_diffFN_vs_y_N", tmp_p_y_diffFN_vs_y_N);
+	// auto tmp_p_y_diffFN_vs_y_F = new TProfile("", ";y_{F};y_{F} - y_{N}", 200, -10., 10.);
+    // p_y_diffFN_vs_y_F = iBooker.bookProfile("p_y_diffFN_vs_y_F", tmp_p_y_diffFN_vs_y_F);
 
     for (int i = 0; i < scfg.nr_x_slice_n; i++)
     {
@@ -675,12 +675,12 @@ unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSet
 
 				p_x_diffFN_vs_x_N->Fill(trUp.x(), trDw.x() - trUp.x());
 
-                // const auto &range = cfg->alignment_y_ranges()[rpIdUp];           // probably redundant    
-				// if (trUp.x() > range.x_min && trUp.x() < range.x_max)            //
-				// {                                                                //
-				// 	p_y_diffFN_vs_y_N->Fill(trUp.y(), trDw.y() - trUp.y());         //
-				// 	p_y_diffFN_vs_y_F->Fill(trDw.y(), trDw.y() - trUp.y());         //
-				// }                                                                //
+                // const auto &range = cfg->alignment_y_ranges()[rpIdUp];   // obsolete   
+				// if (trUp.x() > range.x_min && trUp.x() < range.x_max)            
+				// {                                                                
+				// 	p_y_diffFN_vs_y_N->Fill(trUp.y(), trDw.y() - trUp.y());         
+				// 	p_y_diffFN_vs_y_F->Fill(trDw.y(), trDw.y() - trUp.y());         
+				// }                                                                
 
 				idx = (trUp.x() - scfg.nr_x_slice_min) / scfg.nr_x_slice_w;
 				if (idx >= 0 && idx < scfg.nr_x_slice_n)
