@@ -16,6 +16,7 @@
 #include "FWCore/Framework/interface/EventSetupRecordIntervalFinder.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/ESInputTag.h"
 
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
 #include "CondFormats/DataRecord/interface/PPSAlignmentConfigRcd.h"
@@ -39,7 +40,7 @@ protected:
 						edm::ValidityInterval&) override;
 
 private:
-    unsigned int fill;
+	unsigned int fill;
 	unsigned int xangle;
 	double beta;
 	std::string dataset;
@@ -151,7 +152,8 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		alignment_y_ranges[p.first] = SelectionRange(ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max"));
 	}
 
-	setWhatProduced(this);
+	std::string label = iConfig.getParameter<std::string>("label");
+	setWhatProduced(this, label);
 	findingRecord<PPSAlignmentConfigRcd>();
 }
 

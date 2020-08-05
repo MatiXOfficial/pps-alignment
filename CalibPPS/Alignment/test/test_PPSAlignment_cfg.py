@@ -42,9 +42,10 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring('root://eostotem.cern.ch//eos/cms/store/group/phys_pps/reconstruction/2018/physics_runs/rec-hit-version1/fill7334_xangle160_beta0.30_EGamma.root')
 )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(40000))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
+	label = cms.string(''),
 	fill = cms.uint32(7334),
 	xangle = cms.uint32(160),
 	beta = cms.double(0.30),
@@ -150,6 +151,155 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	rp_R_2_F = cms.PSet(
 		x_min = cms.double(46.),
 		x_max = cms.double(54.),
+	)
+	),
+
+	x_alignment_relative = cms.PSet(
+	rp_L_2_F = cms.PSet(
+		x_min = cms.double(0.),
+		x_max = cms.double(0.),
+	),
+	rp_L_1_F = cms.PSet(
+		x_min = cms.double(7.5),
+		x_max = cms.double(12.),
+	),
+	rp_R_1_F = cms.PSet(
+		x_min = cms.double(6.),
+		x_max = cms.double(10.),
+	),
+	rp_R_2_F = cms.PSet(
+		x_min = cms.double(0.),
+		x_max = cms.double(0.),
+	)
+	),
+
+	y_alignment = cms.PSet(
+	rp_L_2_F = cms.PSet(
+		x_min = cms.double(44.5),
+		x_max = cms.double(49.0),
+	),
+	rp_L_1_F = cms.PSet(
+		x_min = cms.double(6.7),
+		x_max = cms.double(11.0),
+	),
+	rp_R_1_F = cms.PSet(
+		x_min = cms.double(5.9),
+		x_max = cms.double(10.0),
+	),
+	rp_R_2_F = cms.PSet(
+		x_min = cms.double(44.5),
+		x_max = cms.double(49.0),
+	)
+	)
+)
+
+process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigESSource",
+	label = cms.string('reference'),
+	fill = cms.uint32(6554),
+	xangle = cms.uint32(130),
+	beta = cms.double(0.30),
+	dataset = cms.string("DS1"),
+
+	alignment_corrections = cms.PSet(
+		rp_L_2_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		),
+		rp_L_1_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		),
+		rp_R_1_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		),
+		rp_R_2_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		)
+	),
+
+	aligned = cms.bool(False),
+
+	n_si = cms.double(4.),
+
+	sector_45 = cms.PSet(
+		cut_h_apply = cms.bool(True),
+		cut_h_a = cms.double(-1),
+		cut_h_c = cms.double(0.04),
+		cut_h_si = cms.double(0.),
+
+		cut_v_apply = cms.bool(True),
+		cut_v_a = cms.double(-1.07),
+		cut_v_c = cms.double(0.07),
+		cut_v_si = cms.double(0.15),
+
+		nr_x_slice_min = cms.double(2),
+		nr_x_slice_max = cms.double(16),
+		nr_x_slice_w = cms.double(0.2),
+
+		fr_x_slice_min = cms.double(2),
+		fr_x_slice_max = cms.double(16),
+		fr_x_slice_w = cms.double(0.2),
+	),
+
+	sector_56 = cms.PSet(
+		cut_h_apply = cms.bool(True),
+		cut_h_a = cms.double(-1),
+		cut_h_c = cms.double(0.19),
+		cut_h_si = cms.double(0.2),
+
+		cut_v_apply = cms.bool(True),
+		cut_v_a = cms.double(-1.07),
+		cut_v_c = cms.double(0.01),
+		cut_v_si = cms.double(0.15),
+
+		nr_x_slice_min = cms.double(3),
+		nr_x_slice_max = cms.double(16.5),
+		nr_x_slice_w = cms.double(0.2),
+
+		fr_x_slice_min = cms.double(2.5),
+		fr_x_slice_max = cms.double(16.5),
+		fr_x_slice_w = cms.double(0.2),
+		),
+
+	matching = cms.PSet(
+		reference_datasets = cms.vstring("/eos/user/k/kocotm/Documents/Alignment_data/alig-version3/fill_6554/xangle_130_beta_0.30/DS1/distributions.root"),
+
+		rp_L_2_F = cms.PSet(
+			sh_min = cms.double(-43),
+			sh_max = cms.double(-41)
+		),
+		rp_L_1_F = cms.PSet(
+			sh_min = cms.double(-4.2),
+			sh_max = cms.double(-2.4)
+		),
+		rp_R_1_F = cms.PSet(
+			sh_min = cms.double(-3.6),
+			sh_max = cms.double(-1.8)
+		),
+		rp_R_2_F = cms.PSet(
+			sh_min = cms.double(-43.2),
+			sh_max = cms.double(-41.2)
+		)
+	),
+
+	x_alignment_meth_o = cms.PSet(
+	rp_L_2_F = cms.PSet(
+		x_min = cms.double(5.),
+		x_max = cms.double(15.),
+	),
+	rp_L_1_F = cms.PSet(
+		x_min = cms.double(5.),
+		x_max = cms.double(15.),
+	),
+	rp_R_1_F = cms.PSet(
+		x_min = cms.double(4.),
+		x_max = cms.double(12.),
+	),
+	rp_R_2_F = cms.PSet(
+		x_min = cms.double(4.),
+		x_max = cms.double(12.),
 	)
 	),
 
