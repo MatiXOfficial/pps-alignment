@@ -452,6 +452,9 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::Ev
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
+    edm::ESHandle<PPSAlignmentConfig> cfg_ref;
+    iSetup.get<PPSAlignmentConfigRcd>().get("reference", cfg_ref);
+
     // list of RPs and their settings
 	struct RPData
 	{
@@ -477,15 +480,6 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 
         TFile *f_ref = TFile::Open(ref.c_str());
 
-        ///////////// temporary solution ////////////////////////////////////////
-        bool cfg_ref_aligned = true;
-        std::map<unsigned int, SelectionRange> cfg_ref_alignment_x_meth_o_ranges;
-        cfg_ref_alignment_x_meth_o_ranges[23] = SelectionRange(5., 15.);
-        cfg_ref_alignment_x_meth_o_ranges[3] = SelectionRange(5., 15.);
-        cfg_ref_alignment_x_meth_o_ranges[103] = SelectionRange(4., 12.);
-        cfg_ref_alignment_x_meth_o_ranges[123] = SelectionRange(4., 12.);
-        //////////////////////////////////////////////////////////////////////////
-
         for (const auto &rpd : rpData)
         {
             auto *d_ref = (TDirectory *) f_ref->Get((rpd.sectorName + "/near_far/x slices, " + rpd.position).c_str());
@@ -503,12 +497,12 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::Ev
                 continue;
             }
 
-            TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, cfg_ref_aligned, rpd.id);
+            TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, cfg_ref->aligned(), rpd.id);
             TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, mes_test, cfg->aligned(), rpd.id);
 
             const auto &shiftRange = cfg->matchingShiftRanges()[rpd.id];
             double sh = 0., sh_unc = 0.;
-            int r = doMatch(g_ref, g_test, cfg_ref_alignment_x_meth_o_ranges[rpd.id], 
+            int r = doMatch(g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
                             cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
                             shiftRange.x_max, sh, sh_unc);
             if (r == 0)
