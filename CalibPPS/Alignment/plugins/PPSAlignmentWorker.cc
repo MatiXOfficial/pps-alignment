@@ -42,12 +42,12 @@
 class PPSAlignmentWorker : public DQMOneEDAnalyzer<>
 {
 public:
-    PPSAlignmentWorker(const edm::ParameterSet &);
+    PPSAlignmentWorker(const edm::ParameterSet &iConfig);
     ~PPSAlignmentWorker() override {};
 
 private:
-    void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
-    void analyze(const edm::Event &, const edm::EventSetup &) override;
+    void bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, edm::EventSetup const &iSetup) override;
+    void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) override;
     void dqmEndRun(edm::Run const &, edm::EventSetup const &) override;
 
     // ------------ structures ------------
@@ -157,7 +157,8 @@ private:
         std::map<unsigned int, SlicePlots> x_slice_plots_N, x_slice_plots_F;
 
         void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, std::string _name, 
-                  unsigned int _rpIdUp, unsigned int _rpIdDw, const SectorConfig &_scfg, const std::string &folder);
+                  unsigned int _rpIdUp, unsigned int _rpIdDw, const SectorConfig &_scfg, 
+                  const std::string &folder);
 
         unsigned int process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks);
         void fillEndRun() const;
@@ -169,9 +170,9 @@ private:
     SectorData sectorData45;
     SectorData sectorData56;
 
-    unsigned long eventCount = 0;
-    unsigned long eventSelCount45 = 0;
-    unsigned long eventSelCount56 = 0;
+    // unsigned long eventCount = 0;
+    // unsigned long eventSelCount45 = 0;
+    // unsigned long eventSelCount56 = 0;
 
     std::string folder_;
 };
@@ -335,8 +336,8 @@ double PPSAlignmentWorker::Stat::correlationUnc(unsigned int i, unsigned int j) 
     double si_i = stdDev(i), si_i_unc = stdDevUnc(i);
     double si_j = stdDev(j), si_j_unc = stdDevUnc(j);
     double rho = C / (si_i * si_j);
-    double sum =
-        (C != 0. && si_i != 0. && si_j != 0.) ? std::pow(C_unc / C, 2.) + std::pow(si_i_unc / si_i, 2.) + std::pow(si_j_unc / si_j, 2.) : 0.;
+    double sum = (C != 0. && si_i != 0. && si_j != 0.) ? std::pow(C_unc / C, 2.) + std::pow(si_i_unc / si_i, 2.) 
+                  + std::pow(si_j_unc / si_j, 2.) : 0.;
     double rho_unc = std::fabs(rho) * std::sqrt(sum);
     return rho_unc;
 }
@@ -463,8 +464,9 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooke
     p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp_p_y_diffFN_vs_y);
 }
 
-void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, std::string _name, 
-                                          unsigned int _rpIdUp, unsigned int _rpIdDw, const SectorConfig &_scfg, const std::string &folder)
+void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, 
+                                          std::string _name, unsigned int _rpIdUp, unsigned int _rpIdDw, 
+                                          const SectorConfig &_scfg, const std::string &folder)
 {
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
@@ -489,20 +491,26 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
     // hit distributions
     iBooker.setCurrentFolder(folder + "/" + _name + "/before selection/" + cfg->rpTags()[rpIdUp]);
     m_h1_x_bef_sel[rpIdUp] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_str, x_max_str);
-	m_h2_y_vs_x_bef_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_bef_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
+                                                  n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/" + _name + "/before selection/" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_bef_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_bef_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
+                                                  n_bins_y, y_min, y_max);
     m_h1_x_bef_sel[rpIdDw] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_pix, x_max_pix);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/multiplicity selection/" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_mlt_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_mlt_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
+                                                  n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/" + _name + "/multiplicity selection/" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_mlt_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_mlt_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
+                                                  n_bins_y, y_min, y_max);
 
     iBooker.setCurrentFolder(folder + "/" + _name + "/after selection/" + cfg->rpTags()[rpIdUp]);
-	m_h2_y_vs_x_aft_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_aft_sel[rpIdUp] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
+                                                   n_bins_y, y_min, y_max);
     iBooker.setCurrentFolder(folder + "/" + _name + "/after selection/" + cfg->rpTags()[rpIdDw]);
-	m_h2_y_vs_x_aft_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, n_bins_y, y_min, y_max);
+	m_h2_y_vs_x_aft_sel[rpIdDw] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
+                                                   n_bins_y, y_min, y_max);
 
 	m_g_y_vs_x_aft_sel[rpIdUp] = new TGraph();
 	m_g_y_vs_x_aft_sel[rpIdDw] = new TGraph();
@@ -511,8 +519,10 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
     iBooker.setCurrentFolder(folder + "/" + _name + "/cuts/cut_h");
     h_q_cut_h_bef = iBooker.book1DD("h_q_cut_h_bef", ";cq_h", 400, -2., 2.);
 	h_q_cut_h_aft = iBooker.book1DD("h_q_cut_h_aft", ";cq_h", 400, -2., 2.);
-	h2_cut_h_bef = iBooker.book2DD("h2_cut_h_bef", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, x_min_pix, x_max_pix);
-	h2_cut_h_aft = iBooker.book2DD("h2_cut_h_aft", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, x_min_pix, x_max_pix);
+	h2_cut_h_bef = iBooker.book2DD("h2_cut_h_bef", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, 
+                                   x_min_pix, x_max_pix);
+	h2_cut_h_aft = iBooker.book2DD("h2_cut_h_aft", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, 
+                                   x_min_pix, x_max_pix);
 	auto tmp_p_cut_h_aft = new TProfile("", ";x_up;mean of x_dw", n_bins_x, x_min_str, x_max_str);
     p_cut_h_aft = iBooker.bookProfile("p_cut_h_aft", tmp_p_cut_h_aft);
 
@@ -564,7 +574,8 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
     }
 }
 
-unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks)
+unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSetup, 
+                                                     const CTPPSLocalTrackLiteCollection &tracks)
 {
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
@@ -719,23 +730,22 @@ PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig)
       folder_(iConfig.getParameter<std::string>("folder"))
 {}
 
-// ------------ method called for each event  ------------
-void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
-{
-    const auto &tracks = iEvent.get(tracksToken_);
-
-    sectorData45.process(iSetup, tracks);
-    sectorData56.process(iSetup, tracks);
-}
-
-
-void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, edm::EventSetup const &iSetup)
+void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, 
+                                        edm::EventSetup const &iSetup)
 {
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
     sectorData45.init(iBooker, iSetup, "sector 45", 3, 23, cfg->sectorConfig45(), folder_);
     sectorData56.init(iBooker, iSetup, "sector 56", 103, 123, cfg->sectorConfig56(), folder_);
+}
+
+void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
+{
+    const auto &tracks = iEvent.get(tracksToken_);
+
+    sectorData45.process(iSetup, tracks);
+    sectorData56.process(iSetup, tracks);
 }
 
 void PPSAlignmentWorker::dqmEndRun(edm::Run const &, edm::EventSetup const &)

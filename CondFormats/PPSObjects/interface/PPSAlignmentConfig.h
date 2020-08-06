@@ -110,6 +110,7 @@ public:
     void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
 
     void setAlignment_y_ranges(std::map<unsigned int, SelectionRange> &alignment_y_ranges);
+    
     // << operator
     friend std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c);
 

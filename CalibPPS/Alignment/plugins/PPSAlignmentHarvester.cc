@@ -53,12 +53,13 @@
 class PPSAlignmentHarvester : public DQMEDHarvester
 {
 public:
-    PPSAlignmentHarvester(const edm::ParameterSet &);
+    PPSAlignmentHarvester(const edm::ParameterSet &iConfig);
     ~PPSAlignmentHarvester() override {};
 
 private:
-    void dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &) override;
-    void dqmEndRun(DQMStore::IBooker &, DQMStore::IGetter &, edm::Run const &, edm::EventSetup const &);
+    void dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter) override;
+    void dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, edm::Run const &, 
+                   edm::EventSetup const &iSetup);
 
     // ------------ structures ------------
     struct AlignmentResult
@@ -73,44 +74,41 @@ private:
         AlignmentResult(double _sh_x = 0., double _sh_x_unc = 0., double _sh_y = 0., 
                         double _sh_y_unc = 0., double _rot_z = 0., double _rot_z_unc = 0.);
 
-        CTPPSLocalTrackLite apply(const CTPPSLocalTrackLite &) const;
+        CTPPSLocalTrackLite apply(const CTPPSLocalTrackLite &tr) const;
     };
-    friend std::ostream &operator<<(std::ostream &, PPSAlignmentHarvester::AlignmentResult);
+    friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResult ar);
 
     struct AlignmentResults : public std::map<unsigned int, AlignmentResult>
     {
-        // int add();
-        CTPPSLocalTrackLiteCollection apply(const CTPPSLocalTrackLiteCollection &) const;
+        CTPPSLocalTrackLiteCollection apply(const CTPPSLocalTrackLiteCollection &input) const;
     };
-    friend std::ostream &operator<<(std::ostream &, PPSAlignmentHarvester::AlignmentResults);
+    friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResults ar);
 
     struct AlignmentResultsCollection : public std::map<std::string, AlignmentResults>
-    {
-        // int load():
-    };
-    friend std::ostream &operator<<(std::ostream &, PPSAlignmentHarvester::AlignmentResultsCollection);
+    {};
+    friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResultsCollection arc);
 
     // ------------ x alignment ------------
-    TF1 *ff_pol1;
-    TF1 *ff_pol2;
+    static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
+    static TGraphErrors* buildGraphFromDirectory(TDirectory *dir, bool aligned, unsigned int rpId);
+    static TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, 
+                                                       const std::vector<MonitorElement*> &mes, 
+                                                       bool aligned, unsigned int rpId);
+    int doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
+                const SelectionRange &range_test, double sh_min, double sh_max, double &sh_best, 
+                double &sh_best_unc);
 
-    int fitProfile(TProfile *, double, double, double &, double &);
-    TGraphErrors* buildGraphFromDirectory(TDirectory *, bool, unsigned int);
-    TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &, const std::vector<MonitorElement*> &, bool, unsigned int);
-    int doMatch(TGraphErrors *, TGraphErrors *, const SelectionRange &, const SelectionRange &, double, double, double &, double &);
-
-    void xAlignment(DQMStore::IGetter &, const edm::EventSetup &);
+    void xAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
 
     // ------------ x alignment relative ------------
-    void xAlignmentRelative(DQMStore::IGetter &, const edm::EventSetup &);
+    void xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
 
     // ------------ y alignment ------------
-    TF1 *ff_fit;
+    static double findMax(TF1 *ff_fit);
+    static TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
+                                        unsigned int xangle, unsigned int rp);
 
-    double findMax();
-    TGraphErrors* buildModeGraph(MonitorElement *, bool, unsigned int, unsigned int, unsigned int);
-
-    void yAlignment(DQMStore::IGetter &, const edm::EventSetup &);
+    void yAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
 
     // ------------ other member data ------------
     std::string folder_;
@@ -123,15 +121,6 @@ PPSAlignmentHarvester::AlignmentResult::AlignmentResult(double _sh_x, double _sh
     : sh_x(_sh_x), sh_x_unc(_sh_x_unc), sh_y(_sh_y), sh_y_unc(_sh_y_unc), rot_z(_rot_z), rot_z_unc(_rot_z_unc)
 {}
 
-std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResult ar)
-{
-    os << std::showpos << std::fixed << std::setprecision(3) << "sh_x=" << ar.sh_x << ",sh_x_unc=" 
-    << ar.sh_x_unc << ",sh_y=" << ar.sh_y << ",sh_y_unc=" << ar.sh_y_unc << std::setprecision(4) 
-    << ",rot_x=" << ar.rot_x << ",rot_x_unc=" << ar.rot_x_unc << ",rot_y=" << ar.rot_y 
-    << ",rot_y_unc=" << ar.rot_y_unc << ",rot_z=" << ar.rot_z << ",rot_z_unc=" << ar.rot_z_unc << "\n";
-    return os;
-}
-
 CTPPSLocalTrackLite PPSAlignmentHarvester::AlignmentResult::apply(const CTPPSLocalTrackLite &tr) const
 {
     ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> v(tr.x(), tr.y(), 0.);
@@ -143,13 +132,12 @@ CTPPSLocalTrackLite PPSAlignmentHarvester::AlignmentResult::apply(const CTPPSLoc
             tr.chiSquaredOverNDF(), tr.pixelTrackRecoInfo(), tr.numberOfPointsUsedForFit(), tr.time(), tr.timeUnc());
 }
 
-std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResults ar)
+std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResult ar)
 {
-    for (auto &p : ar)
-    {
-        os << "id=" << p.first << ",";
-        os << p.second;
-    }
+    os << std::showpos << std::fixed << std::setprecision(3) << "sh_x=" << ar.sh_x << ",sh_x_unc=" 
+    << ar.sh_x_unc << ",sh_y=" << ar.sh_y << ",sh_y_unc=" << ar.sh_y_unc << std::setprecision(4) 
+    << ",rot_x=" << ar.rot_x << ",rot_x_unc=" << ar.rot_x_unc << ",rot_y=" << ar.rot_y 
+    << ",rot_y_unc=" << ar.rot_y_unc << ",rot_z=" << ar.rot_z << ",rot_z_unc=" << ar.rot_z_unc << "\n";
     return os;
 }
 
@@ -165,6 +153,16 @@ CTPPSLocalTrackLiteCollection PPSAlignmentHarvester::AlignmentResults::apply(con
         output.emplace_back(ait->second.apply(t));
     }
     return output;
+}
+
+std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResults ar)
+{
+    for (auto &p : ar)
+    {
+        os << "id=" << p.first << ",";
+        os << p.second;
+    }
+    return os;
 }
 
 std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResultsCollection arc)
@@ -202,6 +200,8 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 		return 2;
 
 	double xMin = x_mean - x_rms, xMax = x_mean + x_rms;
+
+    TF1 *ff_pol1 = new TF1("ff_pol1", "[0] + [1]*x");
 
 	ff_pol1->SetParameter(0., 0.);
 	p->Fit(ff_pol1, "Q", "", xMin, xMax);
@@ -260,7 +260,8 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, bo
 	return g;
 }
 
-TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const std::vector<MonitorElement*> &mes, 
+TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, 
+                                                                   const std::vector<MonitorElement*> &mes, 
                                                                    bool aligned, unsigned int rpId)
 {
     TGraphErrors *g = new TGraphErrors();
@@ -313,8 +314,9 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
     return g;
 }
 
-int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, const SelectionRange &range_test,
-		                           double sh_min, double sh_max, double &sh_best, double &sh_best_unc)
+int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
+                                   const SelectionRange &range_test, double sh_min, double sh_max, 
+                                   double &sh_best, double &sh_best_unc)
 {
     // require minimal number of points
 	if (g_ref->GetN() < 5 || g_test->GetN() < 5)
@@ -397,6 +399,8 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
 		g_chi_sq->SetPoint(idx, sh, S2);
 		g_chi_sq_norm->SetPoint(idx, sh, S2_norm);
 	}
+
+    TF1 *ff_pol2 = new TF1("ff_pol2", "[0] + [1]*x + [2]*x*x");
 
 	// determine uncertainty
 	double fit_range = 0.5;	// mm
@@ -608,7 +612,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const
 
 // -------------------------------- y alignment methods --------------------------------
 
-double PPSAlignmentHarvester::findMax()
+double PPSAlignmentHarvester::findMax(TF1 *ff_fit)
 {
     const double mu = ff_fit->GetParameter(1);
     const double si = ff_fit->GetParameter(2);
@@ -635,6 +639,8 @@ double PPSAlignmentHarvester::findMax()
 TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
                                                     unsigned int xangle, unsigned int rp)
 {
+    TF1 *ff_fit = new TF1("ff_fit", "[0] * exp(-(x-[1])*(x-[1])/2./[2]/[2]) + [3] + [4]*x");
+
     std::map<unsigned int, double> mymf; // probably to be removed
     if (aligned)
     {
@@ -707,7 +713,7 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 
 		h_y->Fit(ff_fit, "Q", "", xMin, xMax);
 
-        double y_mode = findMax();
+        double y_mode = findMax(ff_fit);
 		const double y_mode_fit_unc = ff_fit->GetParameter(2) / 10;
 		const double y_mode_sys_unc = 0.030;
 		double y_mode_unc = std::sqrt(y_mode_fit_unc*y_mode_fit_unc + y_mode_sys_unc*y_mode_sys_unc);
@@ -826,12 +832,6 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
     : folder_(iConfig.getParameter<std::string>("folder"))
 {
-    // ------------ x alignment ------------
-    ff_pol1 = new TF1("ff_pol1", "[0] + [1]*x");
-    ff_pol2 = new TF1("ff_pol2", "[0] + [1]*x + [2]*x*x");
-
-    // ------------ y alignment ------------
-    ff_fit = new TF1("ff_fit", "[0] * exp(-(x-[1])*(x-[1])/2./[2]/[2]) + [3] + [4]*x");
 }
 
 void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter)

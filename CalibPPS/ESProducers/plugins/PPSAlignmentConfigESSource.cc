@@ -28,16 +28,15 @@
 class PPSAlignmentConfigESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder
 {
 public:
-    PPSAlignmentConfigESSource(const edm::ParameterSet &);
+    PPSAlignmentConfigESSource(const edm::ParameterSet &iConfig);
     ~PPSAlignmentConfigESSource() override = default;
 
     std::unique_ptr<PPSAlignmentConfig> produce(const PPSAlignmentConfigRcd &);
 
 protected:
 	/// sets infinite validity of this data
-	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey&,
-						const edm::IOVSyncValue&,
-						edm::ValidityInterval&) override;
+	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &key, const edm::IOVSyncValue &iosv, 
+						edm::ValidityInterval &oValidity) override;
 
 private:
 	unsigned int fill;
@@ -198,8 +197,8 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 //---------------------------------------------------------------------------------------------
 
 void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetupRecordKey& key,
-                                                 const edm::IOVSyncValue& iosv,
-                                                 edm::ValidityInterval& oValidity) 
+                                                const edm::IOVSyncValue& iosv,
+                                                edm::ValidityInterval& oValidity) 
 {
 	edm::LogInfo("PPSAlignmentConfigESSource")
     	<< ">> PPSAlignmentConfigESSource::setIntervalFor(" << key.name() << ")\n"
