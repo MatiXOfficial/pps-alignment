@@ -34,6 +34,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <regex>
 
 #include <Math/Rotation3D.h>
 #include <Math/RotationZYX.h>
@@ -47,6 +48,7 @@
 #include "TFile.h"
 #include "TKey.h"
 #include "TSpline.h"
+#include "TCanvas.h"
 
 //----------------------------------------------------------------------------------------------------
 
@@ -54,7 +56,7 @@ class PPSAlignmentHarvester : public DQMEDHarvester
 {
 public:
     PPSAlignmentHarvester(const edm::ParameterSet &iConfig);
-    ~PPSAlignmentHarvester() override {};
+    ~PPSAlignmentHarvester() override;
 
 private:
     void dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter) override;
@@ -90,8 +92,8 @@ private:
 
     // ------------ x alignment ------------
     static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
-    static TGraphErrors* buildGraphFromDirectory(TDirectory *dir, bool aligned, unsigned int rpId);
-    static TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, 
+    TGraphErrors* buildGraphFromDirectory(TDirectory *dir, bool aligned, unsigned int rpId);
+    TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, 
                                                        const std::vector<MonitorElement*> &mes, 
                                                        bool aligned, unsigned int rpId);
     int doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
@@ -105,13 +107,15 @@ private:
 
     // ------------ y alignment ------------
     static double findMax(TF1 *ff_fit);
-    static TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
+    TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
                                         unsigned int xangle, unsigned int rp);
 
     void yAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
 
     // ------------ other member data ------------
-    std::string folder_;
+    const std::string folder_;
+    const bool debug_;
+    TFile *debug_file_;
 };
 
 // -------------------------------- Alignment classes methods --------------------------------
@@ -252,6 +256,9 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, bo
 		if (fr != 0)
 			continue;
 
+        if (debug_)
+            p_y_diffFN_vs_y->Write(name.c_str());
+
 		int idx = g->GetN();
 		g->SetPoint(idx, (x_max + x_min)/2., sl);
 		g->SetPointError(idx, (x_max - x_min)/2., sl_unc);
@@ -304,6 +311,9 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
             int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
             if (fr != 0)
                 continue;
+
+            if (debug_)
+                p_y_diffFN_vs_y->Write(parentName.c_str());
 
             int idx = g->GetN();
             g->SetPoint(idx, (xMax + xMin) / 2., sl);
@@ -411,39 +421,42 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
     edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
     << "sh_best = (" << sh_best << " +- " << sh_best_unc << " mm";
 
-	// // save graphs
-	// g_n_points->Write();
-	// g_chi_sq->Write();
-	// g_chi_sq_norm->Write();
+    if (debug_)
+    {
+        // save graphs
+        g_n_points->Write();
+        g_chi_sq->Write();
+        g_chi_sq_norm->Write();
 
-	// // save results
-	// TGraph *g_results = new TGraph();
-	// g_results->SetName("g_results");
-	// g_results->SetPoint(0, sh_best, sh_best_unc);
-	// g_results->SetPoint(1, range_ref.x_min, range_ref.x_max);
-	// g_results->SetPoint(2, range_test.x_min, range_test.x_max);
-	// g_results->Write();
+        // save results
+        TGraph *g_results = new TGraph();
+        g_results->SetName("g_results");
+        g_results->SetPoint(0, sh_best, sh_best_unc);
+        g_results->SetPoint(1, range_ref.x_min, range_ref.x_max);
+        g_results->SetPoint(2, range_test.x_min, range_test.x_max);
+        g_results->Write();
 
-	// // save debug canvas
-	// TGraphErrors *g_test_shifted = new TGraphErrors(*g_test);
-	// for (int i = 0; i < g_test_shifted->GetN(); ++i)
-	// {
-	// 	g_test_shifted->GetX()[i] += sh_best;
-	// }
+        // save debug canvas
+        TGraphErrors *g_test_shifted = new TGraphErrors(*g_test);
+        for (int i = 0; i < g_test_shifted->GetN(); ++i)
+        {
+            g_test_shifted->GetX()[i] += sh_best;
+        }
 
-	// TCanvas *c_cmp = new TCanvas("c_cmp");
-	// g_ref->SetLineColor(1);
-	// g_ref->SetName("g_ref");
-	// g_ref->Draw("apl");
+        // TCanvas *c_cmp = new TCanvas("c_cmp");
+        // g_ref->SetLineColor(1);
+        // g_ref->SetName("g_ref");
+        // g_ref->Draw("apl");
 
-	// g_test->SetLineColor(4);
-	// g_test->SetName("g_test");
-	// g_test->Draw("pl");
+        // g_test->SetLineColor(4);
+        // g_test->SetName("g_test");
+        // g_test->Draw("pl");
 
-	// g_test_shifted->SetLineColor(2);
-	// g_test_shifted->SetName("g_test_shifted");
-	// g_test_shifted->Draw("pl");
-	// c_cmp->Write();
+        // g_test_shifted->SetLineColor(2);
+        // g_test_shifted->SetName("g_test_shifted");
+        // g_test_shifted->Draw("pl");
+        // c_cmp->Write();
+    }
 
 	// clean up
 	delete s_ref;
@@ -458,6 +471,10 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 
     edm::ESHandle<PPSAlignmentConfig> cfg_ref;
     iSetup.get<PPSAlignmentConfigRcd>().get("reference", cfg_ref);
+
+    TDirectory *xAliDir = nullptr;
+    if (debug_)
+        xAliDir = debug_file_->mkdir("x alignment");
 
     // list of RPs and their settings
 	struct RPData
@@ -482,6 +499,10 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::Ev
     {
         edm::LogInfo("x_alignment") << "reference dataset: " << ref;
 
+        TDirectory *refDir = nullptr;
+        if (debug_)
+            refDir = xAliDir->mkdir(std::regex_replace(ref, std::regex("/"), "_").c_str());
+
         TFile *f_ref = TFile::Open(ref.c_str());
 
         for (const auto &rpd : rpData)
@@ -501,8 +522,24 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::Ev
                 continue;
             }
 
+            TDirectory *rpDir = nullptr;
+            if (debug_)
+            {
+                rpDir = refDir->mkdir(rpd.name.c_str());
+                gDirectory = rpDir->mkdir("fits_ref");
+            }
             TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, cfg_ref->aligned(), rpd.id);
+
+            if (debug_)
+                gDirectory = rpDir->mkdir("fits_test");
             TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, mes_test, cfg->aligned(), rpd.id);
+
+            if (debug_)
+            {
+                gDirectory = rpDir;
+                g_ref->Write("g_ref");
+                g_test->Write("g_test");
+            }
 
             const auto &shiftRange = cfg->matchingShiftRanges()[rpd.id];
             double sh = 0., sh_unc = 0.;
@@ -527,6 +564,10 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
+    TDirectory *xAliRelDir = nullptr;
+    if (debug_)
+        xAliRelDir = debug_file_->mkdir("x_alignment_relative");
+
     struct SectorData
     {
         std::string name;
@@ -550,15 +591,22 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const
     // processing
     for (const auto &sd : sectorData)
     {
-        auto *p_x_diffFN_vs_x_N = iGetter.get(folder_ + "/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
-
-        if (p_x_diffFN_vs_x_N == nullptr)
+        TDirectory *sectorDir = nullptr;
+        if (debug_)
+        {
+            sectorDir = xAliRelDir->mkdir(sd.name.c_str());
+            gDirectory = sectorDir;
+        }
+        
+        auto *p_x_diffFN_vs_x_N_monitor = iGetter.get(folder_ + "/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
+        if (p_x_diffFN_vs_x_N_monitor == nullptr)
         {
             edm::LogWarning("x_alignment_relative") << "    cannot load data, skipping";
             continue;
         }
+        TProfile *p_x_diffFN_vs_x_N = p_x_diffFN_vs_x_N_monitor->getTProfile();
 
-        if (p_x_diffFN_vs_x_N->getEntries() < 100)
+        if (p_x_diffFN_vs_x_N->GetEntries() < 100)
         {
             edm::LogInfo("x_alignment_relative") << "    insufficient data, skipping";
             continue;
@@ -580,7 +628,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const
         ff->SetParameters(0., slope, 0.);
 		ff->FixParameter(2, -sh_x_N);
 		ff->SetLineColor(2);
-		p_x_diffFN_vs_x_N->getTProfile()->Fit(ff, "Q", "", xMin, xMax);
+		p_x_diffFN_vs_x_N->Fit(ff, "Q", "", xMin, xMax);
 
 		const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
 		const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
@@ -592,18 +640,24 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const
 		ff_sl_fix->FixParameter(1, slope);
 		ff_sl_fix->FixParameter(2, -sh_x_N);
 		ff_sl_fix->SetLineColor(4);
-		p_x_diffFN_vs_x_N->getTProfile()->Fit(ff_sl_fix, "Q+", "", xMin, xMax);
+		p_x_diffFN_vs_x_N->Fit(ff_sl_fix, "Q+", "", xMin, xMax);
 
 		const double b_fs = ff_sl_fix->GetParameter(0), b_fs_unc = ff_sl_fix->GetParError(0);
 
 		results["x_alignment_relative_sl_fix"][sd.id_N] = AlignmentResult(+b_fs/2., b_fs_unc/2., 0., 0., 0., 0.);
 		results["x_alignment_relative_sl_fix"][sd.id_F] = AlignmentResult(-b_fs/2., b_fs_unc/2., 0., 0., 0., 0.);
 
-		TGraph *g_results = new TGraph();
-		g_results->SetPoint(0, sh_x_N, 0.);
-		g_results->SetPoint(1, a, a_unc);
-		g_results->SetPoint(2, b, b_unc);
-		g_results->SetPoint(3, b_fs, b_fs_unc);
+        if (debug_)
+        {
+            p_x_diffFN_vs_x_N->Write("p_x_diffFN_vs_x_N");
+
+            TGraph *g_results = new TGraph();
+            g_results->SetPoint(0, sh_x_N, 0.);
+            g_results->SetPoint(1, a, a_unc);
+            g_results->SetPoint(2, b, b_unc);
+            g_results->SetPoint(3, b_fs, b_fs_unc);
+            g_results->Write("g_results");
+        }
     }
 
     // write results
@@ -639,6 +693,10 @@ double PPSAlignmentHarvester::findMax(TF1 *ff_fit)
 TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
                                                     unsigned int xangle, unsigned int rp)
 {
+    TDirectory *d_top = nullptr;
+    if (debug_) 
+        d_top = gDirectory;
+
     TF1 *ff_fit = new TF1("ff_fit", "[0] * exp(-(x-[1])*(x-[1])/2./[2]/[2]) + [3] + [4]*x");
 
     std::map<unsigned int, double> mymf; // probably to be removed
@@ -686,6 +744,12 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
         if (h_y->GetEntries() < 300)
 			continue;
 
+        if (debug_)
+        {
+            sprintf(buf, "x=%.3f", x);
+            gDirectory = d_top->mkdir(buf);
+        }
+
         double conMax = -1.;
 		double conMax_x = 0.;
 		for (int biy = 1; biy < h_y->GetNbinsX(); biy++)
@@ -713,6 +777,9 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 
 		h_y->Fit(ff_fit, "Q", "", xMin, xMax);
 
+        if (debug_)
+            h_y->Write("h_y");
+
         double y_mode = findMax(ff_fit);
 		const double y_mode_fit_unc = ff_fit->GetParameter(2) / 10;
 		const double y_mode_sys_unc = 0.030;
@@ -721,6 +788,15 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 		const double chiSqThreshold = (aligned) ? 1000. : 50.;
 
 		const bool valid = ! (std::fabs(y_mode_unc) > 5. || std::fabs(y_mode) > 20. || ff_fit->GetChisquare() / ff_fit->GetNDF() > chiSqThreshold);
+
+        if (debug_)
+        {
+            TGraph *g_data = new TGraph();
+			g_data->SetPoint(0, y_mode, y_mode_unc);
+			g_data->SetPoint(1, ff_fit->GetChisquare(), ff_fit->GetNDF());
+			g_data->SetPoint(2, valid, 0.);
+			g_data->Write("g_data");
+        }
 
 		if (!valid)
 			continue;
@@ -739,6 +815,10 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 
     edm::ESHandle<PPSAlignmentConfig> cfg;
     iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+
+    TDirectory *yAliDir = nullptr;
+    if (debug_)
+        yAliDir = debug_file_->mkdir("y_alignment");
 
     struct RPData
     {
@@ -765,6 +845,13 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
     // processing
     for (const auto &rpd : rpData)
     {
+        TDirectory *rpDir = nullptr;
+        if (debug_)
+        {
+            rpDir = yAliDir->mkdir(rpd.name.c_str());
+            gDirectory = rpDir->mkdir("x");
+        }
+
         auto *h2_y_vs_x = iGetter.get(folder_ + "/" + rpd.sectorName + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
 
         if (h2_y_vs_x == nullptr)
@@ -816,11 +903,19 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 
 		results["y_alignment_sl_fix"][rpd.id] = AlignmentResult(0., 0., b_fs, b_fs_unc, 0., 0.);
 
-        TGraph *g_results = new TGraph();
-		g_results->SetPoint(0, sh_x, 0.);
-		g_results->SetPoint(1, a, a_unc);
-		g_results->SetPoint(2, b, b_unc);
-		g_results->SetPoint(3, b_fs, b_fs_unc);
+        if (debug_)
+        {
+            gDirectory = rpDir;
+
+            g_y_cen_vs_x->Write("g_y_cen_vs_x");
+
+            TGraph *g_results = new TGraph();
+            g_results->SetPoint(0, sh_x, 0.);
+            g_results->SetPoint(1, a, a_unc);
+            g_results->SetPoint(2, b, b_unc);
+            g_results->SetPoint(3, b_fs, b_fs_unc);
+            g_results->Write("g_results");
+        }
     }
 
     // write results
@@ -830,8 +925,17 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
 
 PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
-    : folder_(iConfig.getParameter<std::string>("folder"))
+    : folder_(iConfig.getParameter<std::string>("folder")),
+      debug_(iConfig.getParameter<bool>("debug"))
 {
+    if (debug_)
+        debug_file_ = new TFile("debug_harvester.root", "recreate");
+}
+
+PPSAlignmentHarvester::~PPSAlignmentHarvester()
+{
+    if (debug_)
+        delete debug_file_;
 }
 
 void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter)
