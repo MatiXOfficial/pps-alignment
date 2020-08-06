@@ -443,19 +443,21 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
             g_test_shifted->GetX()[i] += sh_best;
         }
 
-        // TCanvas *c_cmp = new TCanvas("c_cmp");
-        // g_ref->SetLineColor(1);
-        // g_ref->SetName("g_ref");
-        // g_ref->Draw("apl");
+        TCanvas *c_cmp = new TCanvas("c_cmp");
+        g_ref->SetLineColor(1);
+        g_ref->SetName("g_ref");
+        g_ref->Draw("apl");
 
-        // g_test->SetLineColor(4);
-        // g_test->SetName("g_test");
-        // g_test->Draw("pl");
+        g_test->SetLineColor(4);
+        g_test->SetName("g_test");
+        g_test->Draw("pl");
 
-        // g_test_shifted->SetLineColor(2);
-        // g_test_shifted->SetName("g_test_shifted");
-        // g_test_shifted->Draw("pl");
-        // c_cmp->Write();
+        g_test_shifted->SetLineColor(2);
+        g_test_shifted->SetName("g_test_shifted");
+        g_test_shifted->Draw("pl");
+        c_cmp->Write();
+
+        delete c_cmp;
     }
 
 	// clean up
@@ -929,7 +931,7 @@ PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
       debug_(iConfig.getParameter<bool>("debug"))
 {
     if (debug_)
-        debug_file_ = new TFile("debug_harvester.root", "recreate");
+        debug_file_ = new TFile("debug.root", "recreate");
 }
 
 PPSAlignmentHarvester::~PPSAlignmentHarvester()

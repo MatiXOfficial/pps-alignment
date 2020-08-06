@@ -10,4 +10,6 @@
   <use name="CondFormats/PPSObjects"/>
   <use name="CondFormats/DataRecord"/>
   <use name="DQM/CTPPS"/>
+  <use name="rootgraphics"/>
+  <use name="rootcore"/>
 </library>
