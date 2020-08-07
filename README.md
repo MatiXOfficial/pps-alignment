@@ -13,8 +13,3 @@ scram b -j 8
 cd CalibPPS/Alignment/test
 cmsRun test_PPSAlignment_cfg.py
 ```
-## Event Setup example
-```
-cd CalibPPS/ESProducers/test
-cmsRun test_PPSAlignmentConfigESSource_cfg.py
-```
