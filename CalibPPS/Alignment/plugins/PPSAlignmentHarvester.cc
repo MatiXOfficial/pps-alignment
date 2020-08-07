@@ -112,7 +112,9 @@ private:
 
     void yAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
 
-    // ------------ other member data ------------
+    // ------------ other member data and methods ------------
+    void debugPlots(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter);
+
     const std::string folder_;
     const bool debug_;
     TFile *debug_file_;
@@ -926,6 +928,55 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
 
+void PPSAlignmentHarvester::debugPlots(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter)
+{
+    struct RPData
+    {
+        std::string name;
+        std::string sectorName;
+    };
+
+    std::vector<RPData> rpData = {
+        { "L_2_F", "sector 45" },
+		{ "L_1_F", "sector 45" },
+		{ "R_1_F", "sector 56" },
+		{ "R_2_F", "sector 56" }
+    };
+
+    for (const auto &rpd : rpData)
+    {
+        auto *tmp = iGetter.get(folder_ + "/" + rpd.sectorName + "/profiles/" + rpd.name + "/m_p_y_vs_x_aft_sel");
+        if (tmp == nullptr)
+            edm::LogWarning("debug_plots") << "could not load the m_p_y_vs_x_aft_sel Tprofile";
+        auto *profile = tmp->getTProfile();
+
+        int bins = profile->GetXaxis()->GetNbins();
+        double xMin = profile->GetXaxis()->GetXmin();
+        double xMax = profile->GetXaxis()->GetXmax();
+
+        iBooker.setCurrentFolder(folder_ + "/" + rpd.sectorName + "/profiles/" + rpd.name);
+        auto *h_entries = iBooker.book1DD("h_entries", ";x", bins, xMin, xMax);
+        auto *h_mean = iBooker.book1DD("h_mean", ";x", bins, xMin, xMax);
+        auto *h_stddev = iBooker.book1DD("h_stddev", ";x", bins, xMin, xMax);
+        
+        for (int bin = 1; bin < bins; bin++)
+        {
+            int N = profile->GetBinEntries(bin);
+            h_entries->setBinContent(bin, N);
+
+            h_mean->setBinContent(bin, profile->GetBinContent(bin));
+            h_mean->setBinError(bin, profile->GetBinError(bin));
+
+            profile->SetErrorOption("s");
+            double s = profile->GetBinError(bin);
+            h_stddev->setBinContent(bin, s);
+            h_stddev->setBinError(bin, (N > 0) ? s / std::sqrt(2. * N) : 0.);
+
+            profile->SetErrorOption();
+        }
+    }
+}
+
 PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
     : folder_(iConfig.getParameter<std::string>("folder")),
       debug_(iConfig.getParameter<bool>("debug"))
@@ -946,6 +997,9 @@ void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGet
 void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
                                       edm::Run const &, edm::EventSetup const &iSetup)
 {
+    if (debug_)
+        debugPlots(iBooker, iGetter);
+
     xAlignment(iGetter, iSetup);
     xAlignmentRelative(iGetter, iSetup);
     yAlignment(iGetter, iSetup);
