@@ -36,7 +36,7 @@ public:
 protected:
 	/// sets infinite validity of this data
 	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &key, const edm::IOVSyncValue &iosv, 
-						edm::ValidityInterval &oValidity) override;
+	                    edm::ValidityInterval &oValidity) override;
 
 private:
 	unsigned int fill;
@@ -220,11 +220,11 @@ void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetu
 												edm::ValidityInterval& oValidity) 
 {
 	edm::LogInfo("PPSAlignmentConfigESSource")
-		<< ">> PPSAlignmentConfigESSource_setIntervalFor(" << key.name() << ")\n"
-		<< "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
+	<< ">> PPSAlignmentConfigESSource_setIntervalFor(" << key.name() << ")\n"
+	<< "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
 
-	  edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
-	  oValidity = infinity;
+	edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
+	oValidity = infinity;
 }
 
 DEFINE_FWK_EVENTSETUP_SOURCE(PPSAlignmentConfigESSource); 

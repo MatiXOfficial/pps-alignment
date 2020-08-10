@@ -61,7 +61,7 @@ public:
 private:
 	void dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter) override;
 	void dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, edm::Run const &, 
-				   edm::EventSetup const &iSetup);
+	               edm::EventSetup const &iSetup);
 
 	// ------------ structures ------------
 	struct AlignmentResult
@@ -74,7 +74,7 @@ private:
 		double rot_z = 0., rot_z_unc = 0.;  // rad
 
 		AlignmentResult(double _sh_x = 0., double _sh_x_unc = 0., double _sh_y = 0., 
-						double _sh_y_unc = 0., double _rot_z = 0., double _rot_z_unc = 0.);
+		                double _sh_y_unc = 0., double _rot_z = 0., double _rot_z_unc = 0.);
 
 		CTPPSLocalTrackLite apply(const CTPPSLocalTrackLite &tr) const;
 	};
@@ -94,11 +94,11 @@ private:
 	static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
 	TGraphErrors* buildGraphFromDirectory(TDirectory *dir, bool aligned, unsigned int rpId);
 	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, 
-													   const std::vector<MonitorElement*> &mes, 
-													   bool aligned, unsigned int rpId);
+	                                            const std::vector<MonitorElement*> &mes, 
+	                                            bool aligned, unsigned int rpId);
 	int doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
-				const SelectionRange &range_test, double sh_min, double sh_max, double &sh_best, 
-				double &sh_best_unc);
+	            const SelectionRange &range_test, double sh_min, double sh_max, double &sh_best, 
+	            double &sh_best_unc);
 
 	void xAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
 
@@ -108,7 +108,7 @@ private:
 	// ------------ y alignment ------------
 	static double findMax(TF1 *ff_fit);
 	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
-										unsigned int xangle, unsigned int rp);
+	                             unsigned int xangle, unsigned int rp);
 
 	void yAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
 
@@ -123,7 +123,7 @@ private:
 // -------------------------------- Alignment classes methods --------------------------------
 
 PPSAlignmentHarvester::AlignmentResult::AlignmentResult(double _sh_x, double _sh_x_unc, double _sh_y, 
-														double _sh_y_unc, double _rot_z, double _rot_z_unc)
+                                                        double _sh_y_unc, double _rot_z, double _rot_z_unc)
 	: sh_x(_sh_x), sh_x_unc(_sh_x_unc), sh_y(_sh_y), sh_y_unc(_sh_y_unc), rot_z(_rot_z), rot_z_unc(_rot_z_unc)
 {}
 
@@ -135,7 +135,8 @@ CTPPSLocalTrackLite PPSAlignmentHarvester::AlignmentResult::apply(const CTPPSLoc
 	v = R * v + s;
 
 	return CTPPSLocalTrackLite(tr.rpId(), v.x(), 0., v.y(), 0., tr.tx(), tr.txUnc(), tr.ty(), tr.tyUnc(),
-			tr.chiSquaredOverNDF(), tr.pixelTrackRecoInfo(), tr.numberOfPointsUsedForFit(), tr.time(), tr.timeUnc());
+	                           tr.chiSquaredOverNDF(), tr.pixelTrackRecoInfo(), tr.numberOfPointsUsedForFit(), 
+	                           tr.time(), tr.timeUnc());
 }
 
 std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResult ar)
@@ -270,8 +271,8 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, bo
 }
 
 TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, 
-																   const std::vector<MonitorElement*> &mes, 
-																   bool aligned, unsigned int rpId)
+                                                                   const std::vector<MonitorElement*> &mes, 
+                                                                   bool aligned, unsigned int rpId)
 {
 	TGraphErrors *g = new TGraphErrors();
 
@@ -327,8 +328,8 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 }
 
 int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
-								   const SelectionRange &range_test, double sh_min, double sh_max, 
-								   double &sh_best, double &sh_best_unc)
+                                   const SelectionRange &range_test, double sh_min, double sh_max, 
+                                   double &sh_best, double &sh_best_unc)
 {
 	// require minimal number of points
 	if (g_ref->GetN() < 5 || g_test->GetN() < 5)
@@ -662,7 +663,7 @@ double PPSAlignmentHarvester::findMax(TF1 *ff_fit)
 }
 
 TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
-													unsigned int xangle, unsigned int rp)
+                                                    unsigned int xangle, unsigned int rp)
 {
 	TDirectory *d_top = nullptr;
 	if (debug_) 
@@ -877,7 +878,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
 
 void PPSAlignmentHarvester::debugPlots(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
-									   edm::EventSetup const &iSetup)
+                                       edm::EventSetup const &iSetup)
 {
 	edm::ESHandle<PPSAlignmentConfig> cfg;
 	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
@@ -937,7 +938,7 @@ void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGet
 {}
 
 void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
-									  edm::Run const &, edm::EventSetup const &iSetup)
+                                      edm::Run const &, edm::EventSetup const &iSetup)
 {
 	if (debug_)
 		debugPlots(iBooker, iGetter, iSetup);

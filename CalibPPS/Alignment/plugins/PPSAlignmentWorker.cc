@@ -95,7 +95,7 @@ private:
 		std::map<unsigned int, SlicePlots> x_slice_plots_N, x_slice_plots_F;
 
 		void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, const SectorConfig &_scfg, 
-				  const std::string &folder);
+		          const std::string &folder);
 
 		unsigned int process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks);
 	};
@@ -126,7 +126,7 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooke
 }
 
 void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, 
-										  const SectorConfig &_scfg, const std::string &folder)
+                                          const SectorConfig &_scfg, const std::string &folder)
 {
 	edm::ESHandle<PPSAlignmentConfig> cfg;
 	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
@@ -149,25 +149,25 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/before selection/" + scfg.rp_N.name);
 	m_h1_x_bef_sel[scfg.rp_N.id] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_str, x_max_str);
 	m_h2_y_vs_x_bef_sel[scfg.rp_N.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
-												  n_bins_y, y_min, y_max);
+	                                                    n_bins_y, y_min, y_max);
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/before selection/" + scfg.rp_F.name);
 	m_h2_y_vs_x_bef_sel[scfg.rp_F.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
-												  n_bins_y, y_min, y_max);
+	                                                    n_bins_y, y_min, y_max);
 	m_h1_x_bef_sel[scfg.rp_F.id] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_pix, x_max_pix);
 
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/multiplicity selection/" + scfg.rp_N.name);
 	m_h2_y_vs_x_mlt_sel[scfg.rp_N.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
-												  n_bins_y, y_min, y_max);
+	                                                     n_bins_y, y_min, y_max);
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/multiplicity selection/" + scfg.rp_F.name);
 	m_h2_y_vs_x_mlt_sel[scfg.rp_F.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
-												  n_bins_y, y_min, y_max);
+	                                                     n_bins_y, y_min, y_max);
 
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/after selection/" + scfg.rp_N.name);
 	m_h2_y_vs_x_aft_sel[scfg.rp_N.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
-												   n_bins_y, y_min, y_max);
+	                                                     n_bins_y, y_min, y_max);
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/after selection/" + scfg.rp_F.name);
 	m_h2_y_vs_x_aft_sel[scfg.rp_F.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
-												   n_bins_y, y_min, y_max);
+	                                                     n_bins_y, y_min, y_max);
 
 	m_g_y_vs_x_aft_sel[scfg.rp_N.id] = new TGraph();
 	m_g_y_vs_x_aft_sel[scfg.rp_F.id] = new TGraph();
@@ -177,9 +177,9 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	h_q_cut_h_bef = iBooker.book1DD("h_q_cut_h_bef", ";cq_h", 400, -2., 2.);
 	h_q_cut_h_aft = iBooker.book1DD("h_q_cut_h_aft", ";cq_h", 400, -2., 2.);
 	h2_cut_h_bef = iBooker.book2DD("h2_cut_h_bef", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, 
-								   x_min_pix, x_max_pix);
+	                               x_min_pix, x_max_pix);
 	h2_cut_h_aft = iBooker.book2DD("h2_cut_h_aft", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, 
-								   x_min_pix, x_max_pix);
+	                               x_min_pix, x_max_pix);
 	auto *tmp = new TProfile("", ";x_up;mean of x_dw", n_bins_x, x_min_str, x_max_str);
 	p_cut_h_aft = iBooker.bookProfile("p_cut_h_aft", tmp);
 
@@ -194,13 +194,13 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	// profiles
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/profiles/" + scfg.rp_N.name);
 	tmp = new TProfile("", "", m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getNbinsX(), 
-					   m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getTH2D()->GetXaxis()->GetXmin(), 
-					   m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getTH2D()->GetXaxis()->GetXmax());
+	                   m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getTH2D()->GetXaxis()->GetXmin(), 
+	                   m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getTH2D()->GetXaxis()->GetXmax());
 	m_p_y_vs_x_aft_sel[scfg.rp_N.id] = iBooker.bookProfile("m_p_y_vs_x_aft_sel", tmp);
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/profiles/" + scfg.rp_F.name);
 	tmp = new TProfile("", "", m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getNbinsX(), 
-					   m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getTH2D()->GetXaxis()->GetXmin(), 
-					   m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getTH2D()->GetXaxis()->GetXmax());
+	                   m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getTH2D()->GetXaxis()->GetXmin(), 
+	                   m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getTH2D()->GetXaxis()->GetXmax());
 	m_p_y_vs_x_aft_sel[scfg.rp_F.id] = iBooker.bookProfile("m_p_y_vs_x_aft_sel", tmp);
 
 	// near-far plots
@@ -238,7 +238,7 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 }
 
 unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSetup, 
-													 const CTPPSLocalTrackLiteCollection &tracks)
+                                                     const CTPPSLocalTrackLiteCollection &tracks)
 {
 	edm::ESHandle<PPSAlignmentConfig> cfg;
 	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
@@ -386,7 +386,7 @@ PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig)
 {}
 
 void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, 
-										edm::EventSetup const &iSetup)
+                                        edm::EventSetup const &iSetup)
 {
 	edm::ESHandle<PPSAlignmentConfig> cfg;
 	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
