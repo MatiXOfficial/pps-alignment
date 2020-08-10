@@ -42,7 +42,7 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring('root://eostotem.cern.ch//eos/cms/store/group/phys_pps/reconstruction/2018/physics_runs/rec-hit-version1/fill7334_xangle160_beta0.30_EGamma.root')
 )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(120000))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	label = cms.string(''),
@@ -75,6 +75,24 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	n_si = cms.double(4.),
 
 	sector_45 = cms.PSet(
+		name = cms.string("sector 45"),
+		rp_N = cms.PSet(
+			name = cms.string("L_1_F"),
+			id = cms.uint32(3),
+			position = cms.string("N"),
+			slope = cms.double(0.19),
+			sh_x = cms.double(-3.6)
+		),
+		rp_F = cms.PSet(
+			name = cms.string("L_2_F"),
+			id = cms.uint32(23),
+			position = cms.string("F"),
+			slope = cms.double(0.19),
+			sh_x = cms.double(-42.)
+		),
+		slope = cms.double(0.006),
+		sh_x_N = cms.double(-3.6),
+
 		cut_h_apply = cms.bool(True),
 		cut_h_a = cms.double(-1),
 		cut_h_c = cms.double(-38.55 + 0.57 - 0.08),
@@ -95,6 +113,24 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	),
 
 	sector_56 = cms.PSet(
+		name = cms.string("sector 56"),
+		rp_N = cms.PSet(
+			name = cms.string("R_1_F"),
+			id = cms.uint32(103),
+			position = cms.string("N"),
+			slope = cms.double(0.40),
+			sh_x = cms.double(-2.8)
+		),
+		rp_F = cms.PSet(
+			name = cms.string("R_2_F"),
+			id = cms.uint32(123),
+			position = cms.string("F"),
+			slope = cms.double(0.39),
+			sh_x = cms.double(-41.9)
+		),
+		slope = cms.double(-0.015),
+		sh_x_N = cms.double(-2.8),
+
 		cut_h_apply = cms.bool(True),
 		cut_h_a = cms.double(-1),
 		cut_h_c = cms.double(-39.26 + 0.33),
@@ -112,7 +148,7 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 		fr_x_slice_min = cms.double(45),
 		fr_x_slice_max = cms.double(57.),
 		fr_x_slice_w = cms.double(0.2),
-		),
+	),
 
 	matching = cms.PSet(
 		reference_datasets = cms.vstring("/eos/user/k/kocotm/Documents/Alignment_data/alig-version3/fill_6554/xangle_130_beta_0.30/DS1/distributions.root"),
@@ -224,6 +260,24 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 	n_si = cms.double(4.),
 
 	sector_45 = cms.PSet(
+		name = cms.string("sector 45"),
+		rp_N = cms.PSet(
+			name = cms.string("L_2_F"),
+			id = cms.uint32(23),
+			position = cms.string("F"),
+			slope = cms.double(0.19),
+			sh_x = cms.double(-42.)
+		),
+		rp_F = cms.PSet(
+			name = cms.string("L_1_F"),
+			id = cms.uint32(3),
+			position = cms.string("N"),
+			slope = cms.double(0.19),
+			sh_x = cms.double(-3.6)
+		),
+		slope = cms.double(0.006),
+		sh_x_N = cms.double(-3.6),
+		
 		cut_h_apply = cms.bool(True),
 		cut_h_a = cms.double(-1),
 		cut_h_c = cms.double(0.04),
@@ -244,6 +298,24 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 	),
 
 	sector_56 = cms.PSet(
+		name = cms.string("sector 56"),
+		rp_N = cms.PSet(
+			name = cms.string("L_2_F"),
+			id = cms.uint32(103),
+			position = cms.string("N"),
+			slope = cms.double(0.40),
+			sh_x = cms.double(-2.8)
+		),
+		rp_F = cms.PSet(
+			name = cms.string("L_1_F"),
+			id = cms.uint32(123),
+			position = cms.string("F"),
+			slope = cms.double(0.39),
+			sh_x = cms.double(-41.9)
+		),
+		slope = cms.double(-0.015),
+		sh_x_N = cms.double(-2.8),
+		
 		cut_h_apply = cms.bool(True),
 		cut_h_a = cms.double(-1),
 		cut_h_c = cms.double(0.19),

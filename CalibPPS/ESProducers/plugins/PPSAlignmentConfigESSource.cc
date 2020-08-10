@@ -44,8 +44,6 @@ private:
 	double beta;
 	std::string dataset;
 
-	std::map<unsigned int, std::string> rpTags;
-
 	std::vector<std::string> inputFiles;
 
 	std::map<unsigned int, double> alignmentCorrectionsX, alignmentCorrectionsY;
@@ -63,36 +61,14 @@ private:
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges;
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges;
+
+	std::string label;
 };
 
 //---------------------------------------------------------------------------------------------
 
 PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &iConfig)
 {
-    rpTags = {
-        { 23, "L_2_F" },
-		{ 3, "L_1_F" },
-		{ 103, "R_1_F" },
-		{ 123, "R_2_F" }
-    };
-
-    fill = iConfig.getParameter<unsigned int>("fill");
-    xangle = iConfig.getParameter<unsigned int>("xangle");
-	beta = iConfig.getParameter<double>("beta");
-	dataset = iConfig.getParameter<std::string>("dataset");
-
-    const auto &acc = iConfig.getParameter<edm::ParameterSet>("alignment_corrections");
-    for (const auto &p : rpTags)
-	{
-		const auto &ps = acc.getParameter<edm::ParameterSet>("rp_" + p.second);
-		alignmentCorrectionsX[p.first] = ps.getParameter<double>("de_x");
-		alignmentCorrectionsY[p.first] = ps.getParameter<double>("de_y");
-	}
-
-    aligned = iConfig.getParameter<bool>("aligned");
-
-	n_si = iConfig.getParameter<double>("n_si");
-
 	for (std::string sectorName : {"sector_45", "sector_56"})
 	{
 		const auto &sps = iConfig.getParameter<edm::ParameterSet>(sectorName);
@@ -101,6 +77,27 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 			sc = &sectorConfig45;
 		else
 			sc = &sectorConfig56;
+
+		sc->name = sps.getParameter<std::string>("name");
+
+		for (std::string rpName : {"rp_N", "rp_F"})
+		{
+			const auto &rps = sps.getParameter<edm::ParameterSet>(rpName);
+			RPConfig *rc;
+			if (rpName == "rp_N")
+				rc = &sc->rp_N;
+			else
+				rc = &sc->rp_F;
+
+			rc->name = rps.getParameter<std::string>("name");
+			rc->id = rps.getParameter<unsigned int>("id");
+			rc->position = rps.getParameter<std::string>("position");
+			rc->slope = rps.getParameter<double>("slope");
+			rc->sh_x = rps.getParameter<double>("sh_x");
+		}
+
+		sc->slope = sps.getParameter<double>("slope");
+		sc->sh_x_N = sps.getParameter<double>("sh_x_N");
 
 		sc->cut_h_apply = sps.getParameter<bool>("cut_h_apply");
 		sc->cut_h_a = sps.getParameter<double>("cut_h_a");
@@ -121,37 +118,61 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		sc->fr_x_slice_n = std::ceil((sps.getParameter<double>("fr_x_slice_max") - sc->fr_x_slice_min) / sc->fr_x_slice_w);
 	}
 
+    fill = iConfig.getParameter<unsigned int>("fill");
+    xangle = iConfig.getParameter<unsigned int>("xangle");
+	beta = iConfig.getParameter<double>("beta");
+	dataset = iConfig.getParameter<std::string>("dataset");
+
+	std::map<unsigned int, std::string> rpTags = {
+		{ sectorConfig45.rp_F.id, sectorConfig45.rp_F.name },
+		{ sectorConfig45.rp_N.id, sectorConfig45.rp_N.name },
+		{ sectorConfig56.rp_N.id, sectorConfig56.rp_N.name },
+		{ sectorConfig56.rp_F.id, sectorConfig56.rp_F.name }
+	};
+
+    const auto &acc = iConfig.getParameter<edm::ParameterSet>("alignment_corrections");
+    for (const auto &p : rpTags)
+	{
+		const auto &ps = acc.getParameter<edm::ParameterSet>("rp_" + p.second);
+		alignmentCorrectionsX[p.first] = ps.getParameter<double>("de_x");
+		alignmentCorrectionsY[p.first] = ps.getParameter<double>("de_y");
+	}
+
+    aligned = iConfig.getParameter<bool>("aligned");
+
+	n_si = iConfig.getParameter<double>("n_si");
+
     const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
 	matchingReferenceDatasets = c_m.getParameter<std::vector<std::string>>("reference_datasets");
 
     for (const auto &p : rpTags)
 	{
 		const auto &ps = c_m.getParameter<edm::ParameterSet>("rp_" + p.second);
-		matchingShiftRanges[p.first] = SelectionRange(ps.getParameter<double>("sh_min"), ps.getParameter<double>("sh_max"));
+		matchingShiftRanges[p.first] = {ps.getParameter<double>("sh_min"), ps.getParameter<double>("sh_max")};
 	}
 
     const auto &c_axo = iConfig.getParameter<edm::ParameterSet>("x_alignment_meth_o");
 	for (const auto &p : rpTags)
 	{
 		const auto &ps = c_axo.getParameter<edm::ParameterSet>("rp_" + p.second);
-		alignment_x_meth_o_ranges[p.first] = SelectionRange(ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max"));
+		alignment_x_meth_o_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
     const auto &c_axr = iConfig.getParameter<edm::ParameterSet>("x_alignment_relative");
 	for (const auto &p : rpTags)
 	{
 		const auto &ps = c_axr.getParameter<edm::ParameterSet>("rp_" + p.second);
-		alignment_x_relative_ranges[p.first] = SelectionRange(ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max"));
+		alignment_x_relative_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
     const auto &c_ay = iConfig.getParameter<edm::ParameterSet>("y_alignment");
 	for (const auto &p : rpTags)
 	{
 		const auto &ps = c_ay.getParameter<edm::ParameterSet>("rp_" + p.second);
-		alignment_y_ranges[p.first] = SelectionRange(ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max"));
+		alignment_y_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
-	std::string label = iConfig.getParameter<std::string>("label");
+	label = iConfig.getParameter<std::string>("label");
 	setWhatProduced(this, label);
 	findingRecord<PPSAlignmentConfigRcd>();
 }
@@ -162,12 +183,13 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 {
     auto p = std::make_unique<PPSAlignmentConfig>();
 
+	p->setSectorConfig45(sectorConfig45);
+    p->setSectorConfig56(sectorConfig56);
+
     p->setFill(fill);
     p->setXangle(xangle);
     p->setBeta(beta);
     p->setDataset(dataset);
-
-    p->setRpTags(rpTags);
 
     p->setInputFiles(inputFiles);
 
@@ -178,9 +200,6 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
     p->setN_si(n_si);
 
-    p->setSectorConfig45(sectorConfig45);
-    p->setSectorConfig56(sectorConfig56);
-
     p->setMatchingReferenceDatasets(matchingReferenceDatasets);
     p->setMatchingShiftRanges(matchingShiftRanges);
 
@@ -189,7 +208,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
     p->setAlignment_y_ranges(alignment_y_ranges);
 
-    edm::LogInfo("PPSAlignmentConfigESSource::produce") << "\n" << (*p);
+    edm::LogInfo("produce_" + label) << "\n" << (*p);
 
     return p;
 }
@@ -201,7 +220,7 @@ void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetu
                                                 edm::ValidityInterval& oValidity) 
 {
 	edm::LogInfo("PPSAlignmentConfigESSource")
-    	<< ">> PPSAlignmentConfigESSource::setIntervalFor(" << key.name() << ")\n"
+    	<< ">> PPSAlignmentConfigESSource_setIntervalFor(" << key.name() << ")\n"
     	<< "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
 
   	edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());

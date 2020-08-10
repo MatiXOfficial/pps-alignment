@@ -19,19 +19,15 @@ TYPELOOKUP_DATA_REG(PPSAlignmentConfig);
 #include <cmath>
 #include <iomanip>
 
-// -------------------------------- SelectionRange --------------------------------
-
-SelectionRange::SelectionRange(double x_min, double x_max) : x_min(x_min), x_max(x_max)
-{}
-
 // -------------------------------- PPSAlignmentConfig getters --------------------------------
+
+SectorConfig PPSAlignmentConfig::sectorConfig45() const { return sectorConfig45_; }
+SectorConfig PPSAlignmentConfig::sectorConfig56() const { return sectorConfig56_; }
 
 unsigned int PPSAlignmentConfig::fill() const { return fill_; }
 unsigned int PPSAlignmentConfig::xangle() const { return xangle_; }
 double PPSAlignmentConfig::beta() const { return beta_; }
 std::string PPSAlignmentConfig::dataset() const { return dataset_; }
-
-std::map<unsigned int, std::string> PPSAlignmentConfig::rpTags() const { return rpTags_; }
 
 std::vector<std::string> PPSAlignmentConfig::inputFiles() const { return inputFiles_; }
 
@@ -47,9 +43,6 @@ std::map<unsigned int, double> PPSAlignmentConfig::alignmentCorrectionsY() const
 bool PPSAlignmentConfig::aligned() const { return aligned_; }
 
 double PPSAlignmentConfig::n_si() const { return n_si_; }
-
-SectorConfig PPSAlignmentConfig::sectorConfig45() const { return sectorConfig45_; }
-SectorConfig PPSAlignmentConfig::sectorConfig56() const { return sectorConfig56_; }
 
 std::vector<std::string> PPSAlignmentConfig::matchingReferenceDatasets() const 
 { 
@@ -76,12 +69,13 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_y_ranges() 
 
 // -------------------------------- PPSAlignmentConfig setters --------------------------------
 
+void PPSAlignmentConfig::setSectorConfig45(SectorConfig &sectorConfig45) { sectorConfig45_ = sectorConfig45; }
+void PPSAlignmentConfig::setSectorConfig56(SectorConfig &sectorConfig56) { sectorConfig56_ = sectorConfig56; }
+
 void PPSAlignmentConfig::setFill(unsigned int fill) { fill_ = fill; }
 void PPSAlignmentConfig::setXangle(unsigned int xangle) { xangle_ = xangle; }
 void PPSAlignmentConfig::setBeta(double beta) { beta_ = beta; }
 void PPSAlignmentConfig::setDataset(std::string &dataset) { dataset_ = dataset; }
-
-void PPSAlignmentConfig::setRpTags(std::map<unsigned int, std::string> &rpTags) { rpTags_ = rpTags; }
 
 void PPSAlignmentConfig::setInputFiles(std::vector<std::string> &inputFiles) { inputFiles_ = inputFiles; }
 
@@ -97,9 +91,6 @@ void PPSAlignmentConfig::setAlignmentCorrectionsY(std::map<unsigned int, double>
 void PPSAlignmentConfig::setAligned(bool aligned) { aligned_ = aligned; }
 
 void PPSAlignmentConfig::setN_si(double n_si) { n_si_ = n_si; }
-
-void PPSAlignmentConfig::setSectorConfig45(SectorConfig &sectorConfig45) { sectorConfig45_ = sectorConfig45; }
-void PPSAlignmentConfig::setSectorConfig56(SectorConfig &sectorConfig56) { sectorConfig56_ = sectorConfig56; }
 
 void PPSAlignmentConfig::setMatchingReferenceDatasets(std::vector<std::string> &matchingReferenceDatasets)
 {
@@ -126,9 +117,23 @@ void PPSAlignmentConfig::setAlignment_y_ranges(std::map<unsigned int, SelectionR
 
 // -------------------------------- << operators --------------------------------
 
-std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
+std::ostream &operator<<(std::ostream &os, RPConfig &rc)
 {
     os << std::fixed << std::setprecision(3);
+    os << "    " << rc.name << ":\n";
+    os << "        id = " << rc.id << ", position = " << rc.position << ", slope = " << rc.slope 
+    << ", sh_x = " << rc.sh_x;
+
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
+{
+    // to be adjusted
+    os << std::fixed << std::setprecision(3);
+    os << sc.name << ":\n";
+    os << sc.rp_N << "\n" << sc.rp_F << "\n";
+    os << "    slope = " << sc.slope << ", sh_x_N = " << sc.sh_x_N << "\n";
     os << "    cut_h: apply = " << sc.cut_h_apply << ", a = " << sc.cut_h_a << ", c = " 
         << sc.cut_h_c << ", si = " << sc.cut_h_si << "\n";
     os << "    cut_v: apply = " << sc.cut_v_apply << ", a = " << sc.cut_v_a << ", c = " 
@@ -137,7 +142,8 @@ std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
     os << "    x slices, nr: min = " << sc.nr_x_slice_min << ", w = " << sc.nr_x_slice_w 
         << ", n = " << sc.nr_x_slice_n << "\n";
     os << "    x slices, fr: min = " << sc.fr_x_slice_min << ", w = " << sc.fr_x_slice_w 
-        << ", n = " << sc.fr_x_slice_n << "\n";
+        << ", n = " << sc.fr_x_slice_n;
+
     return os;
 }
 
@@ -166,8 +172,8 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
     os << "    n_si = " << c.n_si_ << "\n\n";
 
 
-    os << "* sector 45\n" << c.sectorConfig45_;
-    os << "* sector 56\n" << c.sectorConfig56_ << "\n";
+    os << "* " << c.sectorConfig45_ << "\n\n";
+    os << "* " << c.sectorConfig56_ << "\n\n";
 
     os << "* matching\n" << std::setprecision(3);
     os << "    reference datasets (" << c.matchingReferenceDatasets_.size() << "):\n";
