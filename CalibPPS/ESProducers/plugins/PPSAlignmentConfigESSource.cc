@@ -28,10 +28,10 @@
 class PPSAlignmentConfigESSource : public edm::ESProducer, public edm::EventSetupRecordIntervalFinder
 {
 public:
-    PPSAlignmentConfigESSource(const edm::ParameterSet &iConfig);
-    ~PPSAlignmentConfigESSource() override = default;
+	PPSAlignmentConfigESSource(const edm::ParameterSet &iConfig);
+	~PPSAlignmentConfigESSource() override = default;
 
-    std::unique_ptr<PPSAlignmentConfig> produce(const PPSAlignmentConfigRcd &);
+	std::unique_ptr<PPSAlignmentConfig> produce(const PPSAlignmentConfigRcd &);
 
 protected:
 	/// sets infinite validity of this data
@@ -118,8 +118,8 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		sc->fr_x_slice_n = std::ceil((sps.getParameter<double>("fr_x_slice_max") - sc->fr_x_slice_min) / sc->fr_x_slice_w);
 	}
 
-    fill = iConfig.getParameter<unsigned int>("fill");
-    xangle = iConfig.getParameter<unsigned int>("xangle");
+	fill = iConfig.getParameter<unsigned int>("fill");
+	xangle = iConfig.getParameter<unsigned int>("xangle");
 	beta = iConfig.getParameter<double>("beta");
 	dataset = iConfig.getParameter<std::string>("dataset");
 
@@ -130,42 +130,42 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		{ sectorConfig56.rp_F.id, sectorConfig56.rp_F.name }
 	};
 
-    const auto &acc = iConfig.getParameter<edm::ParameterSet>("alignment_corrections");
-    for (const auto &p : rpTags)
+	const auto &acc = iConfig.getParameter<edm::ParameterSet>("alignment_corrections");
+	for (const auto &p : rpTags)
 	{
 		const auto &ps = acc.getParameter<edm::ParameterSet>("rp_" + p.second);
 		alignmentCorrectionsX[p.first] = ps.getParameter<double>("de_x");
 		alignmentCorrectionsY[p.first] = ps.getParameter<double>("de_y");
 	}
 
-    aligned = iConfig.getParameter<bool>("aligned");
+	aligned = iConfig.getParameter<bool>("aligned");
 
 	n_si = iConfig.getParameter<double>("n_si");
 
-    const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
+	const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
 	matchingReferenceDatasets = c_m.getParameter<std::vector<std::string>>("reference_datasets");
 
-    for (const auto &p : rpTags)
+	for (const auto &p : rpTags)
 	{
 		const auto &ps = c_m.getParameter<edm::ParameterSet>("rp_" + p.second);
 		matchingShiftRanges[p.first] = {ps.getParameter<double>("sh_min"), ps.getParameter<double>("sh_max")};
 	}
 
-    const auto &c_axo = iConfig.getParameter<edm::ParameterSet>("x_alignment_meth_o");
+	const auto &c_axo = iConfig.getParameter<edm::ParameterSet>("x_alignment_meth_o");
 	for (const auto &p : rpTags)
 	{
 		const auto &ps = c_axo.getParameter<edm::ParameterSet>("rp_" + p.second);
 		alignment_x_meth_o_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
-    const auto &c_axr = iConfig.getParameter<edm::ParameterSet>("x_alignment_relative");
+	const auto &c_axr = iConfig.getParameter<edm::ParameterSet>("x_alignment_relative");
 	for (const auto &p : rpTags)
 	{
 		const auto &ps = c_axr.getParameter<edm::ParameterSet>("rp_" + p.second);
 		alignment_x_relative_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
-    const auto &c_ay = iConfig.getParameter<edm::ParameterSet>("y_alignment");
+	const auto &c_ay = iConfig.getParameter<edm::ParameterSet>("y_alignment");
 	for (const auto &p : rpTags)
 	{
 		const auto &ps = c_ay.getParameter<edm::ParameterSet>("rp_" + p.second);
@@ -181,50 +181,50 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 
 std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PPSAlignmentConfigRcd &)
 {
-    auto p = std::make_unique<PPSAlignmentConfig>();
+	auto p = std::make_unique<PPSAlignmentConfig>();
 
 	p->setSectorConfig45(sectorConfig45);
-    p->setSectorConfig56(sectorConfig56);
+	p->setSectorConfig56(sectorConfig56);
 
-    p->setFill(fill);
-    p->setXangle(xangle);
-    p->setBeta(beta);
-    p->setDataset(dataset);
+	p->setFill(fill);
+	p->setXangle(xangle);
+	p->setBeta(beta);
+	p->setDataset(dataset);
 
-    p->setInputFiles(inputFiles);
+	p->setInputFiles(inputFiles);
 
-    p->setAlignmentCorrectionsX(alignmentCorrectionsX);
-    p->setAlignmentCorrectionsY(alignmentCorrectionsY);
+	p->setAlignmentCorrectionsX(alignmentCorrectionsX);
+	p->setAlignmentCorrectionsY(alignmentCorrectionsY);
 
-    p->setAligned(aligned);
+	p->setAligned(aligned);
 
-    p->setN_si(n_si);
+	p->setN_si(n_si);
 
-    p->setMatchingReferenceDatasets(matchingReferenceDatasets);
-    p->setMatchingShiftRanges(matchingShiftRanges);
+	p->setMatchingReferenceDatasets(matchingReferenceDatasets);
+	p->setMatchingShiftRanges(matchingShiftRanges);
 
-    p->setAlignment_x_meth_o_ranges(alignment_x_meth_o_ranges);
-    p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);
+	p->setAlignment_x_meth_o_ranges(alignment_x_meth_o_ranges);
+	p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);
 
-    p->setAlignment_y_ranges(alignment_y_ranges);
+	p->setAlignment_y_ranges(alignment_y_ranges);
 
-    edm::LogInfo("produce_" + label) << "\n" << (*p);
+	edm::LogInfo("produce_" + label) << "\n" << (*p);
 
-    return p;
+	return p;
 }
 
 //---------------------------------------------------------------------------------------------
 
 void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetupRecordKey& key,
-                                                const edm::IOVSyncValue& iosv,
-                                                edm::ValidityInterval& oValidity) 
+												const edm::IOVSyncValue& iosv,
+												edm::ValidityInterval& oValidity) 
 {
 	edm::LogInfo("PPSAlignmentConfigESSource")
-    	<< ">> PPSAlignmentConfigESSource_setIntervalFor(" << key.name() << ")\n"
-    	<< "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
+		<< ">> PPSAlignmentConfigESSource_setIntervalFor(" << key.name() << ")\n"
+		<< "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
 
-  	edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
-  	oValidity = infinity;
+	  edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
+	  oValidity = infinity;
 }
 
 DEFINE_FWK_EVENTSETUP_SOURCE(PPSAlignmentConfigESSource); 

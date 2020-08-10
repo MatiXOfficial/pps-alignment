@@ -24,46 +24,46 @@
 
 struct SelectionRange
 {
-    double x_min;
-    double x_max;
+	double x_min;
+	double x_max;
 
-    COND_SERIALIZABLE;
+	COND_SERIALIZABLE;
 };
 
 //---------------------------------------------------------------------------------------------
 
 struct RPConfig
 {
-    std::string name;
-    unsigned int id;
-    std::string position;
-    double slope;
-    double sh_x;
+	std::string name;
+	unsigned int id;
+	std::string position;
+	double slope;
+	double sh_x;
 
-    COND_SERIALIZABLE;
+	COND_SERIALIZABLE;
 };
 
 //---------------------------------------------------------------------------------------------
 
 struct SectorConfig
 {
-    std::string name;
-    RPConfig rp_N, rp_F;
-    double slope;
-    double sh_x_N;
+	std::string name;
+	RPConfig rp_N, rp_F;
+	double slope;
+	double sh_x_N;
 
-    bool cut_h_apply;
-    double cut_h_a, cut_h_c, cut_h_si;
+	bool cut_h_apply;
+	double cut_h_a, cut_h_c, cut_h_si;
 
-    bool cut_v_apply;
-    double cut_v_a, cut_v_c, cut_v_si;
+	bool cut_v_apply;
+	double cut_v_a, cut_v_c, cut_v_si;
 
-    int nr_x_slice_n;
+	int nr_x_slice_n;
 	double nr_x_slice_min, nr_x_slice_w;
 	int fr_x_slice_n;
 	double fr_x_slice_min, fr_x_slice_w;
 
-    COND_SERIALIZABLE;
+	COND_SERIALIZABLE;
 };
 
 //---------------------------------------------------------------------------------------------
@@ -71,19 +71,19 @@ struct SectorConfig
 class PPSAlignmentConfig
 {
 public:
-    // Getters
-    SectorConfig sectorConfig45() const;
-    SectorConfig sectorConfig56() const;
+	// Getters
+	SectorConfig sectorConfig45() const;
+	SectorConfig sectorConfig56() const;
 
-    unsigned int fill() const;
-    unsigned int xangle() const;
-    double beta() const;
-    std::string dataset() const;
+	unsigned int fill() const;
+	unsigned int xangle() const;
+	double beta() const;
+	std::string dataset() const;
 
 	std::vector<std::string> inputFiles() const;
 
 	std::map<unsigned int, double> alignmentCorrectionsX() const;
-    std::map<unsigned int, double> alignmentCorrectionsY() const;
+	std::map<unsigned int, double> alignmentCorrectionsY() const;
 
 	bool aligned() const;
 
@@ -97,39 +97,39 @@ public:
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges() const;
 
-    // Setters 
-    void setSectorConfig45(SectorConfig &sectorConfig45);
-    void setSectorConfig56(SectorConfig &sectorConfig56);
+	// Setters 
+	void setSectorConfig45(SectorConfig &sectorConfig45);
+	void setSectorConfig56(SectorConfig &sectorConfig56);
 
-    void setFill(unsigned int fill);
-    void setXangle(unsigned int xangle);
-    void setBeta(double beta);
-    void setDataset(std::string &dataset);
+	void setFill(unsigned int fill);
+	void setXangle(unsigned int xangle);
+	void setBeta(double beta);
+	void setDataset(std::string &dataset);
 
-    void setInputFiles(std::vector<std::string> &inputFiles);
+	void setInputFiles(std::vector<std::string> &inputFiles);
 
-    void setAlignmentCorrectionsX(std::map<unsigned int, double> &alignmentCorrectionsX);
-    void setAlignmentCorrectionsY(std::map<unsigned int, double> &alignmentCorrectionsY);
+	void setAlignmentCorrectionsX(std::map<unsigned int, double> &alignmentCorrectionsX);
+	void setAlignmentCorrectionsY(std::map<unsigned int, double> &alignmentCorrectionsY);
 
-    void setAligned(bool aligned);
+	void setAligned(bool aligned);
 
-    void setN_si(double n_si);
+	void setN_si(double n_si);
 
-    void setMatchingReferenceDatasets(std::vector<std::string> &matchingReferenceDatasets);
-    void setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges);
+	void setMatchingReferenceDatasets(std::vector<std::string> &matchingReferenceDatasets);
+	void setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges);
 
-    void setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges);
-    void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
+	void setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges);
+	void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
 
-    void setAlignment_y_ranges(std::map<unsigned int, SelectionRange> &alignment_y_ranges);
+	void setAlignment_y_ranges(std::map<unsigned int, SelectionRange> &alignment_y_ranges);
 
-    // << operator
-    friend std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c);
+	// << operator
+	friend std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c);
 
 private:
-    SectorConfig sectorConfig45_, sectorConfig56_;
+	SectorConfig sectorConfig45_, sectorConfig56_;
 
-    unsigned int fill_;
+	unsigned int fill_;
 	unsigned int xangle_;
 	double beta_;
 	std::string dataset_;
@@ -150,7 +150,7 @@ private:
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges_;
 
-    COND_SERIALIZABLE;
+	COND_SERIALIZABLE;
 };
 
 #endif 

@@ -42,75 +42,75 @@
 class PPSAlignmentWorker : public DQMOneEDAnalyzer<>
 {
 public:
-    PPSAlignmentWorker(const edm::ParameterSet &iConfig);
-    ~PPSAlignmentWorker() override {};
+	PPSAlignmentWorker(const edm::ParameterSet &iConfig);
+	~PPSAlignmentWorker() override {};
 
 private:
-    void bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, edm::EventSetup const &iSetup) override;
-    void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) override;
-    void dqmEndRun(edm::Run const &, edm::EventSetup const &) override;
+	void bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, edm::EventSetup const &iSetup) override;
+	void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) override;
+	void dqmEndRun(edm::Run const &, edm::EventSetup const &) override;
 
-    // ------------ structures ------------
-    struct SectorData
-    {
-        SectorConfig scfg;
+	// ------------ structures ------------
+	struct SectorData
+	{
+		SectorConfig scfg;
 
-        // hit distributions
-        std::map<unsigned int, MonitorElement*> m_h1_x_bef_sel;
+		// hit distributions
+		std::map<unsigned int, MonitorElement*> m_h1_x_bef_sel;
 
-        std::map<unsigned int, MonitorElement*> m_h2_y_vs_x_bef_sel;
+		std::map<unsigned int, MonitorElement*> m_h2_y_vs_x_bef_sel;
 
-        std::map<unsigned int, MonitorElement*> m_h2_y_vs_x_mlt_sel;
-        
-        std::map<unsigned int, MonitorElement*> m_h2_y_vs_x_aft_sel;
-        std::map<unsigned int, TGraph*> m_g_y_vs_x_aft_sel;
+		std::map<unsigned int, MonitorElement*> m_h2_y_vs_x_mlt_sel;
+		
+		std::map<unsigned int, MonitorElement*> m_h2_y_vs_x_aft_sel;
+		std::map<unsigned int, TGraph*> m_g_y_vs_x_aft_sel;
 
-        // cut plots
-        MonitorElement *h_q_cut_h_bef, *h_q_cut_h_aft;
-        MonitorElement *h2_cut_h_bef, *h2_cut_h_aft;
-        MonitorElement *p_cut_h_aft;
+		// cut plots
+		MonitorElement *h_q_cut_h_bef, *h_q_cut_h_aft;
+		MonitorElement *h2_cut_h_bef, *h2_cut_h_aft;
+		MonitorElement *p_cut_h_aft;
 
-        MonitorElement *h_q_cut_v_bef, *h_q_cut_v_aft;
-        MonitorElement *h2_cut_v_bef, *h2_cut_v_aft;
-        MonitorElement *p_cut_v_aft;
+		MonitorElement *h_q_cut_v_bef, *h_q_cut_v_aft;
+		MonitorElement *h2_cut_v_bef, *h2_cut_v_aft;
+		MonitorElement *p_cut_v_aft;
 
-        // profiles
-        std::map<unsigned int, MonitorElement *> m_p_y_vs_x_aft_sel;
+		// profiles
+		std::map<unsigned int, MonitorElement *> m_p_y_vs_x_aft_sel;
 
-        // near-far plots
-        MonitorElement *p_x_diffFN_vs_x_N;
-        // MonitorElement *p_y_diffFN_vs_y_N;   // obsolete
-        MonitorElement *p_y_diffFN_vs_y_F;
+		// near-far plots
+		MonitorElement *p_x_diffFN_vs_x_N;
+		// MonitorElement *p_y_diffFN_vs_y_N;   // obsolete
+		MonitorElement *p_y_diffFN_vs_y_F;
 
-        struct SlicePlots
-        {
-            MonitorElement *h_y;
-            MonitorElement *h2_y_diffFN_vs_y;
-            MonitorElement *p_y_diffFN_vs_y;
+		struct SlicePlots
+		{
+			MonitorElement *h_y;
+			MonitorElement *h2_y_diffFN_vs_y;
+			MonitorElement *p_y_diffFN_vs_y;
 
-            SlicePlots();
-            SlicePlots(DQMStore::IBooker &iBooker);
-        };
+			SlicePlots();
+			SlicePlots(DQMStore::IBooker &iBooker);
+		};
 
-        std::map<unsigned int, SlicePlots> x_slice_plots_N, x_slice_plots_F;
+		std::map<unsigned int, SlicePlots> x_slice_plots_N, x_slice_plots_F;
 
-        void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, const SectorConfig &_scfg, 
-                  const std::string &folder);
+		void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, const SectorConfig &_scfg, 
+				  const std::string &folder);
 
-        unsigned int process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks);
-    };
+		unsigned int process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks);
+	};
 
-    // ------------ member data ------------
-    edm::EDGetTokenT<CTPPSLocalTrackLiteCollection> tracksToken_;
+	// ------------ member data ------------
+	edm::EDGetTokenT<CTPPSLocalTrackLiteCollection> tracksToken_;
 
-    SectorData sectorData45;
-    SectorData sectorData56;
+	SectorData sectorData45;
+	SectorData sectorData56;
 
-    // unsigned long eventCount = 0;
-    // unsigned long eventSelCount45 = 0;
-    // unsigned long eventSelCount56 = 0;
+	// unsigned long eventCount = 0;
+	// unsigned long eventSelCount45 = 0;
+	// unsigned long eventSelCount56 = 0;
 
-    std::string folder_;
+	std::string folder_;
 };
 
 // -------------------------------- SectorData and SlicePlots methods --------------------------------
@@ -119,22 +119,22 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots() {}
 
 PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooker)
 {
-    h_y = iBooker.book1DD("h_y", ";y", 100, -10., 10.);
-    h2_y_diffFN_vs_y = iBooker.book2DD("h2_y_diffFN_vs_y", ";y;x_{F} - y_{N}", 100, -10., 10., 100, -2., 2.);
-    auto *tmp = new TProfile("", ";y;x_{F} - y_{N}", 100, -10., 10.);
-    p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp);
+	h_y = iBooker.book1DD("h_y", ";y", 100, -10., 10.);
+	h2_y_diffFN_vs_y = iBooker.book2DD("h2_y_diffFN_vs_y", ";y;x_{F} - y_{N}", 100, -10., 10., 100, -2., 2.);
+	auto *tmp = new TProfile("", ";y;x_{F} - y_{N}", 100, -10., 10.);
+	p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp);
 }
 
 void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, 
-                                          const SectorConfig &_scfg, const std::string &folder)
+										  const SectorConfig &_scfg, const std::string &folder)
 {
-    edm::ESHandle<PPSAlignmentConfig> cfg;
-    iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+	edm::ESHandle<PPSAlignmentConfig> cfg;
+	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
-    scfg = _scfg;
+	scfg = _scfg;
 
-    // binning
-    const double bin_size_x = 142.3314E-3; // mm
+	// binning
+	const double bin_size_x = 142.3314E-3; // mm
 	const unsigned int n_bins_x = 210;
 
 	const double pixel_x_offset = (cfg->aligned()) ? 0. : 40.;
@@ -145,172 +145,172 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	const unsigned int n_bins_y = 400;
 	const double y_min = -20., y_max = +20.;
 
-    // hit distributions
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/before selection/" + scfg.rp_N.name);
-    m_h1_x_bef_sel[scfg.rp_N.id] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_str, x_max_str);
+	// hit distributions
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/before selection/" + scfg.rp_N.name);
+	m_h1_x_bef_sel[scfg.rp_N.id] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_str, x_max_str);
 	m_h2_y_vs_x_bef_sel[scfg.rp_N.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
-                                                  n_bins_y, y_min, y_max);
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/before selection/" + scfg.rp_F.name);
+												  n_bins_y, y_min, y_max);
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/before selection/" + scfg.rp_F.name);
 	m_h2_y_vs_x_bef_sel[scfg.rp_F.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
-                                                  n_bins_y, y_min, y_max);
-    m_h1_x_bef_sel[scfg.rp_F.id] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_pix, x_max_pix);
+												  n_bins_y, y_min, y_max);
+	m_h1_x_bef_sel[scfg.rp_F.id] = iBooker.book1DD("h_x", ";x", 10 * n_bins_x, x_min_pix, x_max_pix);
 
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/multiplicity selection/" + scfg.rp_N.name);
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/multiplicity selection/" + scfg.rp_N.name);
 	m_h2_y_vs_x_mlt_sel[scfg.rp_N.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
-                                                  n_bins_y, y_min, y_max);
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/multiplicity selection/" + scfg.rp_F.name);
+												  n_bins_y, y_min, y_max);
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/multiplicity selection/" + scfg.rp_F.name);
 	m_h2_y_vs_x_mlt_sel[scfg.rp_F.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
-                                                  n_bins_y, y_min, y_max);
+												  n_bins_y, y_min, y_max);
 
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/after selection/" + scfg.rp_N.name);
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/after selection/" + scfg.rp_N.name);
 	m_h2_y_vs_x_aft_sel[scfg.rp_N.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_str, x_max_str, 
-                                                   n_bins_y, y_min, y_max);
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/after selection/" + scfg.rp_F.name);
+												   n_bins_y, y_min, y_max);
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/after selection/" + scfg.rp_F.name);
 	m_h2_y_vs_x_aft_sel[scfg.rp_F.id] = iBooker.book2DD("h2_y_vs_x", ";x;y", n_bins_x, x_min_pix, x_max_pix, 
-                                                   n_bins_y, y_min, y_max);
+												   n_bins_y, y_min, y_max);
 
 	m_g_y_vs_x_aft_sel[scfg.rp_N.id] = new TGraph();
 	m_g_y_vs_x_aft_sel[scfg.rp_F.id] = new TGraph();
 
-    // cut plots
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/cuts/cut_h");
-    h_q_cut_h_bef = iBooker.book1DD("h_q_cut_h_bef", ";cq_h", 400, -2., 2.);
+	// cut plots
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/cuts/cut_h");
+	h_q_cut_h_bef = iBooker.book1DD("h_q_cut_h_bef", ";cq_h", 400, -2., 2.);
 	h_q_cut_h_aft = iBooker.book1DD("h_q_cut_h_aft", ";cq_h", 400, -2., 2.);
 	h2_cut_h_bef = iBooker.book2DD("h2_cut_h_bef", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, 
-                                   x_min_pix, x_max_pix);
+								   x_min_pix, x_max_pix);
 	h2_cut_h_aft = iBooker.book2DD("h2_cut_h_aft", ";x_up;x_dw", n_bins_x, x_min_str, x_max_str, n_bins_x, 
-                                   x_min_pix, x_max_pix);
+								   x_min_pix, x_max_pix);
 	auto *tmp = new TProfile("", ";x_up;mean of x_dw", n_bins_x, x_min_str, x_max_str);
-    p_cut_h_aft = iBooker.bookProfile("p_cut_h_aft", tmp);
+	p_cut_h_aft = iBooker.bookProfile("p_cut_h_aft", tmp);
 
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/cuts/cut_v");
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/cuts/cut_v");
 	h_q_cut_v_bef = iBooker.book1DD("h_q_cut_v_bef", ";cq_v", 400, -2., 2.);
 	h_q_cut_v_aft = iBooker.book1DD("h_q_cut_v_aft", ";cq_v", 400, -2., 2.);
 	h2_cut_v_bef = iBooker.book2DD("h2_cut_v_bef", ";y_up;y_dw", n_bins_y, y_min, y_max, n_bins_y, y_min, y_max);
 	h2_cut_v_aft = iBooker.book2DD("h2_cut_v_aft", ";y_up;y_dw", n_bins_y, y_min, y_max, n_bins_y, y_min, y_max);
 	tmp = new TProfile("", ";y_up;mean of y_dw", n_bins_y, y_min, y_max);
-    p_cut_v_aft = iBooker.bookProfile("p_cut_v_aft", tmp);
+	p_cut_v_aft = iBooker.bookProfile("p_cut_v_aft", tmp);
 
-    // profiles
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/profiles/" + scfg.rp_N.name);
-    tmp = new TProfile("", "", m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getNbinsX(), 
-                       m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getTH2D()->GetXaxis()->GetXmin(), 
-                       m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getTH2D()->GetXaxis()->GetXmax());
-    m_p_y_vs_x_aft_sel[scfg.rp_N.id] = iBooker.bookProfile("m_p_y_vs_x_aft_sel", tmp);
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/profiles/" + scfg.rp_F.name);
-    tmp = new TProfile("", "", m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getNbinsX(), 
-                       m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getTH2D()->GetXaxis()->GetXmin(), 
-                       m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getTH2D()->GetXaxis()->GetXmax());
-    m_p_y_vs_x_aft_sel[scfg.rp_F.id] = iBooker.bookProfile("m_p_y_vs_x_aft_sel", tmp);
+	// profiles
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/profiles/" + scfg.rp_N.name);
+	tmp = new TProfile("", "", m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getNbinsX(), 
+					   m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getTH2D()->GetXaxis()->GetXmin(), 
+					   m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->getTH2D()->GetXaxis()->GetXmax());
+	m_p_y_vs_x_aft_sel[scfg.rp_N.id] = iBooker.bookProfile("m_p_y_vs_x_aft_sel", tmp);
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/profiles/" + scfg.rp_F.name);
+	tmp = new TProfile("", "", m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getNbinsX(), 
+					   m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getTH2D()->GetXaxis()->GetXmin(), 
+					   m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->getTH2D()->GetXaxis()->GetXmax());
+	m_p_y_vs_x_aft_sel[scfg.rp_F.id] = iBooker.bookProfile("m_p_y_vs_x_aft_sel", tmp);
 
-    // near-far plots
-    iBooker.setCurrentFolder(folder + "/" + scfg.name + "/near_far");
+	// near-far plots
+	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/near_far");
 	tmp = new TProfile("", ";x_{N};x_{F} - x_{N}", 100, 0., 20.);
-    p_x_diffFN_vs_x_N = iBooker.bookProfile("p_x_diffFN_vs_x_N", tmp);
+	p_x_diffFN_vs_x_N = iBooker.bookProfile("p_x_diffFN_vs_x_N", tmp);
 	// auto tmp_p_y_diffFN_vs_y_N = new TProfile("", ";y_{N};y_{F} - y_{N}", 200, -10., 10.);   // obsolete
-    // p_y_diffFN_vs_y_N = iBooker.bookProfile("p_y_diffFN_vs_y_N", tmp_p_y_diffFN_vs_y_N);
+	// p_y_diffFN_vs_y_N = iBooker.bookProfile("p_y_diffFN_vs_y_N", tmp_p_y_diffFN_vs_y_N);
 	// auto tmp_p_y_diffFN_vs_y_F = new TProfile("", ";y_{F};y_{F} - y_{N}", 200, -10., 10.);
-    // p_y_diffFN_vs_y_F = iBooker.bookProfile("p_y_diffFN_vs_y_F", tmp_p_y_diffFN_vs_y_F);
+	// p_y_diffFN_vs_y_F = iBooker.bookProfile("p_y_diffFN_vs_y_F", tmp_p_y_diffFN_vs_y_F);
 
-    for (int i = 0; i < scfg.nr_x_slice_n; i++)
-    {
-        const double xMin = scfg.nr_x_slice_min + i * scfg.nr_x_slice_w;
-        const double xMax = scfg.nr_x_slice_min + (i + 1) * scfg.nr_x_slice_w;
+	for (int i = 0; i < scfg.nr_x_slice_n; i++)
+	{
+		const double xMin = scfg.nr_x_slice_min + i * scfg.nr_x_slice_w;
+		const double xMax = scfg.nr_x_slice_min + (i + 1) * scfg.nr_x_slice_w;
 
-        char buf[100];
-        sprintf(buf, "%.1f-%.1f", xMin, xMax);
+		char buf[100];
+		sprintf(buf, "%.1f-%.1f", xMin, xMax);
 
-        iBooker.setCurrentFolder(folder + "/" + scfg.name + "/near_far/x slices, N/" + buf);
-        x_slice_plots_N.insert({i, SlicePlots(iBooker)});
-    }
+		iBooker.setCurrentFolder(folder + "/" + scfg.name + "/near_far/x slices, N/" + buf);
+		x_slice_plots_N.insert({i, SlicePlots(iBooker)});
+	}
 
-    for (int i = 0; i < scfg.fr_x_slice_n; i++)
-    {
-        const double xMin = scfg.fr_x_slice_min + i * scfg.fr_x_slice_w;
-        const double xMax = scfg.fr_x_slice_min + (i + 1) * scfg.fr_x_slice_w;
+	for (int i = 0; i < scfg.fr_x_slice_n; i++)
+	{
+		const double xMin = scfg.fr_x_slice_min + i * scfg.fr_x_slice_w;
+		const double xMax = scfg.fr_x_slice_min + (i + 1) * scfg.fr_x_slice_w;
 
-        char buf[100];
-        sprintf(buf, "%.1f-%.1f", xMin, xMax);
+		char buf[100];
+		sprintf(buf, "%.1f-%.1f", xMin, xMax);
 
-        iBooker.setCurrentFolder(folder + "/" + scfg.name + "/near_far/x slices, F/" + buf);
-        x_slice_plots_F.insert({i, SlicePlots(iBooker)});
-    }
+		iBooker.setCurrentFolder(folder + "/" + scfg.name + "/near_far/x slices, F/" + buf);
+		x_slice_plots_F.insert({i, SlicePlots(iBooker)});
+	}
 }
 
 unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSetup, 
-                                                     const CTPPSLocalTrackLiteCollection &tracks)
+													 const CTPPSLocalTrackLiteCollection &tracks)
 {
-    edm::ESHandle<PPSAlignmentConfig> cfg;
-    iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+	edm::ESHandle<PPSAlignmentConfig> cfg;
+	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
-    CTPPSLocalTrackLiteCollection tracksUp, tracksDw;
+	CTPPSLocalTrackLiteCollection tracksUp, tracksDw;
 
-    for (const auto &tr : tracks)
+	for (const auto &tr : tracks)
 	{
 		CTPPSDetId rpId(tr.rpId());
 		unsigned int rpDecId = rpId.arm()*100 + rpId.station()*10 + rpId.rp();
 
-        if (rpDecId != scfg.rp_N.id && rpDecId != scfg.rp_F.id)
+		if (rpDecId != scfg.rp_N.id && rpDecId != scfg.rp_F.id)
 			continue;
 
 		double x = tr.x();
 		double y = tr.y();
 
-        // apply alignment corrections
+		// apply alignment corrections
 		x += cfg->alignmentCorrectionsX()[rpDecId];
 		y += cfg->alignmentCorrectionsY()[rpDecId];
 
-        // re-build track object
-        CTPPSLocalTrackLite trCorr(tr.rpId(), x, 0., y, 0.,
-        tr.tx(), tr.txUnc(), tr.ty(), tr.tyUnc(),
-        tr.chiSquaredOverNDF(), tr.pixelTrackRecoInfo(), tr.numberOfPointsUsedForFit(),
-        tr.time(), tr.timeUnc());
+		// re-build track object
+		CTPPSLocalTrackLite trCorr(tr.rpId(), x, 0., y, 0.,
+		tr.tx(), tr.txUnc(), tr.ty(), tr.tyUnc(),
+		tr.chiSquaredOverNDF(), tr.pixelTrackRecoInfo(), tr.numberOfPointsUsedForFit(),
+		tr.time(), tr.timeUnc());
 
-        // store corrected track into the right collection
-        if (rpDecId == scfg.rp_N.id)
+		// store corrected track into the right collection
+		if (rpDecId == scfg.rp_N.id)
 			tracksUp.push_back(std::move(trCorr));
 		if (rpDecId == scfg.rp_F.id)
 			tracksDw.push_back(std::move(trCorr));
-    }
+	}
 
-    // update plots before selection
-    for (const auto &tr : tracksUp)
+	// update plots before selection
+	for (const auto &tr : tracksUp)
 	{
 		m_h1_x_bef_sel[scfg.rp_N.id]->Fill(tr.x());
 		m_h2_y_vs_x_bef_sel[scfg.rp_N.id]->Fill(tr.x(), tr.y());
 	}
 
-    for (const auto &tr : tracksDw)
+	for (const auto &tr : tracksDw)
 	{
 		m_h1_x_bef_sel[scfg.rp_F.id]->Fill(tr.x());
 		m_h2_y_vs_x_bef_sel[scfg.rp_F.id]->Fill(tr.x(), tr.y());
 	}
 
-    // skip crowded events
-    if (tracksUp.size() > 2)
+	// skip crowded events
+	if (tracksUp.size() > 2)
 		return 0;
 
 	if (tracksDw.size() > 2)
 		return 0;
 
-    // update plots with multiplicity selection
+	// update plots with multiplicity selection
 	for (const auto &tr : tracksUp)
 		m_h2_y_vs_x_mlt_sel[scfg.rp_N.id]->Fill(tr.x(), tr.y());
 
 	for (const auto &tr : tracksDw)
 		m_h2_y_vs_x_mlt_sel[scfg.rp_F.id]->Fill(tr.x(), tr.y());
 
-    // do the selection
-    unsigned int pairsSelected = 0;
+	// do the selection
+	unsigned int pairsSelected = 0;
 
-    for (const auto &trUp : tracksUp)
-    {
-        for (const auto &trDw : tracksDw)
-        {
-            h2_cut_h_bef->Fill(trUp.x(), trDw.x());
+	for (const auto &trUp : tracksUp)
+	{
+		for (const auto &trDw : tracksDw)
+		{
+			h2_cut_h_bef->Fill(trUp.x(), trDw.x());
 			h2_cut_v_bef->Fill(trUp.y(), trDw.y());
 
-            const double cq_h = trDw.x() + scfg.cut_h_a * trUp.x() + scfg.cut_h_c;
+			const double cq_h = trDw.x() + scfg.cut_h_a * trUp.x() + scfg.cut_h_c;
 			h_q_cut_h_bef->Fill(cq_h);
 			const bool cv_h = (std::fabs(cq_h) < cfg->n_si() * scfg.cut_h_si);
 
@@ -324,9 +324,9 @@ unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSet
 			if (scfg.cut_v_apply)
 				cutsPassed &= cv_v;
 
-            if (cutsPassed)
-            {
-                pairsSelected++;
+			if (cutsPassed)
+			{
+				pairsSelected++;
 
 				h_q_cut_h_aft->Fill(cq_h);
 				h_q_cut_v_aft->Fill(cq_v);
@@ -349,7 +349,7 @@ unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSet
 
 				p_x_diffFN_vs_x_N->Fill(trUp.x(), trDw.x() - trUp.x());
 
-                // const auto &range = cfg->alignment_y_alt_ranges()[scfg.rp_N.id];   // obsolete   
+				// const auto &range = cfg->alignment_y_alt_ranges()[scfg.rp_N.id];   // obsolete   
 				// if (trUp.x() > range.x_min && trUp.x() < range.x_max)            
 				// {                                                                
 				// 	p_y_diffFN_vs_y_N->Fill(trUp.y(), trDw.y() - trUp.y());         
@@ -371,36 +371,36 @@ unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSet
 					x_slice_plots_F[idx].h2_y_diffFN_vs_y->Fill(trDw.y(), trDw.y() - trUp.y());
 					x_slice_plots_F[idx].p_y_diffFN_vs_y->Fill(trDw.y(), trDw.y() - trUp.y());
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
-    return pairsSelected;
+	return pairsSelected;
 }
 
 // -------------------------------- PPSAlignmentWorker methods --------------------------------
 
 PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig) 
-    : tracksToken_(consumes<CTPPSLocalTrackLiteCollection>(iConfig.getParameter<edm::InputTag>("tagTracks"))),
-      folder_(iConfig.getParameter<std::string>("folder"))
+	: tracksToken_(consumes<CTPPSLocalTrackLiteCollection>(iConfig.getParameter<edm::InputTag>("tagTracks"))),
+	  folder_(iConfig.getParameter<std::string>("folder"))
 {}
 
 void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, 
-                                        edm::EventSetup const &iSetup)
+										edm::EventSetup const &iSetup)
 {
-    edm::ESHandle<PPSAlignmentConfig> cfg;
-    iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+	edm::ESHandle<PPSAlignmentConfig> cfg;
+	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
-    sectorData45.init(iBooker, iSetup, cfg->sectorConfig45(), folder_);
-    sectorData56.init(iBooker, iSetup, cfg->sectorConfig56(), folder_);
+	sectorData45.init(iBooker, iSetup, cfg->sectorConfig45(), folder_);
+	sectorData56.init(iBooker, iSetup, cfg->sectorConfig56(), folder_);
 }
 
 void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 {
-    const auto &tracks = iEvent.get(tracksToken_);
+	const auto &tracks = iEvent.get(tracksToken_);
 
-    sectorData45.process(iSetup, tracks);
-    sectorData56.process(iSetup, tracks);
+	sectorData45.process(iSetup, tracks);
+	sectorData56.process(iSetup, tracks);
 }
 
 void PPSAlignmentWorker::dqmEndRun(edm::Run const &, edm::EventSetup const &)
