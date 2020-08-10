@@ -75,11 +75,6 @@ public:
 	SectorConfig sectorConfig45() const;
 	SectorConfig sectorConfig56() const;
 
-	unsigned int fill() const;
-	unsigned int xangle() const;
-	double beta() const;
-	std::string dataset() const;
-
 	std::vector<std::string> inputFiles() const;
 
 	std::map<unsigned int, double> alignmentCorrectionsX() const;
@@ -91,6 +86,8 @@ public:
 
 	std::vector<std::string> matchingReferenceDatasets() const;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges() const;
+	
+	std::map<unsigned int, double> yMaxFit() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges() const;
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges() const;
@@ -100,11 +97,6 @@ public:
 	// Setters 
 	void setSectorConfig45(SectorConfig &sectorConfig45);
 	void setSectorConfig56(SectorConfig &sectorConfig56);
-
-	void setFill(unsigned int fill);
-	void setXangle(unsigned int xangle);
-	void setBeta(double beta);
-	void setDataset(std::string &dataset);
 
 	void setInputFiles(std::vector<std::string> &inputFiles);
 
@@ -117,6 +109,8 @@ public:
 
 	void setMatchingReferenceDatasets(std::vector<std::string> &matchingReferenceDatasets);
 	void setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges);
+	
+	void setYMaxFit(std::map<unsigned int, double> &yMaxFit);
 
 	void setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges);
 	void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
@@ -129,11 +123,6 @@ public:
 private:
 	SectorConfig sectorConfig45_, sectorConfig56_;
 
-	unsigned int fill_;
-	unsigned int xangle_;
-	double beta_;
-	std::string dataset_;
-
 	std::vector<std::string> inputFiles_;
 
 	std::map<unsigned int, double> alignmentCorrectionsX_, alignmentCorrectionsY_;
@@ -144,6 +133,8 @@ private:
 
 	std::vector<std::string> matchingReferenceDatasets_;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges_;
+	
+	std::map<unsigned int, double> yMaxFit_;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges_;
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges_;

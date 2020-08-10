@@ -32,17 +32,10 @@ public:
 	~PPSAlignmentConfigESSource() override = default;
 
 	std::unique_ptr<PPSAlignmentConfig> produce(const PPSAlignmentConfigRcd &);
-
-protected:
-	/// sets infinite validity of this data
+	
+private:
 	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &key, const edm::IOVSyncValue &iosv, 
 	                    edm::ValidityInterval &oValidity) override;
-
-private:
-	unsigned int fill;
-	unsigned int xangle;
-	double beta;
-	std::string dataset;
 
 	std::vector<std::string> inputFiles;
 
@@ -56,6 +49,8 @@ private:
 
 	std::vector<std::string> matchingReferenceDatasets;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges;
+	
+	std::map<unsigned int, double> yMaxFit;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges;
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges;
@@ -118,11 +113,6 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		sc->fr_x_slice_n = std::ceil((sps.getParameter<double>("fr_x_slice_max") - sc->fr_x_slice_min) / sc->fr_x_slice_w);
 	}
 
-	fill = iConfig.getParameter<unsigned int>("fill");
-	xangle = iConfig.getParameter<unsigned int>("xangle");
-	beta = iConfig.getParameter<double>("beta");
-	dataset = iConfig.getParameter<std::string>("dataset");
-
 	std::map<unsigned int, std::string> rpTags = {
 		{ sectorConfig45.rp_F.id, sectorConfig45.rp_F.name },
 		{ sectorConfig45.rp_N.id, sectorConfig45.rp_N.name },
@@ -149,6 +139,12 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	{
 		const auto &ps = c_m.getParameter<edm::ParameterSet>("rp_" + p.second);
 		matchingShiftRanges[p.first] = {ps.getParameter<double>("sh_min"), ps.getParameter<double>("sh_max")};
+	}
+	
+	const auto &c_mf = iConfig.getParameter<edm::ParameterSet>("y_max_fit");
+	for (const auto &p : rpTags)
+	{
+		yMaxFit[p.first] = c_mf.getParameter<double>("rp_" + p.second);
 	}
 
 	const auto &c_axo = iConfig.getParameter<edm::ParameterSet>("x_alignment_meth_o");
@@ -186,11 +182,6 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setSectorConfig45(sectorConfig45);
 	p->setSectorConfig56(sectorConfig56);
 
-	p->setFill(fill);
-	p->setXangle(xangle);
-	p->setBeta(beta);
-	p->setDataset(dataset);
-
 	p->setInputFiles(inputFiles);
 
 	p->setAlignmentCorrectionsX(alignmentCorrectionsX);
@@ -202,6 +193,8 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 	p->setMatchingReferenceDatasets(matchingReferenceDatasets);
 	p->setMatchingShiftRanges(matchingShiftRanges);
+	
+	p->setYMaxFit(yMaxFit);
 
 	p->setAlignment_x_meth_o_ranges(alignment_x_meth_o_ranges);
 	p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);

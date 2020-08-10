@@ -24,11 +24,6 @@ TYPELOOKUP_DATA_REG(PPSAlignmentConfig);
 SectorConfig PPSAlignmentConfig::sectorConfig45() const { return sectorConfig45_; }
 SectorConfig PPSAlignmentConfig::sectorConfig56() const { return sectorConfig56_; }
 
-unsigned int PPSAlignmentConfig::fill() const { return fill_; }
-unsigned int PPSAlignmentConfig::xangle() const { return xangle_; }
-double PPSAlignmentConfig::beta() const { return beta_; }
-std::string PPSAlignmentConfig::dataset() const { return dataset_; }
-
 std::vector<std::string> PPSAlignmentConfig::inputFiles() const { return inputFiles_; }
 
 std::map<unsigned int, double> PPSAlignmentConfig::alignmentCorrectionsX() const 
@@ -53,6 +48,11 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::matchingShiftRanges()
 	return matchingShiftRanges_; 
 }
 
+std::map<unsigned int, double> PPSAlignmentConfig::yMaxFit() const 
+{ 
+	return yMaxFit_; 
+}
+
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_meth_o_ranges() const 
 { 
 	return alignment_x_meth_o_ranges_; 
@@ -71,11 +71,6 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_y_ranges() 
 
 void PPSAlignmentConfig::setSectorConfig45(SectorConfig &sectorConfig45) { sectorConfig45_ = sectorConfig45; }
 void PPSAlignmentConfig::setSectorConfig56(SectorConfig &sectorConfig56) { sectorConfig56_ = sectorConfig56; }
-
-void PPSAlignmentConfig::setFill(unsigned int fill) { fill_ = fill; }
-void PPSAlignmentConfig::setXangle(unsigned int xangle) { xangle_ = xangle; }
-void PPSAlignmentConfig::setBeta(double beta) { beta_ = beta; }
-void PPSAlignmentConfig::setDataset(std::string &dataset) { dataset_ = dataset; }
 
 void PPSAlignmentConfig::setInputFiles(std::vector<std::string> &inputFiles) { inputFiles_ = inputFiles; }
 
@@ -99,6 +94,11 @@ void PPSAlignmentConfig::setMatchingReferenceDatasets(std::vector<std::string> &
 void PPSAlignmentConfig::setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges)
 {
 	matchingShiftRanges_ = matchingShiftRanges;
+}
+
+void PPSAlignmentConfig::setYMaxFit(std::map<unsigned int, double> &yMaxFit)
+{
+	yMaxFit_ = yMaxFit;
 }
 
 void PPSAlignmentConfig::setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges)
@@ -154,12 +154,6 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 		os << "    " << f.c_str() << "\n";
 	os << "\n";
 
-	os << "* general info\n";
-	os << "    fill = " << c.fill_ << "\n";
-	os << "    xangle = " << c.xangle_ << "\n";
-	os << "    beta = " << std::fixed << std::setprecision(2) << c.beta_ << "\n";
-	os << "    dataset = " << c.dataset_ << "\n\n";
-
 	os << "* dataset already aligned\n";
 	os << "    aligned = " << c.aligned_ << "\n\n";
 
@@ -183,6 +177,10 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	os << "    shift ranges:\n";
 	for (const auto &p : c.matchingShiftRanges_)
 		os << "        RP " << p.first << ": sh_min = " << p.second.x_min << ", sh_max = " << p.second.x_max << "\n";
+		
+	os << "\n" << "* y_max_fit\n";
+	for (const auto &p : c.yMaxFit_)
+		os << "    RP " << p.first << ": " << p.second << "\n";
 
 	os << "\n" << "* alignment_x_meth_o\n";
 	for (const auto &p : c.alignment_x_meth_o_ranges_)

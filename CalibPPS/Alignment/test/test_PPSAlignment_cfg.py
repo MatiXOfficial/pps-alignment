@@ -46,34 +46,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(120000))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	label = cms.string(''),
-	fill = cms.uint32(7334),
-	xangle = cms.uint32(160),
-	beta = cms.double(0.30),
-	dataset = cms.string(""),
-
-	alignment_corrections = cms.PSet(
-		rp_L_2_F = cms.PSet(
-			de_x = cms.double(0.),
-			de_y = cms.double(0.)
-		),
-		rp_L_1_F = cms.PSet(
-			de_x = cms.double(0.),
-			de_y = cms.double(0.)
-		),
-		rp_R_1_F = cms.PSet(
-			de_x = cms.double(0.),
-			de_y = cms.double(0.)
-		),
-		rp_R_2_F = cms.PSet(
-			de_x = cms.double(0.),
-			de_y = cms.double(0.)
-		)
-	),
-
-	aligned = cms.bool(False),
-
-	n_si = cms.double(4.),
-
+	
 	sector_45 = cms.PSet(
 		name = cms.string("sector 45"),
 		rp_N = cms.PSet(
@@ -150,6 +123,29 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 		fr_x_slice_w = cms.double(0.2),
 	),
 
+	alignment_corrections = cms.PSet(
+		rp_L_2_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		),
+		rp_L_1_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		),
+		rp_R_1_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		),
+		rp_R_2_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		)
+	),
+
+	aligned = cms.bool(False),
+
+	n_si = cms.double(4.),
+
 	matching = cms.PSet(
 		reference_datasets = cms.vstring("/eos/user/k/kocotm/Documents/Alignment_data/alig-version3/fill_6554/xangle_130_beta_0.30/DS1/distributions.root"),
 
@@ -169,6 +165,13 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 			sh_min = cms.double(-43.2),
 			sh_max = cms.double(-41.2)
 		)
+	),
+	
+	y_max_fit = cms.PSet(
+		rp_L_2_F = cms.double(7.5),
+		rp_L_1_F = cms.double(7.8),
+		rp_R_1_F = cms.double(7.4),
+		rp_R_2_F = cms.double(8.0)
 	),
 
 	x_alignment_meth_o = cms.PSet(
@@ -231,34 +234,7 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 
 process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigESSource",
 	label = cms.string('reference'),
-	fill = cms.uint32(6554),
-	xangle = cms.uint32(130),
-	beta = cms.double(0.30),
-	dataset = cms.string("DS1"),
-
-	alignment_corrections = cms.PSet(
-		rp_L_2_F = cms.PSet(
-			de_x = cms.double(0.),
-			de_y = cms.double(0.)
-		),
-		rp_L_1_F = cms.PSet(
-			de_x = cms.double(0.),
-			de_y = cms.double(0.)
-		),
-		rp_R_1_F = cms.PSet(
-			de_x = cms.double(0.),
-			de_y = cms.double(0.)
-		),
-		rp_R_2_F = cms.PSet(
-			de_x = cms.double(0.),
-			de_y = cms.double(0.)
-		)
-	),
-
-	aligned = cms.bool(False),
-
-	n_si = cms.double(4.),
-
+	
 	sector_45 = cms.PSet(
 		name = cms.string("sector 45"),
 		rp_N = cms.PSet(
@@ -333,7 +309,30 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 		fr_x_slice_min = cms.double(2.5),
 		fr_x_slice_max = cms.double(16.5),
 		fr_x_slice_w = cms.double(0.2),
+	),
+
+	alignment_corrections = cms.PSet(
+		rp_L_2_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
 		),
+		rp_L_1_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		),
+		rp_R_1_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		),
+		rp_R_2_F = cms.PSet(
+			de_x = cms.double(0.),
+			de_y = cms.double(0.)
+		)
+	),
+
+	aligned = cms.bool(False),
+
+	n_si = cms.double(4.),
 
 	matching = cms.PSet(
 		reference_datasets = cms.vstring("/eos/user/k/kocotm/Documents/Alignment_data/alig-version3/fill_6554/xangle_130_beta_0.30/DS1/distributions.root"),
@@ -354,6 +353,13 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 			sh_min = cms.double(-43.2),
 			sh_max = cms.double(-41.2)
 		)
+	),
+	
+	y_max_fit = cms.PSet(
+		rp_L_2_F = cms.double(3.5),
+		rp_L_1_F = cms.double(4.5),
+		rp_R_1_F = cms.double(5.5),
+		rp_R_2_F = cms.double(4.8)
 	),
 
 	x_alignment_meth_o = cms.PSet(

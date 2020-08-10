@@ -107,8 +107,7 @@ private:
 
 	// ------------ y alignment ------------
 	static double findMax(TF1 *ff_fit);
-	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
-	                             unsigned int xangle, unsigned int rp);
+	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, double _yMaxFit);
 
 	void yAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
 
@@ -662,8 +661,7 @@ double PPSAlignmentHarvester::findMax(TF1 *ff_fit)
 	return xMax;
 }
 
-TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, unsigned int fill, 
-                                                    unsigned int xangle, unsigned int rp)
+TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, double _yMaxFit)
 {
 	TDirectory *d_top = nullptr;
 	if (debug_) 
@@ -671,37 +669,7 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 
 	TF1 *ff_fit = new TF1("ff_fit", "[0] * exp(-(x-[1])*(x-[1])/2./[2]/[2]) + [3] + [4]*x");
 
-	std::map<unsigned int, double> mymf; // probably to be removed
-	if (aligned)
-	{
-		mymf[23] = 3.5, mymf[3] = 4.5, mymf[103] = 5.5, mymf[123] = 4.8;
-	}
-	else
-	{
-		if (fill <= 6778)   // before TS1
-		{ 
-			mymf[23] = 7.2; mymf[3] = 8.3;
-
-			if (xangle == 130) { mymf[103] = 9.0; mymf[123] = 8.0; }
-			if (xangle == 160) { mymf[103] = 9.0; mymf[123] = 8.0; }
-		} 
-		else if (fill <= 7145)  // after TS1
-		{ 
-			mymf[23] = 7.5; mymf[3] = 7.8;
-
-			if (xangle == 130) { mymf[103] = 8.2; mymf[123] = 8.0; }
-			if (xangle == 160) { mymf[103] = 8.2; mymf[123] = 8.0; }
-		} 
-		else    // after TS2
-		{ 
-			mymf[23] = 7.5; mymf[3] = 7.0;
-
-			if (xangle == 130) { mymf[103] = 7.4; mymf[123] = 8.0; }
-			if (xangle == 160) { mymf[103] = 7.4; mymf[123] = 8.0; }
-		}
-	}
-
-	const double yMaxFit = mymf[rp];
+	const double yMaxFit = _yMaxFit;
 	TGraphErrors *g_y_mode_vs_x = new TGraphErrors();
 
 	for (int bix = 1; bix <= h2_y_vs_x->getNbinsX(); bix++)
@@ -816,7 +784,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 				continue;
 			}
 
-			auto *g_y_cen_vs_x = buildModeGraph(h2_y_vs_x, cfg->aligned(), cfg->fill(), cfg->xangle(), rpd.id);
+			auto *g_y_cen_vs_x = buildModeGraph(h2_y_vs_x, cfg->aligned(), cfg->yMaxFit()[rpd.id]);
 
 			if (g_y_cen_vs_x->GetN() < 5)
 			{
