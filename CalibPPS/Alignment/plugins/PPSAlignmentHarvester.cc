@@ -100,19 +100,21 @@ private:
 	            const SelectionRange &range_test, double sh_min, double sh_max, double &sh_best, 
 	            double &sh_best_unc);
 
-	void xAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
+	void xAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg,
+	                const edm::ESHandle<PPSAlignmentConfig> &cfg_ref);
 
 	// ------------ x alignment relative ------------
-	void xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
+	void xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg);
 
 	// ------------ y alignment ------------
 	static double findMax(TF1 *ff_fit);
 	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, double _yMaxFit);
 
-	void yAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
+	void yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg);
 
 	// ------------ other member data and methods ------------
-	void debugPlots(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup);
+	void debugPlots(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
+	                const edm::ESHandle<PPSAlignmentConfig> &cfg);
 
 	const std::string folder_;
 	const bool debug_;
@@ -468,14 +470,9 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
 	return 0;
 }
 
-void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
+void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg,
+                                       const edm::ESHandle<PPSAlignmentConfig> &cfg_ref)
 {
-	edm::ESHandle<PPSAlignmentConfig> cfg;
-	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
-
-	edm::ESHandle<PPSAlignmentConfig> cfg_ref;
-	iSetup.get<PPSAlignmentConfigRcd>().get("reference", cfg_ref);
-
 	TDirectory *xAliDir = nullptr;
 	if (debug_)
 		xAliDir = debug_file_->mkdir("x alignment");
@@ -548,11 +545,9 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 
 // -------------------------------- x alignment relative methods --------------------------------
 
-void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
+void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, 
+                                               const edm::ESHandle<PPSAlignmentConfig> &cfg)
 {
-	edm::ESHandle<PPSAlignmentConfig> cfg;
-	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
-
 	TDirectory *xAliRelDir = nullptr;
 	if (debug_)
 		xAliRelDir = debug_file_->mkdir("x_alignment_relative");
@@ -749,11 +744,8 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 	return g_y_mode_vs_x;
 }
 
-void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::EventSetup &iSetup)
+void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg)
 {
-	edm::ESHandle<PPSAlignmentConfig> cfg;
-	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
-
 	TDirectory *yAliDir = nullptr;
 	if (debug_)
 		yAliDir = debug_file_->mkdir("y_alignment");
@@ -846,11 +838,8 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::Ev
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
 
 void PPSAlignmentHarvester::debugPlots(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
-                                       edm::EventSetup const &iSetup)
+                                       const edm::ESHandle<PPSAlignmentConfig> &cfg)
 {
-	edm::ESHandle<PPSAlignmentConfig> cfg;
-	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
-
 	for (const auto &sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
 	{
 		for (const auto &rpd : { sd.rp_F, sd.rp_N })
@@ -908,12 +897,18 @@ void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGet
 void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
                                       edm::Run const &, edm::EventSetup const &iSetup)
 {
+	edm::ESHandle<PPSAlignmentConfig> cfg;
+	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+	
+	edm::ESHandle<PPSAlignmentConfig> cfg_ref;
+	iSetup.get<PPSAlignmentConfigRcd>().get("reference", cfg_ref);
+	
 	if (debug_)
-		debugPlots(iBooker, iGetter, iSetup);
+		debugPlots(iBooker, iGetter, cfg);
 
-	xAlignment(iGetter, iSetup);
-	xAlignmentRelative(iGetter, iSetup);
-	yAlignment(iGetter, iSetup);
+	xAlignment(iGetter, cfg, cfg_ref);
+	xAlignmentRelative(iGetter, cfg);
+	yAlignment(iGetter, cfg);
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentHarvester);

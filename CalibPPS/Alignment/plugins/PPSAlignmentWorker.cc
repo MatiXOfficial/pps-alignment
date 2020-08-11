@@ -94,10 +94,9 @@ private:
 
 		std::map<unsigned int, SlicePlots> x_slice_plots_N, x_slice_plots_F;
 
-		void init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, const SectorConfig &_scfg, 
-		          const std::string &folder);
+		void init(DQMStore::IBooker &iBooker, const SectorConfig &_scfg, bool aligned, const std::string &folder);
 
-		unsigned int process(const edm::EventSetup &iSetup, const CTPPSLocalTrackLiteCollection &tracks);
+		unsigned int process(const CTPPSLocalTrackLiteCollection &tracks, const edm::ESHandle<PPSAlignmentConfig> &cfg);
 	};
 
 	// ------------ member data ------------
@@ -121,19 +120,16 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooke
 	p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp);
 }
 
-void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::EventSetup const &iSetup, 
-                                          const SectorConfig &_scfg, const std::string &folder)
+void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, const SectorConfig &_scfg, bool aligned,
+                                          const std::string &folder)
 {
-	edm::ESHandle<PPSAlignmentConfig> cfg;
-	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
-
 	scfg = _scfg;
 
 	// binning
 	const double bin_size_x = 142.3314E-3; // mm
 	const unsigned int n_bins_x = 210;
 
-	const double pixel_x_offset = (cfg->aligned()) ? 0. : 40.;
+	const double pixel_x_offset = (aligned) ? 0. : 40.;
 
 	const double x_min_pix = pixel_x_offset, x_max_pix = pixel_x_offset + n_bins_x * bin_size_x;
 	const double x_min_str = 0., x_max_str = n_bins_x * bin_size_x;
@@ -233,12 +229,9 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, edm::Event
 	}
 }
 
-unsigned int PPSAlignmentWorker::SectorData::process(const edm::EventSetup &iSetup, 
-                                                     const CTPPSLocalTrackLiteCollection &tracks)
+unsigned int PPSAlignmentWorker::SectorData::process(const CTPPSLocalTrackLiteCollection &tracks, 
+                                                     const edm::ESHandle<PPSAlignmentConfig> &cfg)
 {
-	edm::ESHandle<PPSAlignmentConfig> cfg;
-	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
-
 	CTPPSLocalTrackLiteCollection tracksUp, tracksDw;
 
 	for (const auto &tr : tracks)
@@ -387,16 +380,19 @@ void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run con
 	edm::ESHandle<PPSAlignmentConfig> cfg;
 	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
-	sectorData45.init(iBooker, iSetup, cfg->sectorConfig45(), folder_);
-	sectorData56.init(iBooker, iSetup, cfg->sectorConfig56(), folder_);
+	sectorData45.init(iBooker, cfg->sectorConfig45(), cfg->aligned(), folder_);
+	sectorData56.init(iBooker, cfg->sectorConfig56(), cfg->aligned(), folder_);
 }
 
 void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
 {
 	const auto &tracks = iEvent.get(tracksToken_);
+	
+	edm::ESHandle<PPSAlignmentConfig> cfg;
+	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
-	sectorData45.process(iSetup, tracks);
-	sectorData56.process(iSetup, tracks);
+	sectorData45.process(tracks, cfg);
+	sectorData56.process(tracks, cfg);
 }
 
 void PPSAlignmentWorker::dqmEndRun(edm::Run const &, edm::EventSetup const &)
