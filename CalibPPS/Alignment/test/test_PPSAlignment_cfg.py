@@ -6,15 +6,15 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 
 process.MessageLogger = cms.Service("MessageLogger",
 	destinations = cms.untracked.vstring('alignment_out', 
-										 'alignment_log', 
-										 'cout'
+	                                     'alignment_log', 
+	                                     'cout'
 										 ),
 	categories = cms.untracked.vstring('x_alignment',
-									   'x_alignment_results',
-									   'x_alignment_relative',
-									   'x_alignment_relative_results',
-									   'y_alignment',
-									   'y_alignment_results', 
+                                       'x_alignment_results',
+                                       'x_alignment_relative',
+                                       'x_alignment_relative_results',
+                                       'y_alignment',
+                                       'y_alignment_results', 
 									   ),
 	alignment_out = cms.untracked.PSet(
 		threshold = cms.untracked.string("INFO"),

@@ -106,10 +106,6 @@ private:
 	SectorData sectorData45;
 	SectorData sectorData56;
 
-	// unsigned long eventCount = 0;
-	// unsigned long eventSelCount45 = 0;
-	// unsigned long eventSelCount56 = 0;
-
 	std::string folder_;
 };
 
