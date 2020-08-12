@@ -589,7 +589,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 		<< "    x_min = " << xMin << ", x_max = " << xMax;
 
 		double slope = sd.slope;
-		double sh_x_N = sd.sh_x_N;
+		double sh_x_N = sd.rp_N.sh_x;
 
 		ff->SetParameters(0., slope, 0.);
 		ff->FixParameter(2, -sh_x_N);

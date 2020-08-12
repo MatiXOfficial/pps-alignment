@@ -92,7 +92,6 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		}
 
 		sc->slope = sps.getParameter<double>("slope");
-		sc->sh_x_N = sps.getParameter<double>("sh_x_N");
 
 		sc->cut_h_apply = sps.getParameter<bool>("cut_h_apply");
 		sc->cut_h_a = sps.getParameter<double>("cut_h_a");

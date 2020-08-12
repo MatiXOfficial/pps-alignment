@@ -49,7 +49,6 @@ struct SectorConfig
 	std::string name;
 	RPConfig rp_N, rp_F;
 	double slope;
-	double sh_x_N;
 
 	bool cut_h_apply;
 	double cut_h_a, cut_h_c, cut_h_si;

@@ -42,7 +42,7 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring('root://eostotem.cern.ch//eos/cms/store/group/phys_pps/reconstruction/2018/physics_runs/rec-hit-version1/fill7334_xangle160_beta0.30_EGamma.root')
 )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(120000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	label = cms.string(''),
@@ -64,7 +64,6 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 			sh_x = cms.double(-42.)
 		),
 		slope = cms.double(0.006),
-		sh_x_N = cms.double(-3.6),
 
 		cut_h_apply = cms.bool(True),
 		cut_h_a = cms.double(-1),
@@ -102,7 +101,6 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 			sh_x = cms.double(-41.9)
 		),
 		slope = cms.double(-0.015),
-		sh_x_N = cms.double(-2.8),
 
 		cut_h_apply = cms.bool(True),
 		cut_h_a = cms.double(-1),

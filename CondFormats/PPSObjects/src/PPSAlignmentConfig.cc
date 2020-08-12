@@ -134,7 +134,7 @@ std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
 	os << std::fixed << std::setprecision(3);
 	os << sc.name << ":\n";
 	os << sc.rp_N << "\n" << sc.rp_F << "\n";
-	os << "    slope = " << sc.slope << ", sh_x_N = " << sc.sh_x_N << "\n";
+	os << "    slope = " << sc.slope << "\n";
 	os << "    cut_h: apply = " << sc.cut_h_apply << ", a = " << sc.cut_h_a << ", c = " 
 		<< sc.cut_h_c << ", si = " << sc.cut_h_si << "\n";
 	os << "    cut_v: apply = " << sc.cut_v_apply << ", a = " << sc.cut_v_a << ", c = " 
