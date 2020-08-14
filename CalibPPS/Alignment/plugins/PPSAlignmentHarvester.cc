@@ -20,8 +20,8 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLite.h"
-#include "DataFormats/CTPPSReco/interface/CTPPSLocalTrackLiteFwd.h"
+#include "CondFormats/PPSObjects/interface/CTPPSRPAlignmentCorrectionData.h"
+#include "CondFormats/PPSObjects/interface/CTPPSRPAlignmentCorrectionsData.h"
 
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
 #include "CondFormats/DataRecord/interface/PPSAlignmentConfigRcd.h"
@@ -59,33 +59,6 @@ private:
 	void dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, edm::Run const &, 
 	               edm::EventSetup const &iSetup);
 
-	// ------------ structures ------------
-	struct AlignmentResult
-	{
-		double sh_x = 0., sh_x_unc = 0.;    // mm
-		double sh_y = 0., sh_y_unc = 0.;    // mm
-
-		double rot_x = 0., rot_x_unc = 0.;  // rad
-		double rot_y = 0., rot_y_unc = 0.;  // rad
-		double rot_z = 0., rot_z_unc = 0.;  // rad
-
-		AlignmentResult(double _sh_x = 0., double _sh_x_unc = 0., double _sh_y = 0., 
-		                double _sh_y_unc = 0., double _rot_z = 0., double _rot_z_unc = 0.);
-
-		CTPPSLocalTrackLite apply(const CTPPSLocalTrackLite &tr) const;
-	};
-	friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResult ar);
-
-	struct AlignmentResults : public std::map<unsigned int, AlignmentResult>
-	{
-		CTPPSLocalTrackLiteCollection apply(const CTPPSLocalTrackLiteCollection &input) const;
-	};
-	friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResults ar);
-
-	struct AlignmentResultsCollection : public std::map<std::string, AlignmentResults>
-	{};
-	friend std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResultsCollection arc);
-
 	// ------------ x alignment ------------
 	static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
 	TGraphErrors* buildGraphFromDirectory(TDirectory *dir, bool aligned, unsigned int rpId);
@@ -116,68 +89,6 @@ private:
 	const bool debug_;
 	TFile *debug_file_;
 };
-
-// -------------------------------- Alignment classes methods --------------------------------
-
-PPSAlignmentHarvester::AlignmentResult::AlignmentResult(double _sh_x, double _sh_x_unc, double _sh_y, 
-                                                        double _sh_y_unc, double _rot_z, double _rot_z_unc)
-	: sh_x(_sh_x), sh_x_unc(_sh_x_unc), sh_y(_sh_y), sh_y_unc(_sh_y_unc), rot_z(_rot_z), rot_z_unc(_rot_z_unc)
-{}
-
-CTPPSLocalTrackLite PPSAlignmentHarvester::AlignmentResult::apply(const CTPPSLocalTrackLite &tr) const
-{
-	ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> v(tr.x(), tr.y(), 0.);
-	ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double>> s(sh_x, -sh_y, 0.);
-	ROOT::Math::RotationZYX R(-rot_z, rot_y, rot_x);
-	v = R * v + s;
-
-	return CTPPSLocalTrackLite(tr.rpId(), v.x(), 0., v.y(), 0., tr.tx(), tr.txUnc(), tr.ty(), tr.tyUnc(),
-	                           tr.chiSquaredOverNDF(), tr.pixelTrackRecoInfo(), tr.numberOfPointsUsedForFit(), 
-	                           tr.time(), tr.timeUnc());
-}
-
-std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResult ar)
-{
-	os << std::showpos << std::fixed << std::setprecision(3) << "sh_x=" << ar.sh_x << ",sh_x_unc=" 
-	<< ar.sh_x_unc << ",sh_y=" << ar.sh_y << ",sh_y_unc=" << ar.sh_y_unc << std::setprecision(4) 
-	<< ",rot_x=" << ar.rot_x << ",rot_x_unc=" << ar.rot_x_unc << ",rot_y=" << ar.rot_y 
-	<< ",rot_y_unc=" << ar.rot_y_unc << ",rot_z=" << ar.rot_z << ",rot_z_unc=" << ar.rot_z_unc << "\n";
-	return os;
-}
-
-CTPPSLocalTrackLiteCollection PPSAlignmentHarvester::AlignmentResults::apply(const CTPPSLocalTrackLiteCollection &input) const
-{
-	CTPPSLocalTrackLiteCollection output;
-	for (auto &t : input)
-	{
-		auto ait = find(t.rpId());
-		if (ait == end())
-			throw cms::Exception("alignment") << "No alignment data for RP " << t.rpId();
-		
-		output.emplace_back(ait->second.apply(t));
-	}
-	return output;
-}
-
-std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResults ar)
-{
-	for (auto &p : ar)
-	{
-		os << "id=" << p.first << ",";
-		os << p.second;
-	}
-	return os;
-}
-
-std::ostream &operator<<(std::ostream &os, PPSAlignmentHarvester::AlignmentResultsCollection arc)
-{
-	for (auto &p : arc)
-	{
-		os << "\n[" << p.first.c_str() << "]\n";
-		os << p.second;
-	}
-	return os;
-}
 
 // -------------------------------- x alignment methods --------------------------------
 
@@ -474,7 +385,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 		xAliDir = debug_file_->mkdir("x alignment");
 
 	// prepare results
-	AlignmentResultsCollection results;
+	CTPPSRPAlignmentCorrectionsData results;
 
 	for (auto ref : cfg->matchingReferenceDatasets())
 	{
@@ -530,13 +441,16 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 								cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
 								shiftRange.x_max, sh, sh_unc);
 				if (r == 0)
-					results["x_alignment_meth_o"][rpd.id] = AlignmentResult(sh, sh_unc);
+				{
+					CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+					results.setRPCorrection(rpd.id, rpResult);
+				}
 			}
 		}
 		delete f_ref;
 	}
 
-	edm::LogInfo("x_alignment_results") << results;
+	edm::LogInfo("x_alignment_results") << "x_alignment_meth_o:\n"<< results;
 }
 
 // -------------------------------- x alignment relative methods --------------------------------
@@ -549,7 +463,8 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 		xAliRelDir = debug_file_->mkdir("x_alignment_relative");
 
 	// prepare results
-	AlignmentResultsCollection results;
+	CTPPSRPAlignmentCorrectionsData results;
+	CTPPSRPAlignmentCorrectionsData results_sl_fix;
 
 	TF1 *ff = new TF1("ff", "[0] + [1]*(x - [2])");
 	TF1 *ff_sl_fix = new TF1("ff_sl_fix", "[0] + [1]*(x - [2])");
@@ -574,7 +489,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 
 		if (p_x_diffFN_vs_x_N->GetEntries() < 100)
 		{
-			edm::LogInfo("x_alignment_relative") << "    insufficient data, skipping";
+			edm::LogInfo("x_alignment_relative") << "insufficient data, skipping";
 			continue;
 		}
 
@@ -595,8 +510,10 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 		const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
 		const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
 
-		results["x_alignment_relative"][sd.rp_N.id] = AlignmentResult(+b/2., b_unc/2., 0., 0., 0., 0.);
-		results["x_alignment_relative"][sd.rp_F.id] = AlignmentResult(-b/2., b_unc/2., 0., 0., 0., 0.);
+		CTPPSRPAlignmentCorrectionData rpResult_N(+b/2., b_unc/2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+		results.setRPCorrection(sd.rp_N.id, rpResult_N);
+		CTPPSRPAlignmentCorrectionData rpResult_F(-b/2., b_unc/2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+		results.setRPCorrection(sd.rp_F.id, rpResult_F);
 
 		ff_sl_fix->SetParameters(0., slope, 0.);
 		ff_sl_fix->FixParameter(1, slope);
@@ -605,9 +522,11 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 		p_x_diffFN_vs_x_N->Fit(ff_sl_fix, "Q+", "", xMin, xMax);
 
 		const double b_fs = ff_sl_fix->GetParameter(0), b_fs_unc = ff_sl_fix->GetParError(0);
-
-		results["x_alignment_relative_sl_fix"][sd.rp_N.id] = AlignmentResult(+b_fs/2., b_fs_unc/2., 0., 0., 0., 0.);
-		results["x_alignment_relative_sl_fix"][sd.rp_F.id] = AlignmentResult(-b_fs/2., b_fs_unc/2., 0., 0., 0., 0.);
+		
+		CTPPSRPAlignmentCorrectionData rpResult_sl_fix_N(+b_fs/2., b_fs_unc/2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+		results_sl_fix.setRPCorrection(sd.rp_N.id, rpResult_sl_fix_N);
+		CTPPSRPAlignmentCorrectionData rpResult_sl_fix_F(-b_fs/2., b_fs_unc/2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+		results_sl_fix.setRPCorrection(sd.rp_F.id, rpResult_sl_fix_F);
 
 		if (debug_)
 		{
@@ -623,7 +542,8 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 	}
 
 	// write results
-	edm::LogInfo("x_alignment_relative_results") << results;
+	edm::LogInfo("x_alignment_relative_results") << "x_alignment_relative:\n" << results
+	<< "x_alignment_relative_sl_fix:\n" << results_sl_fix;
 }
 
 // -------------------------------- y alignment methods --------------------------------
@@ -747,7 +667,8 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 		yAliDir = debug_file_->mkdir("y_alignment");
 
 	// prepare results
-	AlignmentResultsCollection results;
+	CTPPSRPAlignmentCorrectionsData results;
+	CTPPSRPAlignmentCorrectionsData results_sl_fix;
 
 	TF1 *ff = new TF1("ff", "[0] + [1]*(x - [2])");
 	TF1 *ff_sl_fix = new TF1("ff_sl_fix", "[0] + [1]*(x - [2])");
@@ -799,7 +720,8 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			<< "    sh_x = " << sh_x << ", slope (fix) = " << slope << "\n"
 			<< "    slope (fitted) = " << a;
 
-			results["y_alignment"][rpd.id] = AlignmentResult(0., 0., b, b_unc, 0., 0.);
+			CTPPSRPAlignmentCorrectionData rpResult(0., 0., b, b_unc, 0., 0., 0., 0., 0., 0., 0., 0.);
+			results.setRPCorrection(rpd.id, rpResult);
 
 			ff_sl_fix->SetParameters(0., 0., 0.);
 			ff_sl_fix->FixParameter(1, slope);
@@ -808,8 +730,9 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			g_y_cen_vs_x->Fit(ff_sl_fix, "Q+", "", xMin, xMax);
 
 			const double b_fs = ff_sl_fix->GetParameter(0), b_fs_unc = ff_sl_fix->GetParError(0);
-
-			results["y_alignment_sl_fix"][rpd.id] = AlignmentResult(0., 0., b_fs, b_fs_unc, 0., 0.);
+			
+			CTPPSRPAlignmentCorrectionData rpResult_sl_fix(0., 0., b_fs, b_fs_unc, 0., 0., 0., 0., 0., 0., 0., 0.);
+			results_sl_fix.setRPCorrection(rpd.id, rpResult_sl_fix);
 
 			if (debug_)
 			{
@@ -828,7 +751,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 	}
 
 	// write results
-	edm::LogInfo("y_alignment_results") << results;
+	edm::LogInfo("y_alignment_results") << "y_alignment:\n" << results << "y_alignment_sl_fix:\n" << results_sl_fix;
 }
 
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
