@@ -21,6 +21,9 @@
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
 #include "CondFormats/DataRecord/interface/PPSAlignmentConfigRcd.h"
 
+#include <string>
+#include <vector>
+#include <map>
 #include <memory>
 
 //---------------------------------------------------------------------------------------------
@@ -37,6 +40,10 @@ private:
 	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &key, const edm::IOVSyncValue &iosv, 
 	                    edm::ValidityInterval &oValidity) override;
 
+	std::vector<std::string> sequence;
+
+	SectorConfig sectorConfig45, sectorConfig56;
+
 	std::vector<std::string> inputFiles;
 
 	std::map<unsigned int, double> alignmentCorrectionsX, alignmentCorrectionsY;
@@ -44,8 +51,6 @@ private:
 	bool aligned;
 
 	double n_si;
-
-	SectorConfig sectorConfig45, sectorConfig56;
 
 	std::vector<std::string> matchingReferenceDatasets;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges;
@@ -64,6 +69,9 @@ private:
 
 PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &iConfig)
 {
+	for (const auto &seqps : iConfig.getParameter<std::vector<edm::ParameterSet>>("sequence"))
+		sequence.push_back(seqps.getParameter<std::string>("method"));
+
 	for (std::string sectorName : {"sector_45", "sector_56"})
 	{
 		const auto &sps = iConfig.getParameter<edm::ParameterSet>(sectorName);
@@ -177,6 +185,8 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PPSAlignmentConfigRcd &)
 {
 	auto p = std::make_unique<PPSAlignmentConfig>();
+
+	p->setSequence(sequence);
 
 	p->setSectorConfig45(sectorConfig45);
 	p->setSectorConfig56(sectorConfig56);

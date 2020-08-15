@@ -22,6 +22,8 @@ TYPELOOKUP_DATA_REG(PPSAlignmentConfig);
 
 // -------------------------------- PPSAlignmentConfig getters --------------------------------
 
+std::vector<std::string> PPSAlignmentConfig::sequence() const { return sequence_; }
+
 SectorConfig PPSAlignmentConfig::sectorConfig45() const { return sectorConfig45_; }
 SectorConfig PPSAlignmentConfig::sectorConfig56() const { return sectorConfig56_; }
 
@@ -69,6 +71,8 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_y_ranges() 
 }
 
 // -------------------------------- PPSAlignmentConfig setters --------------------------------
+
+void PPSAlignmentConfig::setSequence(std::vector<std::string> &sequence) { sequence_ = sequence; }
 
 void PPSAlignmentConfig::setSectorConfig45(SectorConfig &sectorConfig45) { sectorConfig45_ = sectorConfig45; }
 void PPSAlignmentConfig::setSectorConfig56(SectorConfig &sectorConfig56) { sectorConfig56_ = sectorConfig56; }

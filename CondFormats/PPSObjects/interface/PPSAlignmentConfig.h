@@ -70,6 +70,8 @@ class PPSAlignmentConfig
 {
 public:
 	// Getters
+	std::vector<std::string> sequence() const;
+
 	SectorConfig sectorConfig45() const;
 	SectorConfig sectorConfig56() const;
 
@@ -93,6 +95,8 @@ public:
 	std::map<unsigned int, SelectionRange> alignment_y_ranges() const;
 
 	// Setters 
+	void setSequence(std::vector<std::string> &sequence);
+
 	void setSectorConfig45(SectorConfig &sectorConfig45);
 	void setSectorConfig56(SectorConfig &sectorConfig56);
 
@@ -119,6 +123,8 @@ public:
 	friend std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c);
 
 private:
+	std::vector<std::string> sequence_;
+
 	SectorConfig sectorConfig45_, sectorConfig56_;
 
 	std::vector<std::string> inputFiles_;

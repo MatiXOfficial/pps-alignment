@@ -16,7 +16,6 @@
 
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -31,10 +30,6 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-
-#include <Math/Rotation3D.h>
-#include <Math/RotationZYX.h>
-#include <Math/Vector3D.h>
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -70,16 +65,16 @@ private:
 	            double &sh_best_unc);
 
 	void xAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg,
-	                const edm::ESHandle<PPSAlignmentConfig> &cfg_ref);
+	                const edm::ESHandle<PPSAlignmentConfig> &cfg_ref, int seqPos);
 
 	// ------------ x alignment relative ------------
-	void xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg);
+	void xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
 
 	// ------------ y alignment ------------
 	static double findMax(TF1 *ff_fit);
 	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, double _yMaxFit);
 
-	void yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg);
+	void yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
 
 	// ------------ other member data and methods ------------
 	void debugPlots(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
@@ -378,11 +373,11 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
 }
 
 void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg,
-                                       const edm::ESHandle<PPSAlignmentConfig> &cfg_ref)
+                                       const edm::ESHandle<PPSAlignmentConfig> &cfg_ref, int seqPos)
 {
 	TDirectory *xAliDir = nullptr;
 	if (debug_)
-		xAliDir = debug_file_->mkdir("x alignment");
+		xAliDir = debug_file_->mkdir((std::to_string(seqPos + 1) + ": x alignment").c_str());
 
 	// prepare results
 	CTPPSRPAlignmentCorrectionsData results;
@@ -450,17 +445,17 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 		delete f_ref;
 	}
 
-	edm::LogInfo("x_alignment_results") << "x_alignment_meth_o:\n"<< results;
+	edm::LogInfo("x_alignment_results") << seqPos + 1 << ": x_alignment:\n"<< results;
 }
 
 // -------------------------------- x alignment relative methods --------------------------------
 
 void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, 
-                                               const edm::ESHandle<PPSAlignmentConfig> &cfg)
+                                               const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos)
 {
 	TDirectory *xAliRelDir = nullptr;
 	if (debug_)
-		xAliRelDir = debug_file_->mkdir("x_alignment_relative");
+		xAliRelDir = debug_file_->mkdir((std::to_string(seqPos + 1) + ": x_alignment_relative").c_str());
 
 	// prepare results
 	CTPPSRPAlignmentCorrectionsData results;
@@ -542,8 +537,8 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 	}
 
 	// write results
-	edm::LogInfo("x_alignment_relative_results") << "x_alignment_relative:\n" << results
-	<< "x_alignment_relative_sl_fix:\n" << results_sl_fix;
+	edm::LogInfo("x_alignment_relative_results") << seqPos + 1 << ": x_alignment_relative:\n" << results
+	<< seqPos + 1 << ": x_alignment_relative_sl_fix:\n" << results_sl_fix;
 }
 
 // -------------------------------- y alignment methods --------------------------------
@@ -660,11 +655,11 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 	return g_y_mode_vs_x;
 }
 
-void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg)
+void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos)
 {
 	TDirectory *yAliDir = nullptr;
 	if (debug_)
-		yAliDir = debug_file_->mkdir("y_alignment");
+		yAliDir = debug_file_->mkdir((std::to_string(seqPos + 1) + ": y_alignment").c_str());
 
 	// prepare results
 	CTPPSRPAlignmentCorrectionsData results;
@@ -751,7 +746,8 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 	}
 
 	// write results
-	edm::LogInfo("y_alignment_results") << "y_alignment:\n" << results << "y_alignment_sl_fix:\n" << results_sl_fix;
+	edm::LogInfo("y_alignment_results") << seqPos + 1 << ": y_alignment:\n" << results 
+	<< seqPos + 1 << ": y_alignment_sl_fix:\n" << results_sl_fix;
 }
 
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
@@ -825,9 +821,17 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	if (debug_)
 		debugPlots(iBooker, iGetter, cfg);
 
-	xAlignment(iGetter, cfg, cfg_ref);
-	xAlignmentRelative(iGetter, cfg);
-	yAlignment(iGetter, cfg);
+	for (unsigned int i = 0; i < cfg->sequence().size(); i++)
+	{
+		if (cfg->sequence()[i] == "x alignment")
+			xAlignment(iGetter, cfg, cfg_ref, i);
+		else if (cfg->sequence()[i] == "x alignment relative")
+			xAlignmentRelative(iGetter, cfg, i);
+		else if (cfg->sequence()[i] == "y alignment")
+			yAlignment(iGetter, cfg, i);
+		else
+			edm::LogError("harvester") << cfg->sequence()[i] << " is a wrong method name.";
+	}
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentHarvester);

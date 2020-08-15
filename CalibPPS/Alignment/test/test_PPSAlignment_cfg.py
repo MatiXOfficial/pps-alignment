@@ -46,6 +46,11 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	label = cms.string(''),
+	sequence = cms.VPSet(
+		cms.PSet(method = cms.string("x alignment")),
+		cms.PSet(method = cms.string("x alignment relative")),
+		cms.PSet(method = cms.string("y alignment"))
+	),
 	
 	sector_45 = cms.PSet(
 		name = cms.string("sector 45"),
@@ -232,6 +237,7 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 
 process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigESSource",
 	label = cms.string('reference'),
+	sequence = cms.VPSet(),
 	
 	sector_45 = cms.PSet(
 		name = cms.string("sector 45"),
