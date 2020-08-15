@@ -55,16 +55,10 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	sector_45 = cms.PSet(
 		name = cms.string("sector 45"),
 		rp_N = cms.PSet(
-			name = cms.string("L_1_F"),
-			id = cms.uint32(3),
-			position = cms.string("N"),
 			slope = cms.double(0.19),
 			sh_x = cms.double(-3.6)
 		),
 		rp_F = cms.PSet(
-			name = cms.string("L_2_F"),
-			id = cms.uint32(23),
-			position = cms.string("F"),
 			slope = cms.double(0.19),
 			sh_x = cms.double(-42.)
 		),
@@ -92,16 +86,10 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	sector_56 = cms.PSet(
 		name = cms.string("sector 56"),
 		rp_N = cms.PSet(
-			name = cms.string("R_1_F"),
-			id = cms.uint32(103),
-			position = cms.string("N"),
 			slope = cms.double(0.40),
 			sh_x = cms.double(-2.8)
 		),
 		rp_F = cms.PSet(
-			name = cms.string("R_2_F"),
-			id = cms.uint32(123),
-			position = cms.string("F"),
 			slope = cms.double(0.39),
 			sh_x = cms.double(-41.9)
 		),
@@ -242,16 +230,10 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 	sector_45 = cms.PSet(
 		name = cms.string("sector 45"),
 		rp_N = cms.PSet(
-			name = cms.string("L_2_F"),
-			id = cms.uint32(23),
-			position = cms.string("F"),
 			slope = cms.double(0.19),
 			sh_x = cms.double(-42.)
 		),
 		rp_F = cms.PSet(
-			name = cms.string("L_1_F"),
-			id = cms.uint32(3),
-			position = cms.string("N"),
 			slope = cms.double(0.19),
 			sh_x = cms.double(-3.6)
 		),
@@ -280,16 +262,10 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 	sector_56 = cms.PSet(
 		name = cms.string("sector 56"),
 		rp_N = cms.PSet(
-			name = cms.string("L_2_F"),
-			id = cms.uint32(103),
-			position = cms.string("N"),
 			slope = cms.double(0.40),
 			sh_x = cms.double(-2.8)
 		),
 		rp_F = cms.PSet(
-			name = cms.string("L_1_F"),
-			id = cms.uint32(123),
-			position = cms.string("F"),
 			slope = cms.double(0.39),
 			sh_x = cms.double(-41.9)
 		),

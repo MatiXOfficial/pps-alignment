@@ -72,6 +72,26 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	for (const auto &seqps : iConfig.getParameter<std::vector<edm::ParameterSet>>("sequence"))
 		sequence.push_back(seqps.getParameter<std::string>("method"));
 
+	sectorConfig45.name = "sector 45";
+
+	sectorConfig45.rp_N.name = "L_1_F";
+	sectorConfig45.rp_N.id = 3;
+	sectorConfig45.rp_N.position = "N";
+
+	sectorConfig45.rp_F.name = "L_2_F";
+	sectorConfig45.rp_F.id = 23;
+	sectorConfig45.rp_F.position = "F";
+
+	sectorConfig56.name = "sector 56";
+
+	sectorConfig56.rp_N.name = "R_1_F";
+	sectorConfig56.rp_N.id = 103;
+	sectorConfig56.rp_N.position = "N";
+
+	sectorConfig56.rp_F.name = "R_2_F";
+	sectorConfig56.rp_F.id = 123;
+	sectorConfig56.rp_F.position = "F";
+
 	for (std::string sectorName : {"sector_45", "sector_56"})
 	{
 		const auto &sps = iConfig.getParameter<edm::ParameterSet>(sectorName);
@@ -83,21 +103,13 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 
 		sc->name = sps.getParameter<std::string>("name");
 
-		for (std::string rpName : {"rp_N", "rp_F"})
-		{
-			const auto &rps = sps.getParameter<edm::ParameterSet>(rpName);
-			RPConfig *rc;
-			if (rpName == "rp_N")
-				rc = &sc->rp_N;
-			else
-				rc = &sc->rp_F;
+		const auto &rnps = sps.getParameter<edm::ParameterSet>("rp_N");
+		sc->rp_N.slope = rnps.getParameter<double>("slope");
+		sc->rp_N.sh_x = rnps.getParameter<double>("sh_x");
 
-			rc->name = rps.getParameter<std::string>("name");
-			rc->id = rps.getParameter<unsigned int>("id");
-			rc->position = rps.getParameter<std::string>("position");
-			rc->slope = rps.getParameter<double>("slope");
-			rc->sh_x = rps.getParameter<double>("sh_x");
-		}
+		const auto &rfps = sps.getParameter<edm::ParameterSet>("rp_F");
+		sc->rp_F.slope = rfps.getParameter<double>("slope");
+		sc->rp_F.sh_x = rfps.getParameter<double>("sh_x");
 
 		sc->slope = sps.getParameter<double>("slope");
 
