@@ -418,20 +418,34 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 	)
 )
 
+# load worker
 process.load("CalibPPS.Alignment.ppsAlignmentWorker_cfi")
-process.load("CalibPPS.Alignment.ppsAlignmentHarvester_cfi")
+
+# load harvesters
+process.load("CalibPPS.Alignment.ppsAlignmentXHarvester_cfi")
+process.load("CalibPPS.Alignment.ppsAlignmentXRelativeHarvester_cfi")
+process.load("CalibPPS.Alignment.ppsAlignmentYHarvester_cfi")
+
+process.task_1 = cms.Task(
+	process.ppsAlignmentXHarvester
+)
+
+process.task_2 = cms.Task(
+	process.ppsAlignmentXRelativeHarvester,
+	process.ppsAlignmentYHarvester
+)
 
 process.path = cms.Path(
   	process.ppsAlignmentWorker
-  	* process.ppsAlignmentHarvester
 )
 
 process.end_path = cms.EndPath(
-  process.dqmEnv +
-  process.dqmSaver
+	process.dqmEnv
+	* process.dqmSaver
 )
 
 process.schedule = cms.Schedule(
-  process.path,
-  process.end_path
+	process.path,
+	tasks=[process.task_1, process.task_2],
+	process.end_path
 )
