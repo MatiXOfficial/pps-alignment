@@ -25,6 +25,7 @@
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
 #include "CondFormats/DataRecord/interface/PPSAlignmentConfigRcd.h"
 
+#include <map>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -66,6 +67,8 @@ private:
 
 	void xAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg,
 	                const edm::ESHandle<PPSAlignmentConfig> &cfg_ref, int seqPos);
+
+	std::map<unsigned int, double> sh_x_map;
 
 	// ------------ x alignment relative ------------
 	void xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
@@ -325,7 +328,7 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
 
 	// print results
 	edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
-	<< "sh_best = (" << sh_best << " +- " << sh_best_unc << " mm";
+	<< "sh_best = (" << sh_best << " +- " << sh_best_unc << ") mm";
 
 	if (debug_)
 	{
@@ -439,6 +442,9 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 				{
 					CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 					results.setRPCorrection(rpd.id, rpResult);
+					edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
+					<< "Setting sh_x of " << rpd.name << " to " << sh;
+					sh_x_map[rpd.id] = sh;
 				}
 			}
 		}
@@ -491,11 +497,8 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 		const double xMin = cfg->alignment_x_relative_ranges()[sd.rp_N.id].x_min;
 		const double xMax = cfg->alignment_x_relative_ranges()[sd.rp_N.id].x_max;
 
-		edm::LogInfo("x_alignment_relative") << sd.name << std::fixed << std::setprecision(3) << ":\n"
-		<< "    x_min = " << xMin << ", x_max = " << xMax;
-
+		const double sh_x_N = sh_x_map[sd.rp_N.id];
 		double slope = sd.slope;
-		double sh_x_N = sd.rp_N.sh_x;
 
 		ff->SetParameters(0., slope, 0.);
 		ff->FixParameter(2, -sh_x_N);
@@ -504,6 +507,10 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 
 		const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
 		const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
+
+		edm::LogInfo("x_alignment_relative") << sd.name << ":\n" << std::fixed << std::setprecision(3)
+		<< "    x_min = " << xMin << ", x_max = " << xMax << "\n"
+		<< "    sh_x_N = " << sh_x_N << ", slope (fix) = " << slope << ", slope (fitted) = " << a;
 
 		CTPPSRPAlignmentCorrectionData rpResult_N(+b/2., b_unc/2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 		results.setRPCorrection(sd.rp_N.id, rpResult_N);
@@ -699,7 +706,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			const double xMin = cfg->alignment_y_ranges()[rpd.id].x_min;
 			const double xMax = cfg->alignment_y_ranges()[rpd.id].x_max;
 
-			double sh_x = rpd.sh_x;
+			const double sh_x = sh_x_map[rpd.id];
 			double slope = rpd.slope;
 
 			ff->SetParameters(0., 0., 0.);
@@ -710,10 +717,9 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
 			const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
 
-			edm::LogInfo("y_alignment") << rpd.name << std::fixed << std::setprecision(3) << ":\n"
+			edm::LogInfo("y_alignment") << rpd.name  << ":\n" << std::fixed << std::setprecision(3)
 			<< "    x_min = " << xMin << ", x_max = " << xMax << "\n"
-			<< "    sh_x = " << sh_x << ", slope (fix) = " << slope << "\n"
-			<< "    slope (fitted) = " << a;
+			<< "    sh_x = " << sh_x << ", slope (fix) = " << slope << ", slope (fitted) = " << a;
 
 			CTPPSRPAlignmentCorrectionData rpResult(0., 0., b, b_unc, 0., 0., 0., 0., 0., 0., 0., 0.);
 			results.setRPCorrection(rpd.id, rpResult);
@@ -821,6 +827,17 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	if (debug_)
 		debugPlots(iBooker, iGetter, cfg);
 
+	// setting default sh_x values from config
+	for (const auto sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
+	{
+		for (const auto rpd : { sd.rp_N, sd.rp_F })
+		{
+			edm::LogInfo("harvester_dqmEndRun") << std::fixed << std::setprecision(3) 
+			<< "Setting sh_x of " << rpd.name << " to " << rpd.sh_x;
+			sh_x_map[rpd.id] = rpd.sh_x;
+		}
+	}
+
 	for (unsigned int i = 0; i < cfg->sequence().size(); i++)
 	{
 		if (cfg->sequence()[i] == "x alignment")
@@ -830,7 +847,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 		else if (cfg->sequence()[i] == "y alignment")
 			yAlignment(iGetter, cfg, i);
 		else
-			edm::LogError("harvester") << cfg->sequence()[i] << " is a wrong method name.";
+			edm::LogError("harvester_dqmEndRun") << cfg->sequence()[i] << " is a wrong method name.";
 	}
 }
 
