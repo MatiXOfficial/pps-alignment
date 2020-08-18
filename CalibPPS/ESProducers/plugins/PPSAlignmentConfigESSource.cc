@@ -218,7 +218,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 	p->setAlignment_y_ranges(alignment_y_ranges);
 
-	edm::LogInfo("produce") << "\n\n" << label << ":\n" << (*p);
+	edm::LogInfo("produce") << "\n" << (label.empty() ? "empty label" : "label = " + label) << ":\n\n" << (*p);
 
 	return p;
 }

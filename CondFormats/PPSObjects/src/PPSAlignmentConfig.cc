@@ -121,9 +121,8 @@ void PPSAlignmentConfig::setAlignment_y_ranges(std::map<unsigned int, SelectionR
 std::ostream &operator<<(std::ostream &os, RPConfig &rc)
 {
 	os << std::fixed << std::setprecision(3);
-	os << "    " << rc.name << ":\n";
-	os << "        id = " << rc.id << ", position = " << rc.position << ", slope = " << rc.slope 
-	<< ", sh_x = " << rc.sh_x;
+	os << "    " << rc.name << ", id = " << rc.id << ", position = " << rc.position << ":\n";
+	os << "        slope = " << rc.slope << ", sh_x = " << rc.sh_x;
 
 	return os;
 }
@@ -150,19 +149,29 @@ std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
 
 std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 {
-	os << "* dataset already aligned\n";
-	os << "    aligned = " << c.aligned_ << "\n\n";
-
-	os << "* alignment parameters\n" << std::setprecision(3);
-	for (const auto &p : c.alignmentCorrectionsX_)
-		os << "    RP " << p.first << ": de_x = " << p.second << " mm\n";
+	os << "* sequence\n";
+	for (unsigned int i = 0; i < c.sequence_.size(); i++)
+	{
+		os << "    " << i + 1 << ": " << c.sequence_[i] << "\n";
+	}
 	os << "\n";
-
-	os << "* cuts\n";
-	os << "    n_si = " << c.n_si_ << "\n\n";
 
 	os << "* " << c.sectorConfig45_ << "\n\n";
 	os << "* " << c.sectorConfig56_ << "\n\n";
+
+	os << "* alignment corrections\n" << std::setprecision(3);
+	for (const auto &p : c.alignmentCorrectionsX_)
+	{
+		os << "    RP " << p.first << ": de_x = " << p.second << " mm, de_y = " 
+		<< c.alignmentCorrectionsY_[p.first] << " mm\n";
+	}
+	os << "\n";
+
+	os << "* dataset already aligned\n";
+	os << "    aligned = " << c.aligned_ << "\n\n";
+
+	os << "* cuts\n";
+	os << "    n_si = " << c.n_si_ << "\n\n";
 
 	os << "* matching\n" << std::setprecision(3);
 	os << "    reference datasets (" << c.matchingReferenceDatasets_.size() << "):\n";
