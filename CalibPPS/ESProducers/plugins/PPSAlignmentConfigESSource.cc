@@ -69,8 +69,7 @@ private:
 
 PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &iConfig)
 {
-	for (const auto &seqps : iConfig.getParameter<std::vector<edm::ParameterSet>>("sequence"))
-		sequence.push_back(seqps.getParameter<std::string>("method"));
+	sequence = iConfig.getParameter<std::vector<std::string>>("sequence");
 
 	sectorConfig45.name = "sector 45";
 
@@ -231,10 +230,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 
 	desc.add<std::string>("label", "");
 
-	edm::ParameterSetDescription sequenceValidator;
-	sequenceValidator.add<std::string>("method", "x alignment");
-	std::vector<edm::ParameterSet> sequence;
-	desc.addVPSet("sequence", sequenceValidator, sequence);
+	desc.add<std::vector<std::string>>("sequence", {});
 
 	// sector_45
 	{
