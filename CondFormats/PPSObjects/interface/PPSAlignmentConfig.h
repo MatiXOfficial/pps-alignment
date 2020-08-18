@@ -39,7 +39,7 @@ struct RPConfig
 	double slope;
 	double sh_x;
 
-	double y_max_fit;
+	double x_min_mode, x_max_mode;
 	double y_cen_add;
 	double y_width_mult;
 

@@ -132,7 +132,8 @@ std::ostream &operator<<(std::ostream &os, RPConfig &rc)
 	os << std::fixed << std::setprecision(3);
 	os << "    " << rc.name << ", id = " << rc.id << ", position = " << rc.position << ":\n";
 	os << "        slope = " << rc.slope << ", sh_x = " << rc.sh_x << "\n";
-	os << "        y_max_fit = " << rc.y_max_fit << ", y_cen_add = " << rc.y_cen_add << ", y_width_mult = " << rc.y_width_mult;
+	os << "        x_min_mode = " << rc.x_min_mode << ", x_max_mode = " << rc.x_max_mode << "\n";
+	os << "        y_cen_add = " << rc.y_cen_add << ", y_width_mult = " << rc.y_width_mult;
 
 	return os;
 }

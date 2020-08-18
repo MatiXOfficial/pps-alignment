@@ -109,14 +109,18 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		const auto &rnps = sps.getParameter<edm::ParameterSet>("rp_N");
 		sc->rp_N.slope = rnps.getParameter<double>("slope");
 		sc->rp_N.sh_x = rnps.getParameter<double>("sh_x");
-		sc->rp_N.y_max_fit = rnps.getParameter<double>("y_max_fit");
+
+		sc->rp_N.x_min_mode = rnps.getParameter<double>("x_min_mode");
+		sc->rp_N.x_max_mode = rnps.getParameter<double>("x_max_mode");
 		sc->rp_N.y_cen_add = rnps.getParameter<double>("y_cen_add");
 		sc->rp_N.y_width_mult = rnps.getParameter<double>("y_width_mult");
 
 		const auto &rfps = sps.getParameter<edm::ParameterSet>("rp_F");
 		sc->rp_F.slope = rfps.getParameter<double>("slope");
 		sc->rp_F.sh_x = rfps.getParameter<double>("sh_x");
-		sc->rp_F.y_max_fit = rfps.getParameter<double>("y_max_fit");
+
+		sc->rp_F.x_min_mode = rfps.getParameter<double>("x_min_mode");
+		sc->rp_F.x_max_mode = rfps.getParameter<double>("x_max_mode");
 		sc->rp_F.y_cen_add = rfps.getParameter<double>("y_cen_add");
 		sc->rp_F.y_width_mult = rfps.getParameter<double>("y_width_mult");
 
@@ -265,7 +269,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_N;
 		rp_N.add<double>("slope", -3.6);
 		rp_N.add<double>("sh_x", -0.19);
-		rp_N.add<double>("y_max_fit", 7.8);
+
+		rp_N.add<double>("x_min_mode", 2.);
+		rp_N.add<double>("x_max_mode", 7.8);
 		rp_N.add<double>("y_cen_add", -0.3);
 		rp_N.add<double>("y_width_mult", 1.1);
 		sector45.add<edm::ParameterSetDescription>("rp_N", rp_N);
@@ -273,7 +279,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_F;
 		rp_F.add<double>("slope", -42.);
 		rp_F.add<double>("sh_x", 0.19);
-		rp_F.add<double>("y_max_fit", 7.5);
+
+		rp_F.add<double>("x_min_mode", 2.);
+		rp_F.add<double>("x_max_mode", 7.5);
 		rp_F.add<double>("y_cen_add", -0.3);
 		rp_F.add<double>("y_width_mult", 1.1);
 		sector45.add<edm::ParameterSetDescription>("rp_F", rp_F);
@@ -304,7 +312,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_N;
 		rp_N.add<double>("slope", -2.8);
 		rp_N.add<double>("sh_x", 0.40);
-		rp_N.add<double>("y_max_fit", 7.4);
+
+		rp_N.add<double>("x_min_mode", 2.);
+		rp_N.add<double>("x_max_mode", 7.4);
 		rp_N.add<double>("y_cen_add", -0.8);
 		rp_N.add<double>("y_width_mult", 1.0);
 		sector56.add<edm::ParameterSetDescription>("rp_N", rp_N);
@@ -312,7 +322,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_F;
 		rp_F.add<double>("slope", -41.9);
 		rp_F.add<double>("sh_x", 0.39);
-		rp_F.add<double>("y_max_fit", 8.0);
+
+		rp_F.add<double>("x_min_mode", 2.);
+		rp_F.add<double>("x_max_mode", 8.0);
 		rp_F.add<double>("y_cen_add", -0.8);
 		rp_F.add<double>("y_width_mult", 1.0);
 		sector56.add<edm::ParameterSetDescription>("rp_F", rp_F);

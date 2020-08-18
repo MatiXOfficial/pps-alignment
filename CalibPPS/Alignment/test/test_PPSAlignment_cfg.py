@@ -52,12 +52,12 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 		rp_N = cms.PSet(
 			slope = cms.double(0.19),
 			sh_x = cms.double(-3.6),
-			y_max_fit = cms.double(7.8)
+			x_max_mode = cms.double(7.8)
 		),
 		rp_F = cms.PSet(
 			slope = cms.double(0.19),
 			sh_x = cms.double(-42.),
-			y_max_fit = cms.double(7.5)
+			x_max_mode = cms.double(7.5)
 		),
 		slope = cms.double(0.006),
 
@@ -84,12 +84,12 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 		rp_N = cms.PSet(
 			slope = cms.double(0.40),
 			sh_x = cms.double(-2.8),
-			y_max_fit = cms.double(7.4)
+			x_max_mode = cms.double(7.4)
 		),
 		rp_F = cms.PSet(
 			slope = cms.double(0.39),
 			sh_x = cms.double(-41.9),
-			y_max_fit = cms.double(8.0)
+			x_max_mode = cms.double(8.0)
 		),
 		slope = cms.double(-0.015),
 

@@ -75,7 +75,7 @@ private:
 	// ------------ y alignment ------------
 	static double findMax(TF1 *ff_fit);
 	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
-	                             double _yMaxFit);
+	                             double x_min_mode, double x_max_mode);
 
 	void yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
 
@@ -560,7 +560,7 @@ double PPSAlignmentHarvester::findMax(TF1 *ff_fit)
 
 TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, 
                                                     const edm::ESHandle<PPSAlignmentConfig> &cfg, 
-                                                    const double yMaxFit)
+                                                    double x_min_mode, double x_max_mode)
 {
 	TDirectory *d_top = nullptr;
 	if (debug_) 
@@ -602,16 +602,14 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x,
 		ff_fit->SetParameters(conMax, conMax_x, h_y->GetRMS() * 0.75, 0., 0.);
 		ff_fit->FixParameter(4, 0.);
 
-		double xMin = 2., xMax = yMaxFit;
-		if (cfg->aligned())
-			xMin = -2., xMax = +3.;
+		double xMin = x_min_mode, xMax = x_max_mode;	// previously: xMax = yMaxFit
 
 		h_y->Fit(ff_fit, "Q", "", xMin, xMax);
 
 		ff_fit->ReleaseParameter(4);
 		double w = std::min(4., 2. * ff_fit->GetParameter(2));
 		xMin = ff_fit->GetParameter(1) - w;
-		xMax = std::min(yMaxFit, ff_fit->GetParameter(1) + w);
+		xMax = std::min(x_max_mode, ff_fit->GetParameter(1) + w);
 
 		h_y->Fit(ff_fit, "Q", "", xMin, xMax);
 
@@ -683,7 +681,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 				continue;
 			}
 
-			auto *g_y_cen_vs_x = buildModeGraph(h2_y_vs_x, cfg, rpd.y_max_fit);
+			auto *g_y_cen_vs_x = buildModeGraph(h2_y_vs_x, cfg, rpd.x_min_mode, rpd.x_max_mode);
 
 			if (g_y_cen_vs_x->GetN() < 5)
 			{
