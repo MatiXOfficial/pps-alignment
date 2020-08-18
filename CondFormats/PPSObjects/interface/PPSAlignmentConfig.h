@@ -75,8 +75,6 @@ public:
 	SectorConfig sectorConfig45() const;
 	SectorConfig sectorConfig56() const;
 
-	std::vector<std::string> inputFiles() const;
-
 	std::map<unsigned int, double> alignmentCorrectionsX() const;
 	std::map<unsigned int, double> alignmentCorrectionsY() const;
 
@@ -99,8 +97,6 @@ public:
 
 	void setSectorConfig45(SectorConfig &sectorConfig45);
 	void setSectorConfig56(SectorConfig &sectorConfig56);
-
-	void setInputFiles(std::vector<std::string> &inputFiles);
 
 	void setAlignmentCorrectionsX(std::map<unsigned int, double> &alignmentCorrectionsX);
 	void setAlignmentCorrectionsY(std::map<unsigned int, double> &alignmentCorrectionsY);
@@ -126,8 +122,6 @@ private:
 	std::vector<std::string> sequence_;
 
 	SectorConfig sectorConfig45_, sectorConfig56_;
-
-	std::vector<std::string> inputFiles_;
 
 	std::map<unsigned int, double> alignmentCorrectionsX_, alignmentCorrectionsY_;
 

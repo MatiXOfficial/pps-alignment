@@ -27,8 +27,6 @@ std::vector<std::string> PPSAlignmentConfig::sequence() const { return sequence_
 SectorConfig PPSAlignmentConfig::sectorConfig45() const { return sectorConfig45_; }
 SectorConfig PPSAlignmentConfig::sectorConfig56() const { return sectorConfig56_; }
 
-std::vector<std::string> PPSAlignmentConfig::inputFiles() const { return inputFiles_; }
-
 std::map<unsigned int, double> PPSAlignmentConfig::alignmentCorrectionsX() const 
 { 
 	return alignmentCorrectionsX_; 
@@ -76,8 +74,6 @@ void PPSAlignmentConfig::setSequence(std::vector<std::string> &sequence) { seque
 
 void PPSAlignmentConfig::setSectorConfig45(SectorConfig &sectorConfig45) { sectorConfig45_ = sectorConfig45; }
 void PPSAlignmentConfig::setSectorConfig56(SectorConfig &sectorConfig56) { sectorConfig56_ = sectorConfig56; }
-
-void PPSAlignmentConfig::setInputFiles(std::vector<std::string> &inputFiles) { inputFiles_ = inputFiles; }
 
 void PPSAlignmentConfig::setAlignmentCorrectionsX(std::map<unsigned int, double> &alignmentCorrectionsX) 
 { 
@@ -154,11 +150,6 @@ std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
 
 std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 {
-	os << "* input files\n";
-	for (const auto &f : c.inputFiles_)   
-		os << "    " << f.c_str() << "\n";
-	os << "\n";
-
 	os << "* dataset already aligned\n";
 	os << "    aligned = " << c.aligned_ << "\n\n";
 
@@ -169,7 +160,6 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 
 	os << "* cuts\n";
 	os << "    n_si = " << c.n_si_ << "\n\n";
-
 
 	os << "* " << c.sectorConfig45_ << "\n\n";
 	os << "* " << c.sectorConfig56_ << "\n\n";

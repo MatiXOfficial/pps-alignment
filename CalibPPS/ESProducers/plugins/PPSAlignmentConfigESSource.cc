@@ -46,8 +46,6 @@ private:
 
 	SectorConfig sectorConfig45, sectorConfig56;
 
-	std::vector<std::string> inputFiles;
-
 	std::map<unsigned int, double> alignmentCorrectionsX, alignmentCorrectionsY;
 
 	bool aligned;
@@ -203,8 +201,6 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setSectorConfig45(sectorConfig45);
 	p->setSectorConfig56(sectorConfig56);
 
-	p->setInputFiles(inputFiles);
-
 	p->setAlignmentCorrectionsX(alignmentCorrectionsX);
 	p->setAlignmentCorrectionsY(alignmentCorrectionsY);
 
@@ -222,7 +218,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 	p->setAlignment_y_ranges(alignment_y_ranges);
 
-	edm::LogInfo("produce_" + label) << "\n" << (*p);
+	edm::LogInfo("produce") << "\n\n" << label << ":\n" << (*p);
 
 	return p;
 }
