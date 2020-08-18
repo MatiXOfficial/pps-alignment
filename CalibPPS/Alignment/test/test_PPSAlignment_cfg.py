@@ -51,11 +51,13 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	sector_45 = cms.PSet(
 		rp_N = cms.PSet(
 			slope = cms.double(0.19),
-			sh_x = cms.double(-3.6)
+			sh_x = cms.double(-3.6),
+			y_max_fit = cms.double(7.8)
 		),
 		rp_F = cms.PSet(
 			slope = cms.double(0.19),
-			sh_x = cms.double(-42.)
+			sh_x = cms.double(-42.),
+			y_max_fit = cms.double(7.5)
 		),
 		slope = cms.double(0.006),
 
@@ -81,11 +83,13 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	sector_56 = cms.PSet(
 		rp_N = cms.PSet(
 			slope = cms.double(0.40),
-			sh_x = cms.double(-2.8)
+			sh_x = cms.double(-2.8),
+			y_max_fit = cms.double(7.4)
 		),
 		rp_F = cms.PSet(
 			slope = cms.double(0.39),
-			sh_x = cms.double(-41.9)
+			sh_x = cms.double(-41.9),
+			y_max_fit = cms.double(8.0)
 		),
 		slope = cms.double(-0.015),
 
@@ -131,69 +135,62 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 			sh_max = cms.double(-41.2)
 		)
 	),
-	
-	y_max_fit = cms.PSet(
-		rp_L_2_F = cms.double(7.5),
-		rp_L_1_F = cms.double(7.8),
-		rp_R_1_F = cms.double(7.4),
-		rp_R_2_F = cms.double(8.0)
-	),
 
 	x_alignment_meth_o = cms.PSet(
-	rp_L_2_F = cms.PSet(
-		x_min = cms.double(47.),
-		x_max = cms.double(56.5),
-	),
-	rp_L_1_F = cms.PSet(
-		x_min = cms.double(9.),
-		x_max = cms.double(18.5),
-	),
-	rp_R_1_F = cms.PSet(
-		x_min = cms.double(7.),
-		x_max = cms.double(15.),
-	),
-	rp_R_2_F = cms.PSet(
-		x_min = cms.double(46.),
-		x_max = cms.double(54.),
-	)
+		rp_L_2_F = cms.PSet(
+			x_min = cms.double(47.),
+			x_max = cms.double(56.5),
+		),
+		rp_L_1_F = cms.PSet(
+			x_min = cms.double(9.),
+			x_max = cms.double(18.5),
+		),
+		rp_R_1_F = cms.PSet(
+			x_min = cms.double(7.),
+			x_max = cms.double(15.),
+		),
+		rp_R_2_F = cms.PSet(
+			x_min = cms.double(46.),
+			x_max = cms.double(54.),
+		)
 	),
 
 	x_alignment_relative = cms.PSet(
-	rp_L_2_F = cms.PSet(
-		x_min = cms.double(0.),
-		x_max = cms.double(0.),
-	),
-	rp_L_1_F = cms.PSet(
-		x_min = cms.double(7.5),
-		x_max = cms.double(12.),
-	),
-	rp_R_1_F = cms.PSet(
-		x_min = cms.double(6.),
-		x_max = cms.double(10.),
-	),
-	rp_R_2_F = cms.PSet(
-		x_min = cms.double(0.),
-		x_max = cms.double(0.),
-	)
+		rp_L_2_F = cms.PSet(
+			x_min = cms.double(0.),
+			x_max = cms.double(0.),
+		),
+		rp_L_1_F = cms.PSet(
+			x_min = cms.double(7.5),
+			x_max = cms.double(12.),
+		),
+		rp_R_1_F = cms.PSet(
+			x_min = cms.double(6.),
+			x_max = cms.double(10.),
+		),
+		rp_R_2_F = cms.PSet(
+			x_min = cms.double(0.),
+			x_max = cms.double(0.),
+		)
 	),
 
 	y_alignment = cms.PSet(
-	rp_L_2_F = cms.PSet(
-		x_min = cms.double(44.5),
-		x_max = cms.double(49.0),
-	),
-	rp_L_1_F = cms.PSet(
-		x_min = cms.double(6.7),
-		x_max = cms.double(11.0),
-	),
-	rp_R_1_F = cms.PSet(
-		x_min = cms.double(5.9),
-		x_max = cms.double(10.0),
-	),
-	rp_R_2_F = cms.PSet(
-		x_min = cms.double(44.5),
-		x_max = cms.double(49.0),
-	)
+		rp_L_2_F = cms.PSet(
+			x_min = cms.double(44.5),
+			x_max = cms.double(49.0),
+		),
+		rp_L_1_F = cms.PSet(
+			x_min = cms.double(6.7),
+			x_max = cms.double(11.0),
+		),
+		rp_R_1_F = cms.PSet(
+			x_min = cms.double(5.9),
+			x_max = cms.double(10.0),
+		),
+		rp_R_2_F = cms.PSet(
+			x_min = cms.double(44.5),
+			x_max = cms.double(49.0),
+		)
 	)
 )
 
@@ -222,32 +219,23 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 		)
 	),
 
-	aligned = cms.bool(True),
-	
-	y_max_fit = cms.PSet(
-		rp_L_2_F = cms.double(3.5),
-		rp_L_1_F = cms.double(4.5),
-		rp_R_1_F = cms.double(5.5),
-		rp_R_2_F = cms.double(4.8)
-	),
-
 	x_alignment_meth_o = cms.PSet(
-	rp_L_2_F = cms.PSet(
-		x_min = cms.double(5.),
-		x_max = cms.double(15.),
-	),
-	rp_L_1_F = cms.PSet(
-		x_min = cms.double(5.),
-		x_max = cms.double(15.),
-	),
-	rp_R_1_F = cms.PSet(
-		x_min = cms.double(4.),
-		x_max = cms.double(12.),
-	),
-	rp_R_2_F = cms.PSet(
-		x_min = cms.double(4.),
-		x_max = cms.double(12.),
-	)
+		rp_L_2_F = cms.PSet(
+			x_min = cms.double(5.),
+			x_max = cms.double(15.),
+		),
+		rp_L_1_F = cms.PSet(
+			x_min = cms.double(5.),
+			x_max = cms.double(15.),
+		),
+		rp_R_1_F = cms.PSet(
+			x_min = cms.double(4.),
+			x_max = cms.double(12.),
+		),
+		rp_R_2_F = cms.PSet(
+			x_min = cms.double(4.),
+			x_max = cms.double(12.),
+		)
 	),
 
 	binning = cms.PSet(

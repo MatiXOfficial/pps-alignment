@@ -39,6 +39,11 @@ std::map<unsigned int, double> PPSAlignmentConfig::alignmentCorrectionsY() const
 bool PPSAlignmentConfig::aligned() const { return aligned_; }
 double PPSAlignmentConfig::x_ali_sh_step() const { return x_ali_sh_step_; }
 
+double PPSAlignmentConfig::y_mode_sys_unc() const { return y_mode_sys_unc_; }
+double PPSAlignmentConfig::chiSqThreshold() const { return chiSqThreshold_; }
+double PPSAlignmentConfig::y_mode_unc_max_valid() const { return y_mode_unc_max_valid_; }
+double PPSAlignmentConfig::y_mode_max_valid() const { return y_mode_max_valid_; }
+
 double PPSAlignmentConfig::n_si() const { return n_si_; }
 
 std::vector<std::string> PPSAlignmentConfig::matchingReferenceDatasets() const 
@@ -48,11 +53,6 @@ std::vector<std::string> PPSAlignmentConfig::matchingReferenceDatasets() const
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::matchingShiftRanges() const 
 { 
 	return matchingShiftRanges_; 
-}
-
-std::map<unsigned int, double> PPSAlignmentConfig::yMaxFit() const 
-{ 
-	return yMaxFit_; 
 }
 
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_meth_o_ranges() const 
@@ -90,6 +90,14 @@ void PPSAlignmentConfig::setAlignmentCorrectionsY(std::map<unsigned int, double>
 void PPSAlignmentConfig::setAligned(bool aligned) { aligned_ = aligned; }
 void PPSAlignmentConfig::setX_ali_sh_step(double x_ali_sh_step) { x_ali_sh_step_ = x_ali_sh_step; }
 
+void PPSAlignmentConfig::setY_mode_sys_unc(double y_mode_sys_unc) { y_mode_sys_unc_ = y_mode_sys_unc; }
+void PPSAlignmentConfig::setChiSqThreshold(double chiSqThreshold) { chiSqThreshold_ = chiSqThreshold; }
+void PPSAlignmentConfig::setY_mode_unc_max_valid(double y_mode_unc_max_valid) 
+{ 
+	y_mode_unc_max_valid_ = y_mode_unc_max_valid; 
+}
+void PPSAlignmentConfig::setY_mode_max_valid(double y_mode_max_valid) { y_mode_max_valid_ = y_mode_max_valid; }
+
 void PPSAlignmentConfig::setN_si(double n_si) { n_si_ = n_si; }
 
 void PPSAlignmentConfig::setMatchingReferenceDatasets(std::vector<std::string> &matchingReferenceDatasets)
@@ -99,11 +107,6 @@ void PPSAlignmentConfig::setMatchingReferenceDatasets(std::vector<std::string> &
 void PPSAlignmentConfig::setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges)
 {
 	matchingShiftRanges_ = matchingShiftRanges;
-}
-
-void PPSAlignmentConfig::setYMaxFit(std::map<unsigned int, double> &yMaxFit)
-{
-	yMaxFit_ = yMaxFit;
 }
 
 void PPSAlignmentConfig::setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges)
@@ -129,7 +132,7 @@ std::ostream &operator<<(std::ostream &os, RPConfig &rc)
 	os << std::fixed << std::setprecision(3);
 	os << "    " << rc.name << ", id = " << rc.id << ", position = " << rc.position << ":\n";
 	os << "        slope = " << rc.slope << ", sh_x = " << rc.sh_x << "\n";
-	os << "        y_cen_add = " << rc.y_cen_add << ", y_width_mult = " << rc.y_width_mult;
+	os << "        y_max_fit = " << rc.y_max_fit << ", y_cen_add = " << rc.y_cen_add << ", y_width_mult = " << rc.y_width_mult;
 
 	return os;
 }
@@ -189,6 +192,12 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	os << "* x alignment shift step\n";
 	os << "    x_ali_sh_step = " << c.x_ali_sh_step_ << "\n\n";
 
+	os << "* mode graph parameters\n";
+	os << "    y_mode_sys_unc = " << c.y_mode_sys_unc_ << "\n";
+	os << "    chiSqThreshold = " << c.chiSqThreshold_ << "\n";
+	os << "    y_mode_unc_max_valid = " << c.y_mode_unc_max_valid_ << "\n";
+	os << "    y_mode_max_valid = " << c.y_mode_max_valid_ << "\n\n";
+
 	os << "* cuts\n";
 	os << "    n_si = " << c.n_si_ << "\n\n";
 
@@ -200,10 +209,6 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	os << "    shift ranges:\n";
 	for (const auto &p : c.matchingShiftRanges_)
 		os << "        RP " << p.first << ": sh_min = " << p.second.x_min << ", sh_max = " << p.second.x_max << "\n";
-		
-	os << "\n" << "* y_max_fit\n";
-	for (const auto &p : c.yMaxFit_)
-		os << "    RP " << p.first << ": " << p.second << "\n";
 
 	os << "\n" << "* alignment_x_meth_o\n";
 	for (const auto &p : c.alignment_x_meth_o_ranges_)

@@ -38,6 +38,8 @@ struct RPConfig
 	std::string position;
 	double slope;
 	double sh_x;
+
+	double y_max_fit;
 	double y_cen_add;
 	double y_width_mult;
 
@@ -99,12 +101,15 @@ public:
 	bool aligned() const;
 	double x_ali_sh_step() const;
 
+	double y_mode_sys_unc() const;
+	double chiSqThreshold() const;
+	double y_mode_unc_max_valid() const;
+	double y_mode_max_valid() const;
+
 	double n_si() const;
 
 	std::vector<std::string> matchingReferenceDatasets() const;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges() const;
-	
-	std::map<unsigned int, double> yMaxFit() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges() const;
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges() const;
@@ -125,12 +130,15 @@ public:
 	void setAligned(bool aligned);
 	void setX_ali_sh_step(double x_ali_sh_step);
 
+	void setY_mode_sys_unc(double y_mode_sys_unc);
+	void setChiSqThreshold(double chiSqThreshold);
+	void setY_mode_unc_max_valid(double y_mode_unc_max_valid);
+	void setY_mode_max_valid(double y_mode_max_valid);
+
 	void setN_si(double n_si);
 
 	void setMatchingReferenceDatasets(std::vector<std::string> &matchingReferenceDatasets);
 	void setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges);
-	
-	void setYMaxFit(std::map<unsigned int, double> &yMaxFit);
 
 	void setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges);
 	void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
@@ -152,12 +160,15 @@ private:
 	bool aligned_;
 	double x_ali_sh_step_;	// mm
 
+	double y_mode_sys_unc_;
+	double chiSqThreshold_;
+	double y_mode_unc_max_valid_;
+	double y_mode_max_valid_;
+
 	double n_si_;
 
 	std::vector<std::string> matchingReferenceDatasets_;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges_;
-	
-	std::map<unsigned int, double> yMaxFit_;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges_;
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges_;

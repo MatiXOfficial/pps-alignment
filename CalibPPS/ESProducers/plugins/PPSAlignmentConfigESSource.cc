@@ -51,12 +51,15 @@ private:
 	bool aligned;
 	double x_ali_sh_step;
 
+	double y_mode_sys_unc;
+	double chiSqThreshold;
+	double y_mode_unc_max_valid;
+	double y_mode_max_valid;
+
 	double n_si;
 
 	std::vector<std::string> matchingReferenceDatasets;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges;
-	
-	std::map<unsigned int, double> yMaxFit;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges;
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges;
@@ -106,12 +109,14 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		const auto &rnps = sps.getParameter<edm::ParameterSet>("rp_N");
 		sc->rp_N.slope = rnps.getParameter<double>("slope");
 		sc->rp_N.sh_x = rnps.getParameter<double>("sh_x");
+		sc->rp_N.y_max_fit = rnps.getParameter<double>("y_max_fit");
 		sc->rp_N.y_cen_add = rnps.getParameter<double>("y_cen_add");
 		sc->rp_N.y_width_mult = rnps.getParameter<double>("y_width_mult");
 
 		const auto &rfps = sps.getParameter<edm::ParameterSet>("rp_F");
 		sc->rp_F.slope = rfps.getParameter<double>("slope");
 		sc->rp_F.sh_x = rfps.getParameter<double>("sh_x");
+		sc->rp_F.y_max_fit = rfps.getParameter<double>("y_max_fit");
 		sc->rp_F.y_cen_add = rfps.getParameter<double>("y_cen_add");
 		sc->rp_F.y_width_mult = rfps.getParameter<double>("y_width_mult");
 
@@ -154,6 +159,11 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	aligned = iConfig.getParameter<bool>("aligned");
 	x_ali_sh_step = iConfig.getParameter<double>("x_ali_sh_step");
 
+	y_mode_sys_unc = iConfig.getParameter<double>("y_mode_sys_unc");
+	chiSqThreshold = iConfig.getParameter<double>("chiSqThreshold");
+	y_mode_unc_max_valid = iConfig.getParameter<double>("y_mode_unc_max_valid");
+	y_mode_max_valid = iConfig.getParameter<double>("y_mode_max_valid");
+
 	n_si = iConfig.getParameter<double>("n_si");
 
 	const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
@@ -163,12 +173,6 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	{
 		const auto &ps = c_m.getParameter<edm::ParameterSet>("rp_" + p.second);
 		matchingShiftRanges[p.first] = {ps.getParameter<double>("sh_min"), ps.getParameter<double>("sh_max")};
-	}
-	
-	const auto &c_mf = iConfig.getParameter<edm::ParameterSet>("y_max_fit");
-	for (const auto &p : rpTags)
-	{
-		yMaxFit[p.first] = c_mf.getParameter<double>("rp_" + p.second);
 	}
 
 	const auto &c_axo = iConfig.getParameter<edm::ParameterSet>("x_alignment_meth_o");
@@ -222,12 +226,15 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setAligned(aligned);
 	p->setX_ali_sh_step(x_ali_sh_step);
 
+	p->setY_mode_sys_unc(y_mode_sys_unc);
+	p->setChiSqThreshold(chiSqThreshold);
+	p->setY_mode_unc_max_valid(y_mode_unc_max_valid);
+	p->setY_mode_max_valid(y_mode_max_valid);
+
 	p->setN_si(n_si);
 
 	p->setMatchingReferenceDatasets(matchingReferenceDatasets);
 	p->setMatchingShiftRanges(matchingShiftRanges);
-	
-	p->setYMaxFit(yMaxFit);
 
 	p->setAlignment_x_meth_o_ranges(alignment_x_meth_o_ranges);
 	p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);
@@ -258,6 +265,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_N;
 		rp_N.add<double>("slope", -3.6);
 		rp_N.add<double>("sh_x", -0.19);
+		rp_N.add<double>("y_max_fit", 7.8);
 		rp_N.add<double>("y_cen_add", -0.3);
 		rp_N.add<double>("y_width_mult", 1.1);
 		sector45.add<edm::ParameterSetDescription>("rp_N", rp_N);
@@ -265,6 +273,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_F;
 		rp_F.add<double>("slope", -42.);
 		rp_F.add<double>("sh_x", 0.19);
+		rp_F.add<double>("y_max_fit", 7.5);
 		rp_F.add<double>("y_cen_add", -0.3);
 		rp_F.add<double>("y_width_mult", 1.1);
 		sector45.add<edm::ParameterSetDescription>("rp_F", rp_F);
@@ -295,6 +304,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_N;
 		rp_N.add<double>("slope", -2.8);
 		rp_N.add<double>("sh_x", 0.40);
+		rp_N.add<double>("y_max_fit", 7.4);
 		rp_N.add<double>("y_cen_add", -0.8);
 		rp_N.add<double>("y_width_mult", 1.0);
 		sector56.add<edm::ParameterSetDescription>("rp_N", rp_N);
@@ -302,6 +312,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_F;
 		rp_F.add<double>("slope", -41.9);
 		rp_F.add<double>("sh_x", 0.39);
+		rp_F.add<double>("y_max_fit", 8.0);
 		rp_F.add<double>("y_cen_add", -0.8);
 		rp_F.add<double>("y_width_mult", 1.0);
 		sector56.add<edm::ParameterSetDescription>("rp_F", rp_F);
@@ -354,6 +365,12 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 
 	desc.add<bool>("aligned", false);
 	desc.add<double>("x_ali_sh_step", 0.01);
+
+	desc.add<double>("y_mode_sys_unc", 0.03);
+	desc.add<double>("chiSqThreshold", 50.);
+	desc.add<double>("y_mode_unc_max_valid", 5.);
+	desc.add<double>("y_mode_max_valid", 20.);
+
 	desc.add<double>("n_si", 4.);
 
 	// matching
@@ -383,18 +400,6 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		matching.add<edm::ParameterSetDescription>("rp_R_2_F", rpR2F);
 
 		desc.add<edm::ParameterSetDescription>("matching", matching);
-	}
-
-	// y max fit
-	{
-		edm::ParameterSetDescription yMaxFit;
-
-		yMaxFit.add<double>("rp_L_2_F", 7.5);
-		yMaxFit.add<double>("rp_L_1_F", 7.8);
-		yMaxFit.add<double>("rp_R_1_F", 7.4);
-		yMaxFit.add<double>("rp_R_2_F", 8.0);
-
-		desc.add<edm::ParameterSetDescription>("y_max_fit", yMaxFit);
 	}
 
 	// x alignment meth o

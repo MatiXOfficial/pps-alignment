@@ -74,7 +74,8 @@ private:
 
 	// ------------ y alignment ------------
 	static double findMax(TF1 *ff_fit);
-	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, double _yMaxFit);
+	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
+	                             double _yMaxFit);
 
 	void yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
 
@@ -557,7 +558,9 @@ double PPSAlignmentHarvester::findMax(TF1 *ff_fit)
 	return xMax;
 }
 
-TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, bool aligned, double _yMaxFit)
+TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, 
+                                                    const edm::ESHandle<PPSAlignmentConfig> &cfg, 
+                                                    const double yMaxFit)
 {
 	TDirectory *d_top = nullptr;
 	if (debug_) 
@@ -565,7 +568,6 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 
 	TF1 *ff_fit = new TF1("ff_fit", "[0] * exp(-(x-[1])*(x-[1])/2./[2]/[2]) + [3] + [4]*x");
 
-	const double yMaxFit = _yMaxFit;
 	TGraphErrors *g_y_mode_vs_x = new TGraphErrors();
 
 	for (int bix = 1; bix <= h2_y_vs_x->getNbinsX(); bix++)
@@ -601,7 +603,7 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 		ff_fit->FixParameter(4, 0.);
 
 		double xMin = 2., xMax = yMaxFit;
-		if (aligned)
+		if (cfg->aligned())
 			xMin = -2., xMax = +3.;
 
 		h_y->Fit(ff_fit, "Q", "", xMin, xMax);
@@ -618,12 +620,14 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 
 		double y_mode = findMax(ff_fit);
 		const double y_mode_fit_unc = ff_fit->GetParameter(2) / 10;
-		const double y_mode_sys_unc = 0.030;
+		const double y_mode_sys_unc = cfg->y_mode_sys_unc();
 		double y_mode_unc = std::sqrt(y_mode_fit_unc*y_mode_fit_unc + y_mode_sys_unc*y_mode_sys_unc);
 
-		const double chiSqThreshold = (aligned) ? 1000. : 50.;
+		const double chiSqThreshold = cfg->chiSqThreshold();
 
-		const bool valid = ! (std::fabs(y_mode_unc) > 5. || std::fabs(y_mode) > 20. || ff_fit->GetChisquare() / ff_fit->GetNDF() > chiSqThreshold);
+		const bool valid = ! (std::fabs(y_mode_unc) > cfg->y_mode_unc_max_valid() 
+		                      || std::fabs(y_mode) > cfg->y_mode_max_valid() 
+		                      || ff_fit->GetChisquare() / ff_fit->GetNDF() > chiSqThreshold);
 
 		if (debug_)
 		{
@@ -645,7 +649,8 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, b
 	return g_y_mode_vs_x;
 }
 
-void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos)
+void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
+                                       int seqPos)
 {
 	TDirectory *yAliDir = nullptr;
 	if (debug_)
@@ -678,7 +683,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 				continue;
 			}
 
-			auto *g_y_cen_vs_x = buildModeGraph(h2_y_vs_x, cfg->aligned(), cfg->yMaxFit()[rpd.id]);
+			auto *g_y_cen_vs_x = buildModeGraph(h2_y_vs_x, cfg, rpd.y_max_fit);
 
 			if (g_y_cen_vs_x->GetN() < 5)
 			{
