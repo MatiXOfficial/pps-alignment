@@ -41,6 +41,7 @@ struct RPConfig
 
 	COND_SERIALIZABLE;
 };
+std::ostream &operator<<(std::ostream &os, RPConfig &rc);
 
 //---------------------------------------------------------------------------------------------
 
@@ -63,6 +64,21 @@ struct SectorConfig
 
 	COND_SERIALIZABLE;
 };
+std::ostream &operator<<(std::ostream &os, SectorConfig &sc);
+
+//---------------------------------------------------------------------------------------------
+
+struct Binning
+{
+	double bin_size_x;	// mm
+	unsigned int n_bins_x;
+
+	double pixel_x_offset;
+
+	unsigned int n_bins_y;
+	double y_min, y_max;
+};
+std::ostream &operator<<(std::ostream &os, Binning &b);
 
 //---------------------------------------------------------------------------------------------
 
@@ -92,6 +108,8 @@ public:
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges() const;
 
+	Binning binning() const;
+
 	// Setters 
 	void setSequence(std::vector<std::string> &sequence);
 
@@ -114,6 +132,8 @@ public:
 	void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
 
 	void setAlignment_y_ranges(std::map<unsigned int, SelectionRange> &alignment_y_ranges);
+
+	void setBinning(Binning &binning);
 
 	// << operator
 	friend std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c);
@@ -139,7 +159,11 @@ private:
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges_;
 
+	Binning binning_;
+
 	COND_SERIALIZABLE;
 };
+
+std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c);
 
 #endif 

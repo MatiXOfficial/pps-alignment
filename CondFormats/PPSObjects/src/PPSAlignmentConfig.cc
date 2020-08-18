@@ -68,6 +68,8 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_y_ranges() 
 	return alignment_y_ranges_; 
 }
 
+Binning PPSAlignmentConfig::binning() const { return binning_; }
+
 // -------------------------------- PPSAlignmentConfig setters --------------------------------
 
 void PPSAlignmentConfig::setSequence(std::vector<std::string> &sequence) { sequence_ = sequence; }
@@ -116,6 +118,8 @@ void PPSAlignmentConfig::setAlignment_y_ranges(std::map<unsigned int, SelectionR
 	alignment_y_ranges_ = alignment_y_ranges;
 }
 
+void PPSAlignmentConfig::setBinning(Binning &binning) { binning_ = binning; }
+
 // -------------------------------- << operators --------------------------------
 
 std::ostream &operator<<(std::ostream &os, RPConfig &rc)
@@ -143,6 +147,15 @@ std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
 		<< ", n = " << sc.nr_x_slice_n << "\n";
 	os << "    x slices, fr: min = " << sc.fr_x_slice_min << ", w = " << sc.fr_x_slice_w 
 		<< ", n = " << sc.fr_x_slice_n;
+
+	return os;
+}
+
+std::ostream &operator<<(std::ostream &os, Binning &b)
+{
+	os << "    bin_size_x = " << b.bin_size_x << ", n_bins_x = " << b.n_bins_x << "\n";
+	os << "    pixel_x_offset = " << b.pixel_x_offset << "\n";
+	os << "    n_bins_y = " << b.n_bins_y << ", y_min = " << b.y_min << ", y_max = " << b.y_max;
 
 	return os;
 }
@@ -197,6 +210,9 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	os << "\n" << "* alignment_y\n";
 	for (const auto &p : c.alignment_y_ranges_)
 		os << "    RP " << p.first << ": x_min = " << p.second.x_min << ", x_max = " << p.second.x_max << "\n";
+
+	os << "\n" << "* binning\n";
+	os << c.binning_ << "\n";
 
 	return os;
 }

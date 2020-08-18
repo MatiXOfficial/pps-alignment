@@ -62,6 +62,8 @@ private:
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges;
 
+	Binning binning;
+
 	std::string label;
 };
 
@@ -184,6 +186,14 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		alignment_y_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
+	const auto &bps = iConfig.getParameter<edm::ParameterSet>("binning");
+	binning.bin_size_x = bps.getParameter<double>("bin_size_x");
+	binning.n_bins_x = bps.getParameter<unsigned int>("n_bins_x");
+	binning.pixel_x_offset = bps.getParameter<double>("pixel_x_offset");
+	binning.n_bins_y = bps.getParameter<unsigned int>("n_bins_y");
+	binning.y_min = bps.getParameter<double>("y_min");
+	binning.y_max = bps.getParameter<double>("y_max");
+
 	label = iConfig.getParameter<std::string>("label");
 	setWhatProduced(this, label);
 	findingRecord<PPSAlignmentConfigRcd>();
@@ -216,6 +226,8 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);
 
 	p->setAlignment_y_ranges(alignment_y_ranges);
+
+	p->setBinning(binning);
 
 	edm::LogInfo("produce") << "\n" << (label.empty() ? "empty label" : "label = " + label) << ":\n\n" << (*p);
 
@@ -448,6 +460,20 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		y_alignment.add<edm::ParameterSetDescription>("rp_R_2_F", rpR2F);
 
 		desc.add<edm::ParameterSetDescription>("y_alignment", y_alignment);
+	}
+
+	// binning
+	{
+		edm::ParameterSetDescription binning;
+
+		binning.add<double>("bin_size_x", 142.3314E-3);
+		binning.add<unsigned int>("n_bins_x", 210);
+		binning.add<double>("pixel_x_offset", 40.);
+		binning.add<unsigned int>("n_bins_y", 400);
+		binning.add<double>("y_min", -20.);
+		binning.add<double>("y_max", 20.);
+
+		desc.add<edm::ParameterSetDescription>("binning", binning);
 	}
 
 	descriptions.add("ppsAlignmentConfigESSource", desc);

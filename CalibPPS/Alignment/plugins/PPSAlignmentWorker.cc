@@ -92,7 +92,8 @@ private:
 
 		std::map<unsigned int, SlicePlots> x_slice_plots_N, x_slice_plots_F;
 
-		void init(DQMStore::IBooker &iBooker, const SectorConfig &_scfg, bool aligned, const std::string &folder);
+		void init(DQMStore::IBooker &iBooker, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
+		          const SectorConfig &_scfg, const std::string &folder);
 
 		unsigned int process(const CTPPSLocalTrackLiteCollection &tracks, const edm::ESHandle<PPSAlignmentConfig> &cfg);
 	};
@@ -118,22 +119,22 @@ PPSAlignmentWorker::SectorData::SlicePlots::SlicePlots(DQMStore::IBooker &iBooke
 	p_y_diffFN_vs_y = iBooker.bookProfile("p_y_diffFN_vs_y", tmp);
 }
 
-void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, const SectorConfig &_scfg, bool aligned,
-                                          const std::string &folder)
+void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
+                                          const SectorConfig &_scfg, const std::string &folder)
 {
 	scfg = _scfg;
 
 	// binning
-	const double bin_size_x = 142.3314E-3; // mm
-	const unsigned int n_bins_x = 210;
+	const double bin_size_x = cfg->binning().bin_size_x;
+	const unsigned int n_bins_x = cfg->binning().n_bins_x;
 
-	const double pixel_x_offset = (aligned) ? 0. : 40.;
+	const double pixel_x_offset = cfg->binning().pixel_x_offset;
 
 	const double x_min_pix = pixel_x_offset, x_max_pix = pixel_x_offset + n_bins_x * bin_size_x;
 	const double x_min_str = 0., x_max_str = n_bins_x * bin_size_x;
 
-	const unsigned int n_bins_y = 400;
-	const double y_min = -20., y_max = +20.;
+	const unsigned int n_bins_y = cfg->binning().n_bins_y;
+	const double y_min = cfg->binning().y_min, y_max = cfg->binning().y_max;
 
 	// hit distributions
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/before selection/" + scfg.rp_N.name);
@@ -378,8 +379,8 @@ void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run con
 	edm::ESHandle<PPSAlignmentConfig> cfg;
 	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
 
-	sectorData45.init(iBooker, cfg->sectorConfig45(), cfg->aligned(), folder_);
-	sectorData56.init(iBooker, cfg->sectorConfig56(), cfg->aligned(), folder_);
+	sectorData45.init(iBooker, cfg, cfg->sectorConfig45(), folder_);
+	sectorData56.init(iBooker, cfg, cfg->sectorConfig56(), folder_);
 }
 
 void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
