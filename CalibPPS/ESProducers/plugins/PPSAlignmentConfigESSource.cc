@@ -49,6 +49,7 @@ private:
 	std::map<unsigned int, double> alignmentCorrectionsX, alignmentCorrectionsY;
 
 	bool aligned;
+	double x_ali_sh_step;
 
 	double n_si;
 
@@ -105,10 +106,14 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		const auto &rnps = sps.getParameter<edm::ParameterSet>("rp_N");
 		sc->rp_N.slope = rnps.getParameter<double>("slope");
 		sc->rp_N.sh_x = rnps.getParameter<double>("sh_x");
+		sc->rp_N.y_cen_add = rnps.getParameter<double>("y_cen_add");
+		sc->rp_N.y_width_mult = rnps.getParameter<double>("y_width_mult");
 
 		const auto &rfps = sps.getParameter<edm::ParameterSet>("rp_F");
 		sc->rp_F.slope = rfps.getParameter<double>("slope");
 		sc->rp_F.sh_x = rfps.getParameter<double>("sh_x");
+		sc->rp_F.y_cen_add = rfps.getParameter<double>("y_cen_add");
+		sc->rp_F.y_width_mult = rfps.getParameter<double>("y_width_mult");
 
 		sc->slope = sps.getParameter<double>("slope");
 
@@ -147,6 +152,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	}
 
 	aligned = iConfig.getParameter<bool>("aligned");
+	x_ali_sh_step = iConfig.getParameter<double>("x_ali_sh_step");
 
 	n_si = iConfig.getParameter<double>("n_si");
 
@@ -214,6 +220,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setAlignmentCorrectionsY(alignmentCorrectionsY);
 
 	p->setAligned(aligned);
+	p->setX_ali_sh_step(x_ali_sh_step);
 
 	p->setN_si(n_si);
 
@@ -251,11 +258,15 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_N;
 		rp_N.add<double>("slope", -3.6);
 		rp_N.add<double>("sh_x", -0.19);
+		rp_N.add<double>("y_cen_add", -0.3);
+		rp_N.add<double>("y_width_mult", 1.1);
 		sector45.add<edm::ParameterSetDescription>("rp_N", rp_N);
 
 		edm::ParameterSetDescription rp_F;
 		rp_F.add<double>("slope", -42.);
 		rp_F.add<double>("sh_x", 0.19);
+		rp_F.add<double>("y_cen_add", -0.3);
+		rp_F.add<double>("y_width_mult", 1.1);
 		sector45.add<edm::ParameterSetDescription>("rp_F", rp_F);
 
 		sector45.add<double>("slope", 0.006);
@@ -284,11 +295,15 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription rp_N;
 		rp_N.add<double>("slope", -2.8);
 		rp_N.add<double>("sh_x", 0.40);
+		rp_N.add<double>("y_cen_add", -0.8);
+		rp_N.add<double>("y_width_mult", 1.0);
 		sector56.add<edm::ParameterSetDescription>("rp_N", rp_N);
 
 		edm::ParameterSetDescription rp_F;
 		rp_F.add<double>("slope", -41.9);
 		rp_F.add<double>("sh_x", 0.39);
+		rp_F.add<double>("y_cen_add", -0.8);
+		rp_F.add<double>("y_width_mult", 1.0);
 		sector56.add<edm::ParameterSetDescription>("rp_F", rp_F);
 
 		sector56.add<double>("slope", -0.015);
@@ -338,6 +353,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	}
 
 	desc.add<bool>("aligned", false);
+	desc.add<double>("x_ali_sh_step", 0.01);
 	desc.add<double>("n_si", 4.);
 
 	// matching

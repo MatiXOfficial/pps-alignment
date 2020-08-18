@@ -57,13 +57,12 @@ private:
 
 	// ------------ x alignment ------------
 	static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
-	TGraphErrors* buildGraphFromDirectory(TDirectory *dir, bool aligned, unsigned int rpId);
-	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, 
-	                                            const std::vector<MonitorElement*> &mes, 
-	                                            bool aligned, unsigned int rpId);
+	TGraphErrors* buildGraphFromDirectory(TDirectory *dir, const RPConfig &rpd, unsigned int rpId);
+	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
+	                                            const std::vector<MonitorElement*> &mes, unsigned int rpId);
 	int doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
-	            const SelectionRange &range_test, double sh_min, double sh_max, double &sh_best, 
-	            double &sh_best_unc);
+	            const SelectionRange &range_test, double sh_min, double sh_max, double sh_step,
+	            double &sh_best, double &sh_best_unc);
 
 	void xAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg,
 	                const edm::ESHandle<PPSAlignmentConfig> &cfg_ref, int seqPos);
@@ -124,7 +123,7 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 	return 0;
 }
 
-TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, bool aligned, unsigned int rpId)
+TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, const RPConfig &rpd, unsigned int rpId)
 {
 	TGraphErrors *g = new TGraphErrors();
 
@@ -149,15 +148,8 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, bo
 		double y_cen = h_y->GetMean();
 		double y_width = h_y->GetRMS();
 
-		if (aligned)
-		{
-			y_cen += ((rpId < 100) ? -0.2 : -0.4);
-		}
-		else 
-		{
-			y_cen += ((rpId < 100) ? -0.3 : -0.8);
-			y_width *= ((rpId < 100) ? 1.1 : 1.0);
-		}
+		y_cen += rpd.y_cen_add;
+		y_width *= rpd.y_width_mult;
 
 		double sl=0., sl_unc=0.;
 		int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
@@ -175,9 +167,9 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, bo
 	return g;
 }
 
-TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, 
+TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
                                                                    const std::vector<MonitorElement*> &mes, 
-                                                                   bool aligned, unsigned int rpId)
+                                                                   unsigned int rpId)
 {
 	TGraphErrors *g = new TGraphErrors();
 
@@ -205,15 +197,8 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 			double y_cen = h_y->GetMean();
 			double y_width = h_y->GetRMS();
 
-			if (aligned)
-			{
-				y_cen += (rpId < 100) ? -0.2 : -0.4;
-			}   
-			else
-			{
-				y_cen += (rpId < 100) ? -0.3 : -0.8;
-				y_width *= (rpId < 100) ? 1.1 : 1.0;
-			}
+			y_cen += rpd.y_cen_add;
+			y_width *= rpd.y_width_mult;
 			
 			double sl = 0., sl_unc = 0.;
 			int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
@@ -233,7 +218,7 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 }
 
 int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
-                                   const SelectionRange &range_test, double sh_min, double sh_max, 
+                                   const SelectionRange &range_test, double sh_min, double sh_max, double sh_step,
                                    double &sh_best, double &sh_best_unc)
 {
 	// require minimal number of points
@@ -256,7 +241,6 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
 	// optimalisation variables
 	double S2_norm_best = 1E100;
 
-	double sh_step = 0.010;	// mm
 	for (double sh = sh_min; sh <= sh_max; sh += sh_step)
 	{
 		// calculate chi^2
@@ -419,11 +403,11 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 					rpDir = refDir->mkdir(rpd.name.c_str());
 					gDirectory = rpDir->mkdir("fits_ref");
 				}
-				TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, cfg_ref->aligned(), rpd.id);
+				TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, rpd, rpd.id);
 
 				if (debug_)
 					gDirectory = rpDir->mkdir("fits_test");
-				TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, mes_test, cfg->aligned(), rpd.id);
+				TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, rpd, mes_test, rpd.id);
 
 				if (debug_)
 				{
@@ -436,7 +420,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 				double sh = 0., sh_unc = 0.;
 				int r = doMatch(g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
 								cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
-								shiftRange.x_max, sh, sh_unc);
+								shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
 				if (r == 0)
 				{
 					CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);

@@ -38,6 +38,8 @@ struct RPConfig
 	std::string position;
 	double slope;
 	double sh_x;
+	double y_cen_add;
+	double y_width_mult;
 
 	COND_SERIALIZABLE;
 };
@@ -95,6 +97,7 @@ public:
 	std::map<unsigned int, double> alignmentCorrectionsY() const;
 
 	bool aligned() const;
+	double x_ali_sh_step() const;
 
 	double n_si() const;
 
@@ -120,6 +123,7 @@ public:
 	void setAlignmentCorrectionsY(std::map<unsigned int, double> &alignmentCorrectionsY);
 
 	void setAligned(bool aligned);
+	void setX_ali_sh_step(double x_ali_sh_step);
 
 	void setN_si(double n_si);
 
@@ -146,6 +150,7 @@ private:
 	std::map<unsigned int, double> alignmentCorrectionsX_, alignmentCorrectionsY_;
 
 	bool aligned_;
+	double x_ali_sh_step_;	// mm
 
 	double n_si_;
 

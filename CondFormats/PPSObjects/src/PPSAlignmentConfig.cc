@@ -37,6 +37,7 @@ std::map<unsigned int, double> PPSAlignmentConfig::alignmentCorrectionsY() const
 }
 
 bool PPSAlignmentConfig::aligned() const { return aligned_; }
+double PPSAlignmentConfig::x_ali_sh_step() const { return x_ali_sh_step_; }
 
 double PPSAlignmentConfig::n_si() const { return n_si_; }
 
@@ -87,6 +88,7 @@ void PPSAlignmentConfig::setAlignmentCorrectionsY(std::map<unsigned int, double>
 }
 
 void PPSAlignmentConfig::setAligned(bool aligned) { aligned_ = aligned; }
+void PPSAlignmentConfig::setX_ali_sh_step(double x_ali_sh_step) { x_ali_sh_step_ = x_ali_sh_step; }
 
 void PPSAlignmentConfig::setN_si(double n_si) { n_si_ = n_si; }
 
@@ -126,7 +128,8 @@ std::ostream &operator<<(std::ostream &os, RPConfig &rc)
 {
 	os << std::fixed << std::setprecision(3);
 	os << "    " << rc.name << ", id = " << rc.id << ", position = " << rc.position << ":\n";
-	os << "        slope = " << rc.slope << ", sh_x = " << rc.sh_x;
+	os << "        slope = " << rc.slope << ", sh_x = " << rc.sh_x << "\n";
+	os << "        y_cen_add = " << rc.y_cen_add << ", y_width_mult = " << rc.y_width_mult;
 
 	return os;
 }
@@ -182,6 +185,9 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 
 	os << "* dataset already aligned\n";
 	os << "    aligned = " << c.aligned_ << "\n\n";
+
+	os << "* x alignment shift step\n";
+	os << "    x_ali_sh_step = " << c.x_ali_sh_step_ << "\n\n";
 
 	os << "* cuts\n";
 	os << "    n_si = " << c.n_si_ << "\n\n";

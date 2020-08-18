@@ -200,6 +200,28 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigESSource",
 	label = cms.string('reference'),
 
+	sector_45 = cms.PSet(
+		rp_N = cms.PSet(
+			y_cen_add = cms.double(-0.2),
+			y_width_mult = cms.double(1.0)
+		),
+		rp_F = cms.PSet(
+			y_cen_add = cms.double(-0.2),
+			y_width_mult = cms.double(1.0)
+		)
+	),
+
+	sector_56 = cms.PSet(
+		rp_N = cms.PSet(
+			y_cen_add = cms.double(-0.4),
+			y_width_mult = cms.double(1.0)
+		),
+		rp_F = cms.PSet(
+			y_cen_add = cms.double(-0.4),
+			y_width_mult = cms.double(1.0)
+		)
+	),
+
 	aligned = cms.bool(True),
 	
 	y_max_fit = cms.PSet(
