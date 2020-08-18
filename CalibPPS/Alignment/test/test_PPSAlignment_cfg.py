@@ -39,7 +39,7 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring('root://eostotem.cern.ch//eos/cms/store/group/phys_pps/reconstruction/2018/physics_runs/rec-hit-version1/fill7334_xangle160_beta0.30_EGamma.root')
 )
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
 
 process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	label = cms.string(''),
@@ -50,7 +50,6 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	),
 	
 	sector_45 = cms.PSet(
-		name = cms.string("sector 45"),
 		rp_N = cms.PSet(
 			slope = cms.double(0.19),
 			sh_x = cms.double(-3.6)
@@ -81,7 +80,6 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 	),
 
 	sector_56 = cms.PSet(
-		name = cms.string("sector 56"),
 		rp_N = cms.PSet(
 			slope = cms.double(0.40),
 			sh_x = cms.double(-2.8)
@@ -225,7 +223,6 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 	sequence = cms.VPSet(),
 	
 	sector_45 = cms.PSet(
-		name = cms.string("sector 45"),
 		rp_N = cms.PSet(
 			slope = cms.double(0.19),
 			sh_x = cms.double(-42.)
@@ -235,7 +232,6 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 			sh_x = cms.double(-3.6)
 		),
 		slope = cms.double(0.006),
-		sh_x_N = cms.double(-3.6),
 		
 		cut_h_apply = cms.bool(True),
 		cut_h_a = cms.double(-1),
@@ -257,7 +253,6 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 	),
 
 	sector_56 = cms.PSet(
-		name = cms.string("sector 56"),
 		rp_N = cms.PSet(
 			slope = cms.double(0.40),
 			sh_x = cms.double(-2.8)
@@ -267,7 +262,6 @@ process.ppsAlignmentConfigESSource_reference = cms.ESSource("PPSAlignmentConfigE
 			sh_x = cms.double(-41.9)
 		),
 		slope = cms.double(-0.015),
-		sh_x_N = cms.double(-2.8),
 		
 		cut_h_apply = cms.bool(True),
 		cut_h_a = cms.double(-1),
