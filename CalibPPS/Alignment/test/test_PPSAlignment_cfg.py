@@ -112,7 +112,6 @@ process.ppsAlignmentConfigESSource = cms.ESSource("PPSAlignmentConfigESSource",
 		fr_x_slice_w = cms.double(0.2),
 	),
 
-	aligned = cms.bool(False),
 	n_si = cms.double(4.),
 
 	matching = cms.PSet(

@@ -36,7 +36,6 @@ std::map<unsigned int, double> PPSAlignmentConfig::alignmentCorrectionsY() const
 	return alignmentCorrectionsY_;
 }
 
-bool PPSAlignmentConfig::aligned() const { return aligned_; }
 double PPSAlignmentConfig::x_ali_sh_step() const { return x_ali_sh_step_; }
 
 double PPSAlignmentConfig::y_mode_sys_unc() const { return y_mode_sys_unc_; }
@@ -87,7 +86,6 @@ void PPSAlignmentConfig::setAlignmentCorrectionsY(std::map<unsigned int, double>
 	alignmentCorrectionsY_ = alignmentCorrectionsY; 
 }
 
-void PPSAlignmentConfig::setAligned(bool aligned) { aligned_ = aligned; }
 void PPSAlignmentConfig::setX_ali_sh_step(double x_ali_sh_step) { x_ali_sh_step_ = x_ali_sh_step; }
 
 void PPSAlignmentConfig::setY_mode_sys_unc(double y_mode_sys_unc) { y_mode_sys_unc_ = y_mode_sys_unc; }
@@ -186,9 +184,6 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 		<< c.alignmentCorrectionsY_[p.first] << " mm\n";
 	}
 	os << "\n";
-
-	os << "* dataset already aligned\n";
-	os << "    aligned = " << c.aligned_ << "\n\n";
 
 	os << "* x alignment shift step\n";
 	os << "    x_ali_sh_step = " << c.x_ali_sh_step_ << "\n\n";

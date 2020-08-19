@@ -48,7 +48,6 @@ private:
 
 	std::map<unsigned int, double> alignmentCorrectionsX, alignmentCorrectionsY;
 
-	bool aligned;
 	double x_ali_sh_step;
 
 	double y_mode_sys_unc;
@@ -160,7 +159,6 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		alignmentCorrectionsY[p.first] = ps.getParameter<double>("de_y");
 	}
 
-	aligned = iConfig.getParameter<bool>("aligned");
 	x_ali_sh_step = iConfig.getParameter<double>("x_ali_sh_step");
 
 	y_mode_sys_unc = iConfig.getParameter<double>("y_mode_sys_unc");
@@ -227,7 +225,6 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setAlignmentCorrectionsX(alignmentCorrectionsX);
 	p->setAlignmentCorrectionsY(alignmentCorrectionsY);
 
-	p->setAligned(aligned);
 	p->setX_ali_sh_step(x_ali_sh_step);
 
 	p->setY_mode_sys_unc(y_mode_sys_unc);
@@ -375,7 +372,6 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		desc.add<edm::ParameterSetDescription>("alignment_corrections", alignmentCorrections);
 	}
 
-	desc.add<bool>("aligned", false);
 	desc.add<double>("x_ali_sh_step", 0.01);
 
 	desc.add<double>("y_mode_sys_unc", 0.03);

@@ -98,7 +98,6 @@ public:
 	std::map<unsigned int, double> alignmentCorrectionsX() const;
 	std::map<unsigned int, double> alignmentCorrectionsY() const;
 
-	bool aligned() const;
 	double x_ali_sh_step() const;
 
 	double y_mode_sys_unc() const;
@@ -127,7 +126,6 @@ public:
 	void setAlignmentCorrectionsX(std::map<unsigned int, double> &alignmentCorrectionsX);
 	void setAlignmentCorrectionsY(std::map<unsigned int, double> &alignmentCorrectionsY);
 
-	void setAligned(bool aligned);
 	void setX_ali_sh_step(double x_ali_sh_step);
 
 	void setY_mode_sys_unc(double y_mode_sys_unc);
@@ -157,7 +155,6 @@ private:
 
 	std::map<unsigned int, double> alignmentCorrectionsX_, alignmentCorrectionsY_;
 
-	bool aligned_;
 	double x_ali_sh_step_;	// mm
 
 	double y_mode_sys_unc_;
