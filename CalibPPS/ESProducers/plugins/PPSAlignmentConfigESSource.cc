@@ -251,6 +251,14 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 //---------------------------------------------------------------------------------------------
 
+/**********************
+defaults for:
+	* fill = 7334
+	* xangle = 160
+	* beta = 0.30
+	* data not already aligned
+	* skeleton from 2018 config_base.py
+**********************/
 void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
 	edm::ParameterSetDescription desc;
@@ -264,8 +272,8 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription sector45;
 
 		edm::ParameterSetDescription rp_N;
-		rp_N.add<double>("slope", -3.6);
-		rp_N.add<double>("sh_x", -0.19);
+		rp_N.add<double>("slope", 0.19);
+		rp_N.add<double>("sh_x", -3.6);
 
 		rp_N.add<double>("x_min_mode", 2.);
 		rp_N.add<double>("x_max_mode", 7.8);
@@ -274,8 +282,8 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector45.add<edm::ParameterSetDescription>("rp_N", rp_N);
 
 		edm::ParameterSetDescription rp_F;
-		rp_F.add<double>("slope", -42.);
-		rp_F.add<double>("sh_x", 0.19);
+		rp_F.add<double>("slope", 0.19);
+		rp_F.add<double>("sh_x", -42.);
 
 		rp_F.add<double>("x_min_mode", 2.);
 		rp_F.add<double>("x_max_mode", 7.5);
@@ -307,8 +315,8 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription sector56;
 
 		edm::ParameterSetDescription rp_N;
-		rp_N.add<double>("slope", -2.8);
-		rp_N.add<double>("sh_x", 0.40);
+		rp_N.add<double>("slope", 0.40);
+		rp_N.add<double>("sh_x", -2.8);
 
 		rp_N.add<double>("x_min_mode", 2.);
 		rp_N.add<double>("x_max_mode", 7.4);
@@ -317,8 +325,8 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector56.add<edm::ParameterSetDescription>("rp_N", rp_N);
 
 		edm::ParameterSetDescription rp_F;
-		rp_F.add<double>("slope", -41.9);
-		rp_F.add<double>("sh_x", 0.39);
+		rp_F.add<double>("slope", 0.39);
+		rp_F.add<double>("sh_x", -41.9);
 
 		rp_F.add<double>("x_min_mode", 2.);
 		rp_F.add<double>("x_max_mode", 8.0);
