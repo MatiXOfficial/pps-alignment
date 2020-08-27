@@ -57,7 +57,6 @@ private:
 
 	// ------------ x alignment ------------
 	static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
-	TGraphErrors* buildGraphFromDirectory(TDirectory *dir, const RPConfig &rpd, unsigned int rpId);
 	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
 	                                            const std::vector<MonitorElement*> &mes, unsigned int rpId);
 	int doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
@@ -122,50 +121,6 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 	sl_unc = ff_pol1->GetParError(1);
 
 	return 0;
-}
-
-TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, const RPConfig &rpd, unsigned int rpId)
-{
-	TGraphErrors *g = new TGraphErrors();
-
-	TIter next(dir->GetListOfKeys());
-	TObject *o;
-	while ((o = next()))
-	{
-		TKey *k = (TKey *) o;
-
-		std::string name = k->GetName();
-		size_t d = name.find("-");
-		const double x_min = std::stod(name.substr(0, d));
-		const double x_max = std::stod(name.substr(d+1));
-
-		//printf("  %s, %.3f, %.3f\n", name.c_str(), x_min, x_max);
-
-		TDirectory *d_slice = (TDirectory *) k->ReadObj();
-
-		TH1D *h_y = (TH1D *) d_slice->Get("h_y");
-		TProfile *p_y_diffFN_vs_y = (TProfile *) d_slice->Get("p_y_diffFN_vs_y");
-
-		double y_cen = h_y->GetMean();
-		double y_width = h_y->GetRMS();
-
-		y_cen += rpd.y_cen_add;
-		y_width *= rpd.y_width_mult;
-
-		double sl=0., sl_unc=0.;
-		int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
-		if (fr != 0)
-			continue;
-
-		if (debug_)
-			p_y_diffFN_vs_y->Write(name.c_str());
-
-		int idx = g->GetN();
-		g->SetPoint(idx, (x_max + x_min)/2., sl);
-		g->SetPointError(idx, (x_max - x_min)/2., sl_unc);
-	}
-
-	return g;
 }
 
 TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
@@ -383,15 +338,14 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 		{
 			for (const auto &rpd : { sd.rp_F, sd.rp_N })
 			{
-				auto *d_ref = (TDirectory *) f_ref->Get((sd.name + "/near_far/x slices, " + rpd.position).c_str());
-				auto mes_test = iGetter.getAllContents(folder_ + "/" + sd.name + "/near_far/x slices, " + rpd.position);
-
-				if (d_ref == nullptr)
+				auto mes_ref = iGetter.getAllContents(folder_ + "/reference/" + sd.name + "/near_far/x slices, " + rpd.position);
+				if (mes_ref.empty())
 				{
-					edm::LogWarning("x_alignment") << "could not load d_ref";
+					edm::LogWarning("x_alignment") << "could not load mes_ref";
 					continue;
 				}
 
+				auto mes_test = iGetter.getAllContents(folder_ + "/test/" + sd.name + "/near_far/x slices, " + rpd.position);
 				if (mes_test.empty())
 				{
 					edm::LogWarning("x_alignment") << "could not load mes_test";
@@ -404,7 +358,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 					rpDir = refDir->mkdir(rpd.name.c_str());
 					gDirectory = rpDir->mkdir("fits_ref");
 				}
-				TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, rpd, rpd.id);
+				TGraphErrors *g_ref = buildGraphFromMonitorElements(iGetter, rpd, mes_ref, rpd.id);
 
 				if (debug_)
 					gDirectory = rpDir->mkdir("fits_test");
@@ -464,7 +418,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 			gDirectory = sectorDir;
 		}
 		
-		auto *p_x_diffFN_vs_x_N_monitor = iGetter.get(folder_ + "/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
+		auto *p_x_diffFN_vs_x_N_monitor = iGetter.get(folder_ + "/test/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
 		if (p_x_diffFN_vs_x_N_monitor == nullptr)
 		{
 			edm::LogWarning("x_alignment_relative") << "    cannot load data, skipping";
@@ -673,7 +627,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 				gDirectory = rpDir->mkdir("x");
 			}
 
-			auto *h2_y_vs_x = iGetter.get(folder_ + "/" + sd.name + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
+			auto *h2_y_vs_x = iGetter.get(folder_ + "/test/" + sd.name + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
 
 			if (h2_y_vs_x == nullptr)
 			{
@@ -753,7 +707,7 @@ void PPSAlignmentHarvester::debugPlots(DQMStore::IGetter &iGetter, const edm::ES
 		{
 			gDirectory = debugPlotsDir->mkdir(rpd.name.c_str());
 
-			auto *tmp = iGetter.get(folder_ + "/" + sd.name + "/profiles/" + rpd.name + "/m_p_y_vs_x_aft_sel");
+			auto *tmp = iGetter.get(folder_ + "/test/" + sd.name + "/profiles/" + rpd.name + "/m_p_y_vs_x_aft_sel");
 			if (tmp == nullptr)
 				edm::LogWarning("debug_plots") << "could not load the m_p_y_vs_x_aft_sel Tprofile";
 			auto *profile = tmp->getTProfile();

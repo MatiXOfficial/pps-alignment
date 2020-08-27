@@ -1,3 +1,7 @@
+####################################
+######## OBSOLETE!!! ###############
+####################################
+
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process('testAlignment')

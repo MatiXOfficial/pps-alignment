@@ -10,7 +10,7 @@
  *
  ****************************************************************************/
 
-#include "DQMServices/Core/interface/DQMOneEDAnalyzer.h"
+#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
 
@@ -37,7 +37,7 @@
 
 //----------------------------------------------------------------------------------------------------
 
-class PPSAlignmentWorker : public DQMOneEDAnalyzer<>
+class PPSAlignmentWorker : public DQMEDAnalyzer
 {
 public:
 	PPSAlignmentWorker(const edm::ParameterSet &iConfig);
@@ -46,7 +46,6 @@ public:
 private:
 	void bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, edm::EventSetup const &iSetup) override;
 	void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) override;
-	void dqmEndRun(edm::Run const &, edm::EventSetup const &) override;
 
 	// ------------ structures ------------
 	struct SectorData
@@ -105,6 +104,7 @@ private:
 	SectorData sectorData56;
 
 	std::string folder_;
+	std::string label_;
 };
 
 // -------------------------------- SectorData and SlicePlots methods --------------------------------
@@ -370,17 +370,19 @@ unsigned int PPSAlignmentWorker::SectorData::process(const CTPPSLocalTrackLiteCo
 
 PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig) 
 	: tracksToken_(consumes<CTPPSLocalTrackLiteCollection>(iConfig.getParameter<edm::InputTag>("tagTracks"))),
-	  folder_(iConfig.getParameter<std::string>("folder"))
+	  folder_(iConfig.getParameter<std::string>("folder")),
+	  label_(iConfig.getParameter<std::string>("label"))
 {}
 
 void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, 
                                         edm::EventSetup const &iSetup)
 {
 	edm::ESHandle<PPSAlignmentConfig> cfg;
-	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+	iSetup.get<PPSAlignmentConfigRcd>().get(label_, cfg);
 
-	sectorData45.init(iBooker, cfg, cfg->sectorConfig45(), folder_);
-	sectorData56.init(iBooker, cfg, cfg->sectorConfig56(), folder_);
+	std::string dir = folder_ + "/" + (label_.empty() ? "test" : label_);
+	sectorData45.init(iBooker, cfg, cfg->sectorConfig45(), dir);
+	sectorData56.init(iBooker, cfg, cfg->sectorConfig56(), dir);
 }
 
 void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
@@ -388,14 +390,10 @@ void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup
 	const auto &tracks = iEvent.get(tracksToken_);
 	
 	edm::ESHandle<PPSAlignmentConfig> cfg;
-	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
+	iSetup.get<PPSAlignmentConfigRcd>().get(label_, cfg);
 
 	sectorData45.process(tracks, cfg);
 	sectorData56.process(tracks, cfg);
-}
-
-void PPSAlignmentWorker::dqmEndRun(edm::Run const &, edm::EventSetup const &)
-{
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentWorker);
