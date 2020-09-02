@@ -294,11 +294,11 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector45.add<double>("slope", 0.006);
 		sector45.add<bool>("cut_h_apply", true);
 		sector45.add<double>("cut_h_a", -1.);
-		sector45.add<double>("cut_h_c", -38.55 + 0.57 - 0.08);
+		sector45.add<double>("cut_h_c", -38.55);
 		sector45.add<double>("cut_h_si", 0.2);
 		sector45.add<bool>("cut_v_apply", true);
 		sector45.add<double>("cut_v_a", -1.07);
-		sector45.add<double>("cut_v_c", 1.63 - 2.15 + 0.25);
+		sector45.add<double>("cut_v_c", 1.63);
 		sector45.add<double>("cut_v_si", 0.15);
 		sector45.add<double>("nr_x_slice_min", 7.);
 		sector45.add<double>("nr_x_slice_max", 19.);
@@ -337,11 +337,11 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector56.add<double>("slope", -0.015);
 		sector56.add<bool>("cut_h_apply", true);
 		sector56.add<double>("cut_h_a", -1.);
-		sector56.add<double>("cut_h_c", -39.26 + 0.33);
+		sector56.add<double>("cut_h_c", -39.26);
 		sector56.add<double>("cut_h_si", 0.2);
 		sector56.add<bool>("cut_v_apply", true);
 		sector56.add<double>("cut_v_a", -1.07);
-		sector56.add<double>("cut_v_c", 1.49 - 1.80);
+		sector56.add<double>("cut_v_c", 1.49);
 		sector56.add<double>("cut_v_si", 0.15);
 		sector56.add<double>("nr_x_slice_min", 6.);
 		sector56.add<double>("nr_x_slice_max", 17.);
