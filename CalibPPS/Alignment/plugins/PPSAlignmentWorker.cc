@@ -380,9 +380,8 @@ void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run con
 	edm::ESHandle<PPSAlignmentConfig> cfg;
 	iSetup.get<PPSAlignmentConfigRcd>().get(label_, cfg);
 
-	std::string dir = folder_ + "/" + (label_.empty() ? "test" : label_);
-	sectorData45.init(iBooker, cfg, cfg->sectorConfig45(), dir);
-	sectorData56.init(iBooker, cfg, cfg->sectorConfig56(), dir);
+	sectorData45.init(iBooker, cfg, cfg->sectorConfig45(), folder_);
+	sectorData56.init(iBooker, cfg, cfg->sectorConfig56(), folder_);
 }
 
 void PPSAlignmentWorker::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup)
