@@ -52,7 +52,7 @@ public:
 
 private:
 	void dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter) override;
-	void dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, edm::Run const &, 
+	void dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, edm::Run const &iRun, 
 	               edm::EventSetup const &iSetup);
 
 	// ------------ x alignment ------------
@@ -746,22 +746,16 @@ void PPSAlignmentHarvester::debugPlots(DQMStore::IGetter &iGetter, const edm::ES
 PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
 	: folder_(iConfig.getParameter<std::string>("folder")),
 	  debug_(iConfig.getParameter<bool>("debug"))
-{
-	if (debug_)
-		debug_file_ = new TFile("debug.root", "recreate");
-}
+{}
 
 PPSAlignmentHarvester::~PPSAlignmentHarvester()
-{
-	if (debug_)
-		delete debug_file_;
-}
+{}
 
 void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter)
 {}
 
 void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
-                                      edm::Run const &, edm::EventSetup const &iSetup)
+                                      edm::Run const &iRun, edm::EventSetup const &iSetup)
 {
 	edm::ESHandle<PPSAlignmentConfig> cfg;
 	iSetup.get<PPSAlignmentConfigRcd>().get(cfg);
@@ -770,7 +764,10 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	iSetup.get<PPSAlignmentConfigRcd>().get("reference", cfg_ref);
 	
 	if (debug_)
+	{
+		debug_file_ = new TFile(("debug_" + std::to_string(iRun.run()) + ".root").c_str(), "recreate");
 		debugPlots(iGetter, cfg);
+	}
 
 	// setting default sh_x values from config
 	for (const auto sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
@@ -794,6 +791,9 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 		else
 			edm::LogError("harvester_dqmEndRun") << cfg->sequence()[i] << " is a wrong method name.";
 	}
+
+	if (debug_)
+		delete debug_file_;
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentHarvester);
