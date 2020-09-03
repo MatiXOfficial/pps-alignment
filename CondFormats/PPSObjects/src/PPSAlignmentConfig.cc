@@ -177,11 +177,18 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	os << "* " << c.sectorConfig45_ << "\n\n";
 	os << "* " << c.sectorConfig56_ << "\n\n";
 
+	std::map<unsigned int, std::string> rpTags = {
+		{ c.sectorConfig45_.rp_F.id, c.sectorConfig45_.rp_F.name },
+		{ c.sectorConfig45_.rp_N.id, c.sectorConfig45_.rp_N.name },
+		{ c.sectorConfig56_.rp_N.id, c.sectorConfig56_.rp_N.name },
+		{ c.sectorConfig56_.rp_F.id, c.sectorConfig56_.rp_F.name }
+	};
+
 	os << "* alignment corrections\n" << std::setprecision(3);
 	for (const auto &p : c.alignmentCorrectionsX_)
 	{
-		os << "    RP " << p.first << ": de_x = " << p.second << " mm, de_y = " 
-		<< c.alignmentCorrectionsY_[p.first] << " mm\n";
+		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): de_x = " 
+		   << p.second << " mm, de_y = " << c.alignmentCorrectionsY_[p.first] << " mm\n";
 	}
 	os << "\n";
 
@@ -204,19 +211,23 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 
 	os << "    shift ranges:\n";
 	for (const auto &p : c.matchingShiftRanges_)
-		os << "        RP " << p.first << ": sh_min = " << p.second.x_min << ", sh_max = " << p.second.x_max << "\n";
+		os << "        RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
+		   << ", sh_max = " << p.second.x_max << "\n";
 
 	os << "\n" << "* alignment_x_meth_o\n";
 	for (const auto &p : c.alignment_x_meth_o_ranges_)
-		os << "    RP " << p.first << ": x_min = " << p.second.x_min << ", x_max = " << p.second.x_max << "\n";
+		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
+		   << ", sh_max = " << p.second.x_max << "\n";
 
 	os << "\n" << "* alignment_x_relative\n";
 	for (const auto &p : c.alignment_x_relative_ranges_)
-		os << "    RP " << p.first << ": x_min = " << p.second.x_min << ", x_max = " << p.second.x_max << "\n";
+		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
+		   << ", sh_max = " << p.second.x_max << "\n";
 
 	os << "\n" << "* alignment_y\n";
 	for (const auto &p : c.alignment_y_ranges_)
-		os << "    RP " << p.first << ": x_min = " << p.second.x_min << ", x_max = " << p.second.x_max << "\n";
+		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
+		   << ", sh_max = " << p.second.x_max << "\n";
 
 	os << "\n" << "* binning\n";
 	os << c.binning_ << "\n";

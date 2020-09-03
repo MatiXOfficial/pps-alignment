@@ -78,22 +78,12 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 
 	sectorConfig45.name = "sector 45";
 
-	sectorConfig45.rp_N.name = "L_1_F";
-	sectorConfig45.rp_N.id = 3;
 	sectorConfig45.rp_N.position = "N";
-
-	sectorConfig45.rp_F.name = "L_2_F";
-	sectorConfig45.rp_F.id = 23;
 	sectorConfig45.rp_F.position = "F";
 
 	sectorConfig56.name = "sector 56";
 
-	sectorConfig56.rp_N.name = "R_1_F";
-	sectorConfig56.rp_N.id = 103;
 	sectorConfig56.rp_N.position = "N";
-
-	sectorConfig56.rp_F.name = "R_2_F";
-	sectorConfig56.rp_F.id = 123;
 	sectorConfig56.rp_F.position = "F";
 
 	for (std::string sectorName : {"sector_45", "sector_56"})
@@ -106,6 +96,9 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 			sc = &sectorConfig56;
 
 		const auto &rnps = sps.getParameter<edm::ParameterSet>("rp_N");
+		sc->rp_N.name = rnps.getParameter<std::string>("name");
+		sc->rp_N.id = rnps.getParameter<int>("id");
+
 		sc->rp_N.slope = rnps.getParameter<double>("slope");
 		sc->rp_N.sh_x = rnps.getParameter<double>("sh_x");
 
@@ -115,6 +108,9 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		sc->rp_N.y_width_mult = rnps.getParameter<double>("y_width_mult");
 
 		const auto &rfps = sps.getParameter<edm::ParameterSet>("rp_F");
+		sc->rp_F.name = rfps.getParameter<std::string>("name");
+		sc->rp_F.id = rfps.getParameter<int>("id");
+
 		sc->rp_F.slope = rfps.getParameter<double>("slope");
 		sc->rp_F.sh_x = rfps.getParameter<double>("sh_x");
 
@@ -145,16 +141,16 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	}
 
 	std::map<unsigned int, std::string> rpTags = {
-		{ sectorConfig45.rp_F.id, sectorConfig45.rp_F.name },
-		{ sectorConfig45.rp_N.id, sectorConfig45.rp_N.name },
-		{ sectorConfig56.rp_N.id, sectorConfig56.rp_N.name },
-		{ sectorConfig56.rp_F.id, sectorConfig56.rp_F.name }
+		{ sectorConfig45.rp_F.id, "rp_L_F" },
+		{ sectorConfig45.rp_N.id, "rp_L_N" },
+		{ sectorConfig56.rp_N.id, "rp_R_N" },
+		{ sectorConfig56.rp_F.id, "rp_R_F" }
 	};
 
 	const auto &acc = iConfig.getParameter<edm::ParameterSet>("alignment_corrections");
 	for (const auto &p : rpTags)
 	{
-		const auto &ps = acc.getParameter<edm::ParameterSet>("rp_" + p.second);
+		const auto &ps = acc.getParameter<edm::ParameterSet>(p.second);
 		alignmentCorrectionsX[p.first] = ps.getParameter<double>("de_x");
 		alignmentCorrectionsY[p.first] = ps.getParameter<double>("de_y");
 	}
@@ -173,28 +169,28 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 
 	for (const auto &p : rpTags)
 	{
-		const auto &ps = c_m.getParameter<edm::ParameterSet>("rp_" + p.second);
+		const auto &ps = c_m.getParameter<edm::ParameterSet>(p.second);
 		matchingShiftRanges[p.first] = {ps.getParameter<double>("sh_min"), ps.getParameter<double>("sh_max")};
 	}
 
 	const auto &c_axo = iConfig.getParameter<edm::ParameterSet>("x_alignment_meth_o");
 	for (const auto &p : rpTags)
 	{
-		const auto &ps = c_axo.getParameter<edm::ParameterSet>("rp_" + p.second);
+		const auto &ps = c_axo.getParameter<edm::ParameterSet>(p.second);
 		alignment_x_meth_o_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
 	const auto &c_axr = iConfig.getParameter<edm::ParameterSet>("x_alignment_relative");
 	for (const auto &p : rpTags)
 	{
-		const auto &ps = c_axr.getParameter<edm::ParameterSet>("rp_" + p.second);
+		const auto &ps = c_axr.getParameter<edm::ParameterSet>(p.second);
 		alignment_x_relative_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
 	const auto &c_ay = iConfig.getParameter<edm::ParameterSet>("y_alignment");
 	for (const auto &p : rpTags)
 	{
-		const auto &ps = c_ay.getParameter<edm::ParameterSet>("rp_" + p.second);
+		const auto &ps = c_ay.getParameter<edm::ParameterSet>(p.second);
 		alignment_y_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
 
@@ -272,6 +268,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription sector45;
 
 		edm::ParameterSetDescription rp_N;
+		rp_N.add<std::string>("name", "L_1_F");
+		rp_N.add<int>("id", 3);
+
 		rp_N.add<double>("slope", 0.19);
 		rp_N.add<double>("sh_x", -3.6);
 
@@ -282,6 +281,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector45.add<edm::ParameterSetDescription>("rp_N", rp_N);
 
 		edm::ParameterSetDescription rp_F;
+		rp_F.add<std::string>("name", "L_2_F");
+		rp_F.add<int>("id", 23);
+		
 		rp_F.add<double>("slope", 0.19);
 		rp_F.add<double>("sh_x", -42.);
 
@@ -315,6 +317,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		edm::ParameterSetDescription sector56;
 
 		edm::ParameterSetDescription rp_N;
+		rp_N.add<std::string>("name", "R_1_F");
+		rp_N.add<int>("id", 103);
+		
 		rp_N.add<double>("slope", 0.40);
 		rp_N.add<double>("sh_x", -2.8);
 
@@ -325,6 +330,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector56.add<edm::ParameterSetDescription>("rp_N", rp_N);
 
 		edm::ParameterSetDescription rp_F;
+		rp_F.add<std::string>("name", "R_2_F");
+		rp_F.add<int>("id", 123);
+		
 		rp_F.add<double>("slope", 0.39);
 		rp_F.add<double>("sh_x", -41.9);
 
@@ -357,25 +365,25 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	{
 		edm::ParameterSetDescription alignmentCorrections;
 
-		edm::ParameterSetDescription rpL2F;
-		rpL2F.add<double>("de_x", 0.);
-		rpL2F.add<double>("de_y", 0.);
-		alignmentCorrections.add<edm::ParameterSetDescription>("rp_L_2_F", rpL2F);
+		edm::ParameterSetDescription rpLF;
+		rpLF.add<double>("de_x", 0.);
+		rpLF.add<double>("de_y", 0.);
+		alignmentCorrections.add<edm::ParameterSetDescription>("rp_L_F", rpLF);
 
-		edm::ParameterSetDescription rpL1F;
-		rpL1F.add<double>("de_x", 0.);
-		rpL1F.add<double>("de_y", 0.);
-		alignmentCorrections.add<edm::ParameterSetDescription>("rp_L_1_F", rpL1F);
+		edm::ParameterSetDescription rpLN;
+		rpLN.add<double>("de_x", 0.);
+		rpLN.add<double>("de_y", 0.);
+		alignmentCorrections.add<edm::ParameterSetDescription>("rp_L_N", rpLN);
 
-		edm::ParameterSetDescription rpR1F;
-		rpR1F.add<double>("de_x", 0.);
-		rpR1F.add<double>("de_y", 0.);
-		alignmentCorrections.add<edm::ParameterSetDescription>("rp_R_1_F", rpR1F);
+		edm::ParameterSetDescription rpRN;
+		rpRN.add<double>("de_x", 0.);
+		rpRN.add<double>("de_y", 0.);
+		alignmentCorrections.add<edm::ParameterSetDescription>("rp_R_N", rpRN);
 
-		edm::ParameterSetDescription rpR2F;
-		rpR2F.add<double>("de_x", 0.);
-		rpR2F.add<double>("de_y", 0.);
-		alignmentCorrections.add<edm::ParameterSetDescription>("rp_R_2_F", rpR2F);
+		edm::ParameterSetDescription rpRF;
+		rpRF.add<double>("de_x", 0.);
+		rpRF.add<double>("de_y", 0.);
+		alignmentCorrections.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
 
 		desc.add<edm::ParameterSetDescription>("alignment_corrections", alignmentCorrections);
 	}
@@ -395,25 +403,25 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		std::vector<std::string> referenceDatasets;
 		matching.add<std::vector<std::string>>("reference_datasets", referenceDatasets);
 
-		edm::ParameterSetDescription rpL2F;
-		rpL2F.add<double>("sh_min", -43.);
-		rpL2F.add<double>("sh_max", -41.);
-		matching.add<edm::ParameterSetDescription>("rp_L_2_F", rpL2F);
+		edm::ParameterSetDescription rpLF;
+		rpLF.add<double>("sh_min", -43.);
+		rpLF.add<double>("sh_max", -41.);
+		matching.add<edm::ParameterSetDescription>("rp_L_F", rpLF);
 
-		edm::ParameterSetDescription rpL1F;
-		rpL1F.add<double>("sh_min", -4.2);
-		rpL1F.add<double>("sh_max", -2.4);
-		matching.add<edm::ParameterSetDescription>("rp_L_1_F", rpL1F);
+		edm::ParameterSetDescription rpLN;
+		rpLN.add<double>("sh_min", -4.2);
+		rpLN.add<double>("sh_max", -2.4);
+		matching.add<edm::ParameterSetDescription>("rp_L_N", rpLN);
 
-		edm::ParameterSetDescription rpR1F;
-		rpR1F.add<double>("sh_min", -3.6);
-		rpR1F.add<double>("sh_max", -1.8);
-		matching.add<edm::ParameterSetDescription>("rp_R_1_F", rpR1F);
+		edm::ParameterSetDescription rpRN;
+		rpRN.add<double>("sh_min", -3.6);
+		rpRN.add<double>("sh_max", -1.8);
+		matching.add<edm::ParameterSetDescription>("rp_R_N", rpRN);
 
-		edm::ParameterSetDescription rpR2F;
-		rpR2F.add<double>("sh_min", -43.2);
-		rpR2F.add<double>("sh_max", -41.2);
-		matching.add<edm::ParameterSetDescription>("rp_R_2_F", rpR2F);
+		edm::ParameterSetDescription rpRF;
+		rpRF.add<double>("sh_min", -43.2);
+		rpRF.add<double>("sh_max", -41.2);
+		matching.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
 
 		desc.add<edm::ParameterSetDescription>("matching", matching);
 	}
@@ -422,25 +430,25 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	{
 		edm::ParameterSetDescription x_alignment_meth_o;
 
-		edm::ParameterSetDescription rpL2F;
-		rpL2F.add<double>("x_min", 47.);
-		rpL2F.add<double>("x_max", 56.5);
-		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_L_2_F", rpL2F);
+		edm::ParameterSetDescription rpLF;
+		rpLF.add<double>("x_min", 47.);
+		rpLF.add<double>("x_max", 56.5);
+		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_L_F", rpLF);
 
-		edm::ParameterSetDescription rpL1F;
-		rpL1F.add<double>("x_min", 9.);
-		rpL1F.add<double>("x_max", 18.5);
-		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_L_1_F", rpL1F);
+		edm::ParameterSetDescription rpLN;
+		rpLN.add<double>("x_min", 9.);
+		rpLN.add<double>("x_max", 18.5);
+		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_L_N", rpLN);
 
-		edm::ParameterSetDescription rpR1F;
-		rpR1F.add<double>("x_min", 7.);
-		rpR1F.add<double>("x_max", 15.);
-		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_R_1_F", rpR1F);
+		edm::ParameterSetDescription rpRN;
+		rpRN.add<double>("x_min", 7.);
+		rpRN.add<double>("x_max", 15.);
+		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_R_N", rpRN);
 
-		edm::ParameterSetDescription rpR2F;
-		rpR2F.add<double>("x_min", 46.);
-		rpR2F.add<double>("x_max", 54.);
-		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_R_2_F", rpR2F);
+		edm::ParameterSetDescription rpRF;
+		rpRF.add<double>("x_min", 46.);
+		rpRF.add<double>("x_max", 54.);
+		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
 
 		desc.add<edm::ParameterSetDescription>("x_alignment_meth_o", x_alignment_meth_o);
 	}
@@ -449,25 +457,25 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	{
 		edm::ParameterSetDescription x_alignment_relative;
 
-		edm::ParameterSetDescription rpL2F;
-		rpL2F.add<double>("x_min", 0.);
-		rpL2F.add<double>("x_max", 0.);
-		x_alignment_relative.add<edm::ParameterSetDescription>("rp_L_2_F", rpL2F);
+		edm::ParameterSetDescription rpLF;
+		rpLF.add<double>("x_min", 0.);
+		rpLF.add<double>("x_max", 0.);
+		x_alignment_relative.add<edm::ParameterSetDescription>("rp_L_F", rpLF);
 
-		edm::ParameterSetDescription rpL1F;
-		rpL1F.add<double>("x_min", 7.5);
-		rpL1F.add<double>("x_max", 12.);
-		x_alignment_relative.add<edm::ParameterSetDescription>("rp_L_1_F", rpL1F);
+		edm::ParameterSetDescription rpLN;
+		rpLN.add<double>("x_min", 7.5);
+		rpLN.add<double>("x_max", 12.);
+		x_alignment_relative.add<edm::ParameterSetDescription>("rp_L_N", rpLN);
 
-		edm::ParameterSetDescription rpR1F;
-		rpR1F.add<double>("x_min", 6.);
-		rpR1F.add<double>("x_max", 10.);
-		x_alignment_relative.add<edm::ParameterSetDescription>("rp_R_1_F", rpR1F);
+		edm::ParameterSetDescription rpRN;
+		rpRN.add<double>("x_min", 6.);
+		rpRN.add<double>("x_max", 10.);
+		x_alignment_relative.add<edm::ParameterSetDescription>("rp_R_N", rpRN);
 
-		edm::ParameterSetDescription rpR2F;
-		rpR2F.add<double>("x_min", 0.);
-		rpR2F.add<double>("x_max", 0.);
-		x_alignment_relative.add<edm::ParameterSetDescription>("rp_R_2_F", rpR2F);
+		edm::ParameterSetDescription rpRF;
+		rpRF.add<double>("x_min", 0.);
+		rpRF.add<double>("x_max", 0.);
+		x_alignment_relative.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
 
 		desc.add<edm::ParameterSetDescription>("x_alignment_relative", x_alignment_relative);
 	}
@@ -476,25 +484,25 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	{
 		edm::ParameterSetDescription y_alignment;
 
-		edm::ParameterSetDescription rpL2F;
-		rpL2F.add<double>("x_min", 44.5);
-		rpL2F.add<double>("x_max", 49.);
-		y_alignment.add<edm::ParameterSetDescription>("rp_L_2_F", rpL2F);
+		edm::ParameterSetDescription rpLF;
+		rpLF.add<double>("x_min", 44.5);
+		rpLF.add<double>("x_max", 49.);
+		y_alignment.add<edm::ParameterSetDescription>("rp_L_F", rpLF);
 
-		edm::ParameterSetDescription rpL1F;
-		rpL1F.add<double>("x_min", 6.7);
-		rpL1F.add<double>("x_max", 11.);
-		y_alignment.add<edm::ParameterSetDescription>("rp_L_1_F", rpL1F);
+		edm::ParameterSetDescription rpLN;
+		rpLN.add<double>("x_min", 6.7);
+		rpLN.add<double>("x_max", 11.);
+		y_alignment.add<edm::ParameterSetDescription>("rp_L_N", rpLN);
 
-		edm::ParameterSetDescription rpR1F;
-		rpR1F.add<double>("x_min", 5.9);
-		rpR1F.add<double>("x_max", 10.);
-		y_alignment.add<edm::ParameterSetDescription>("rp_R_1_F", rpR1F);
+		edm::ParameterSetDescription rpRN;
+		rpRN.add<double>("x_min", 5.9);
+		rpRN.add<double>("x_max", 10.);
+		y_alignment.add<edm::ParameterSetDescription>("rp_R_N", rpRN);
 
-		edm::ParameterSetDescription rpR2F;
-		rpR2F.add<double>("x_min", 44.5);
-		rpR2F.add<double>("x_max", 49.);
-		y_alignment.add<edm::ParameterSetDescription>("rp_R_2_F", rpR2F);
+		edm::ParameterSetDescription rpRF;
+		rpRF.add<double>("x_min", 44.5);
+		rpRF.add<double>("x_max", 49.);
+		y_alignment.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
 
 		desc.add<edm::ParameterSetDescription>("y_alignment", y_alignment);
 	}
