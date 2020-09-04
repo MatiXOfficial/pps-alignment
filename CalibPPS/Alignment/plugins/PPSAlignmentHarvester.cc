@@ -31,6 +31,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <queue>
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -39,6 +40,7 @@
 #include "TProfile.h"
 #include "TFile.h"
 #include "TKey.h"
+#include "TSystemFile.h"
 #include "TSpline.h"
 #include "TCanvas.h"
 
@@ -57,6 +59,7 @@ private:
 
 	// ------------ x alignment ------------
 	static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
+	static TDirectory* findDirectoryWithName(TDirectory *dir, std::string searchName);
 	TGraphErrors* buildGraphFromDirectory(TDirectory *dir, const RPConfig &rpd);
 	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
 	                                            const std::vector<MonitorElement*> &mes);
@@ -122,6 +125,36 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 	sl_unc = ff_pol1->GetParError(1);
 
 	return 0;
+}
+
+TDirectory* PPSAlignmentHarvester::findDirectoryWithName(TDirectory *dir, std::string searchName)
+{
+	TIter next(dir->GetListOfKeys());
+	std::queue<TDirectory *> dirQueue;
+	TObject *o;
+	while ((o = next()))
+	{
+		TKey *k = (TKey *) o;
+		
+		std::string name = k->GetName();
+		if (name == searchName)
+			return dir;
+		else if (name == "EventInfo")
+			continue;
+
+		if (((TSystemFile *) k)->IsDirectory())
+			dirQueue.push((TDirectory *) k->ReadObj());
+	}
+
+	while(!dirQueue.empty())
+	{
+		TDirectory *resultDir = findDirectoryWithName(dirQueue.front(), searchName);
+		dirQueue.pop();
+		if (resultDir != nullptr)
+			return resultDir;
+	}
+
+	return nullptr;
 }
 
 TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, const RPConfig &rpd)
@@ -375,12 +408,18 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			refDir = xAliDir->mkdir(std::regex_replace(ref, std::regex("/"), "_").c_str());
 
 		TFile *f_ref = TFile::Open(ref.c_str());
+		TDirectory *ad_ref = findDirectoryWithName((TDirectory *) f_ref, cfg->sectorConfig45().name);
+		if (ad_ref == nullptr)
+		{
+			edm::LogWarning("x_alignment") << "could not find reference dataset";
+			continue;
+		}
 
 		for (const auto &sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
 		{
 			for (const auto &rpd : { sd.rp_F, sd.rp_N })
 			{
-				auto *d_ref = (TDirectory *) f_ref->Get((sd.name + "/near_far/x slices, " + rpd.position).c_str());
+				auto *d_ref = (TDirectory *) ad_ref->Get((sd.name + "/near_far/x slices, " + rpd.position).c_str());
 				if (d_ref == nullptr)
 				{
 					edm::LogWarning("x_alignment") << "could not load d_ref";
