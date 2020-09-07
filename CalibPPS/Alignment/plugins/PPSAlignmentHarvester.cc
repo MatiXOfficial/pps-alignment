@@ -415,10 +415,15 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			continue;
 		}
 
-		for (const auto &sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
+		for (const auto &sdp : { std::make_pair(cfg->sectorConfig45(), cfg_ref->sectorConfig45()), 
+		                         std::make_pair(cfg->sectorConfig56(), cfg_ref->sectorConfig56()) })
 		{
-			for (const auto &rpd : { sd.rp_F, sd.rp_N })
+			const auto &sd = sdp.first;
+			for (const auto &rpdp : { std::make_pair(sd.rp_F, sdp.second.rp_F), 
+			                          std::make_pair(sd.rp_N, sdp.second.rp_F) })
 			{
+				const auto &rpd = rpdp.first;
+
 				auto *d_ref = (TDirectory *) ad_ref->Get((sd.name + "/near_far/x slices, " + rpd.position).c_str());
 				if (d_ref == nullptr)
 				{
@@ -439,7 +444,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 					rpDir = refDir->mkdir(rpd.name.c_str());
 					gDirectory = rpDir->mkdir("fits_ref");
 				}
-				TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, rpd);
+				TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, rpdp.second);
 
 				if (debug_)
 					gDirectory = rpDir->mkdir("fits_test");
@@ -455,8 +460,8 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 				const auto &shiftRange = cfg->matchingShiftRanges()[rpd.id];
 				double sh = 0., sh_unc = 0.;
 				int r = doMatch(g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
-								cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
-								shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
+				                cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
+				                shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
 				if (r == 0)
 				{
 					CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
