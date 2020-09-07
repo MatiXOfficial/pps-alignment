@@ -195,6 +195,7 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, co
 		g->SetPoint(idx, (x_max + x_min)/2., sl);
 		g->SetPointError(idx, (x_max - x_min)/2., sl_unc);
 	}
+	g->Sort();
 
 	return g;
 }
@@ -244,6 +245,7 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 			g->SetPointError(idx, (xMax - xMin) / 2., sl_unc);
 		}
 	}
+	g->Sort();
 
 	return g;
 }
@@ -401,8 +403,6 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 
 	for (auto ref : cfg->matchingReferenceDatasets())
 	{
-		edm::LogInfo("x_alignment") << "reference dataset: " << ref;
-
 		TDirectory *refDir = nullptr;
 		if (debug_)
 			refDir = xAliDir->mkdir(std::regex_replace(ref, std::regex("/"), "_").c_str());
@@ -411,9 +411,10 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 		TDirectory *ad_ref = findDirectoryWithName((TDirectory *) f_ref, cfg->sectorConfig45().name);
 		if (ad_ref == nullptr)
 		{
-			edm::LogWarning("x_alignment") << "could not find reference dataset";
+			edm::LogWarning("x_alignment") << "could not find reference dataset " << ref;
 			continue;
 		}
+		edm::LogInfo("x_alignment") << "loading reference dataset from " << ad_ref->GetPath();
 
 		for (const auto &sdp : { std::make_pair(cfg->sectorConfig45(), cfg_ref->sectorConfig45()), 
 		                         std::make_pair(cfg->sectorConfig56(), cfg_ref->sectorConfig56()) })
