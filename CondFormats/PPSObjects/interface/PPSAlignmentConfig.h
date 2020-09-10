@@ -21,6 +21,18 @@
 
 //---------------------------------------------------------------------------------------------
 
+struct PointErrors
+{
+	double x;
+	double y;
+	double ex;	// error x
+	double ey;	// error y
+
+	COND_SERIALIZABLE;
+};
+
+//---------------------------------------------------------------------------------------------
+
 struct SelectionRange
 {
 	double x_min;
@@ -107,7 +119,7 @@ public:
 
 	double n_si() const;
 
-	std::vector<std::string> matchingReferenceDatasets() const;
+	std::map<unsigned int, std::vector<PointErrors>> matchingReferencePoints() const;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges() const;
@@ -135,7 +147,7 @@ public:
 
 	void setN_si(double n_si);
 
-	void setMatchingReferenceDatasets(std::vector<std::string> &matchingReferenceDatasets);
+	void setMatchingReferencePoints(std::map<unsigned int, std::vector<PointErrors>> &matchingReferencePoints);
 	void setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges);
 
 	void setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges);
@@ -164,7 +176,7 @@ private:
 
 	double n_si_;
 
-	std::vector<std::string> matchingReferenceDatasets_;
+	std::map<unsigned int, std::vector<PointErrors>> matchingReferencePoints_;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges_;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges_;

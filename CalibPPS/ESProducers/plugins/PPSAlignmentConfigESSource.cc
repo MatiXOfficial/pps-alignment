@@ -26,6 +26,13 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <queue>
+
+#include "TF1.h"
+#include "TProfile.h"
+#include "TFile.h"
+#include "TKey.h"
+#include "TSystemFile.h"
 
 //---------------------------------------------------------------------------------------------
 
@@ -39,8 +46,13 @@ public:
 	static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
 	
 private:
+	int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
+	TDirectory* findDirectoryWithName(TDirectory *dir, std::string searchName);
+	std::vector<PointErrors> buildVectorFromDirectory(TDirectory *dir, const RPConfig &rpd);
+
 	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &key, const edm::IOVSyncValue &iosv, 
 	                    edm::ValidityInterval &oValidity) override;
+
 
 	std::vector<std::string> sequence;
 
@@ -57,7 +69,7 @@ private:
 
 	double n_si;
 
-	std::vector<std::string> matchingReferenceDatasets;
+	std::map<unsigned int, std::vector<PointErrors>> matchingReferencePoints;
 	std::map<unsigned int, SelectionRange> matchingShiftRanges;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges;
@@ -147,6 +159,20 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		{ sectorConfig56.rp_F.id, "rp_R_F" }
 	};
 
+	std::map<unsigned int, std::string> sectorNames = {
+		{ sectorConfig45.rp_F.id, sectorConfig45.name },
+		{ sectorConfig45.rp_N.id, sectorConfig45.name },
+		{ sectorConfig56.rp_N.id, sectorConfig56.name },
+		{ sectorConfig56.rp_F.id, sectorConfig56.name }
+	};
+
+	std::map<unsigned int, const RPConfig *> rpConfigs = {
+		{ sectorConfig45.rp_F.id, &sectorConfig45.rp_F },
+		{ sectorConfig45.rp_N.id, &sectorConfig45.rp_N },
+		{ sectorConfig56.rp_N.id, &sectorConfig56.rp_N },
+		{ sectorConfig56.rp_F.id, &sectorConfig56.rp_F }
+	};
+
 	const auto &acc = iConfig.getParameter<edm::ParameterSet>("alignment_corrections");
 	for (const auto &p : rpTags)
 	{
@@ -165,7 +191,40 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	n_si = iConfig.getParameter<double>("n_si");
 
 	const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
-	matchingReferenceDatasets = c_m.getParameter<std::vector<std::string>>("reference_datasets");
+	const auto &referenceDataset = c_m.getParameter<std::string>("reference_dataset");
+	if (!referenceDataset.empty())
+	{
+		TFile *f_ref = TFile::Open(referenceDataset.c_str());
+		if (f_ref == nullptr)
+		{
+			edm::LogWarning("PPSAlignmentConfigESSource") << "could not find reference dataset file: " << referenceDataset;
+		}
+		else
+		{
+			TDirectory *ad_ref = findDirectoryWithName((TDirectory *) f_ref, sectorConfig45.name);
+			if (ad_ref == nullptr)
+			{
+				edm::LogWarning("PPSAlignmentConfigESSource") << "could not find reference dataset in " << referenceDataset;
+			}
+			else
+			{
+				edm::LogInfo("PPSAlignmentConfigESSource") << "loading reference dataset from " << ad_ref->GetPath();
+				for (const auto &p : rpTags)
+				{
+					auto *d_ref = (TDirectory *) ad_ref->Get((sectorNames[p.first] + "/near_far/x slices, " 
+															+ rpConfigs[p.first]->position).c_str());
+					if (d_ref == nullptr)
+					{
+						edm::LogWarning("x_alignment") << "could not load d_ref";
+					}
+					else
+					{
+						matchingReferencePoints[p.first] = buildVectorFromDirectory(d_ref, *rpConfigs[p.first]);
+					}
+				}
+			}
+		}
+	}
 
 	for (const auto &p : rpTags)
 	{
@@ -230,7 +289,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 	p->setN_si(n_si);
 
-	p->setMatchingReferenceDatasets(matchingReferenceDatasets);
+	p->setMatchingReferencePoints(matchingReferencePoints);
 	p->setMatchingShiftRanges(matchingShiftRanges);
 
 	p->setAlignment_x_meth_o_ranges(alignment_x_meth_o_ranges);
@@ -248,12 +307,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 //---------------------------------------------------------------------------------------------
 
 /**********************
-defaults for:
-	* fill = 7334
-	* xangle = 160
-	* beta = 0.30
-	* data not already aligned
-	* skeleton from 2018 config_base.py
+defaults for 2018 period
 **********************/
 void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
@@ -400,8 +454,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	// matching
 	{
 		edm::ParameterSetDescription matching;
-		std::vector<std::string> referenceDatasets;
-		matching.add<std::vector<std::string>>("reference_datasets", referenceDatasets);
+		matching.add<std::string>("reference_dataset", "");
 
 		edm::ParameterSetDescription rpLF;
 		rpLF.add<double>("sh_min", -43.);
@@ -522,6 +575,114 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	}
 
 	descriptions.add("ppsAlignmentConfigESSource", desc);
+}
+
+//---------------------------------------------------------------------------------------------
+
+int PPSAlignmentConfigESSource::fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc)
+{
+	if (p->GetEntries() < 50)
+		return 1;
+
+	unsigned int n_reasonable = 0;
+	for (int bi = 1; bi <= p->GetNbinsX(); bi++)
+	{
+		if (p->GetBinEntries(bi) < 5)
+		{
+			p->SetBinContent(bi, 0.);
+			p->SetBinError(bi, 0.);
+		} 
+		else 
+		{
+			n_reasonable++;
+		}
+	}
+
+	if (n_reasonable < 10)
+		return 2;
+
+	double xMin = x_mean - x_rms, xMax = x_mean + x_rms;
+
+	TF1 *ff_pol1 = new TF1("ff_pol1", "[0] + [1]*x");
+
+	ff_pol1->SetParameter(0., 0.);
+	p->Fit(ff_pol1, "Q", "", xMin, xMax);
+
+	sl = ff_pol1->GetParameter(1);
+	sl_unc = ff_pol1->GetParError(1);
+
+	return 0;
+}
+
+//---------------------------------------------------------------------------------------------
+
+TDirectory* PPSAlignmentConfigESSource::findDirectoryWithName(TDirectory *dir, std::string searchName)
+{
+	TIter next(dir->GetListOfKeys());
+	std::queue<TDirectory *> dirQueue;
+	TObject *o;
+	while ((o = next()))
+	{
+		TKey *k = (TKey *) o;
+		
+		std::string name = k->GetName();
+		if (name == searchName)
+			return dir;
+		else if (name == "EventInfo")
+			continue;
+
+		if (((TSystemFile *) k)->IsDirectory())
+			dirQueue.push((TDirectory *) k->ReadObj());
+	}
+
+	while(!dirQueue.empty())
+	{
+		TDirectory *resultDir = findDirectoryWithName(dirQueue.front(), searchName);
+		dirQueue.pop();
+		if (resultDir != nullptr)
+			return resultDir;
+	}
+
+	return nullptr;
+}
+
+//---------------------------------------------------------------------------------------------
+
+std::vector<PointErrors> PPSAlignmentConfigESSource::buildVectorFromDirectory(TDirectory *dir, const RPConfig &rpd)
+{
+	std::vector<PointErrors> pv;
+
+	TIter next(dir->GetListOfKeys());
+	TObject *o;
+	while ((o = next()))
+	{
+		TKey *k = (TKey *) o;
+
+		std::string name = k->GetName();
+		size_t d = name.find("-");
+		const double x_min = std::stod(name.substr(0, d));
+		const double x_max = std::stod(name.substr(d+1));
+
+		TDirectory *d_slice = (TDirectory *) k->ReadObj();
+
+		TH1D *h_y = (TH1D *) d_slice->Get("h_y");
+		TProfile *p_y_diffFN_vs_y = (TProfile *) d_slice->Get("p_y_diffFN_vs_y");
+
+		double y_cen = h_y->GetMean();
+		double y_width = h_y->GetRMS();
+
+		y_cen += rpd.y_cen_add;
+		y_width *= rpd.y_width_mult;
+
+		double sl=0., sl_unc=0.;
+		int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
+		if (fr != 0)
+			continue;
+
+		pv.push_back({ (x_max + x_min) / 2., sl, (x_max - x_min) / 2., sl_unc });
+	}
+
+	return pv;
 }
 
 //---------------------------------------------------------------------------------------------

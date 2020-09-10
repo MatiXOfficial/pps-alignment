@@ -45,9 +45,9 @@ double PPSAlignmentConfig::y_mode_max_valid() const { return y_mode_max_valid_; 
 
 double PPSAlignmentConfig::n_si() const { return n_si_; }
 
-std::vector<std::string> PPSAlignmentConfig::matchingReferenceDatasets() const 
+std::map<unsigned int, std::vector<PointErrors>> PPSAlignmentConfig::matchingReferencePoints() const 
 { 
-	return matchingReferenceDatasets_; 
+	return matchingReferencePoints_; 
 }
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::matchingShiftRanges() const 
 { 
@@ -98,9 +98,9 @@ void PPSAlignmentConfig::setY_mode_max_valid(double y_mode_max_valid) { y_mode_m
 
 void PPSAlignmentConfig::setN_si(double n_si) { n_si_ = n_si; }
 
-void PPSAlignmentConfig::setMatchingReferenceDatasets(std::vector<std::string> &matchingReferenceDatasets)
+void PPSAlignmentConfig::setMatchingReferencePoints(std::map<unsigned int, std::vector<PointErrors>> &matchingReferencePoints)
 {
-	matchingReferenceDatasets_ = matchingReferenceDatasets;
+	matchingReferencePoints_ = matchingReferencePoints;
 }
 void PPSAlignmentConfig::setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges)
 {
@@ -205,14 +205,25 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	os << "    n_si = " << c.n_si_ << "\n\n";
 
 	os << "* matching\n" << std::setprecision(3);
-	os << "    reference datasets (" << c.matchingReferenceDatasets_.size() << "):\n";
-	for (const auto &ds : c.matchingReferenceDatasets_)
-		os << "        " << ds << "\n";
 
 	os << "    shift ranges:\n";
 	for (const auto &p : c.matchingShiftRanges_)
 		os << "        RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
 		   << ", sh_max = " << p.second.x_max << "\n";
+
+	os << "    reference points:\n";
+	for (const auto &pm : c.matchingReferencePoints_)
+	{
+		os << "        " << std::setw(3) << pm.first << ": ";
+		for (unsigned int i = 0; i < pm.second.size(); i++)
+		{
+			const auto &p = pm.second[i];
+			if (i % 5 == 0 && i > 0)
+				os << "\n             ";
+			os << "(" << std::setw(6) << p.x << " +- " << p.ex << ", " << std::setw(6) << p.y << " +- " << p.ey << "), ";
+		}
+		os << "\n";
+	}
 
 	os << "\n" << "* alignment_x_meth_o\n";
 	for (const auto &p : c.alignment_x_meth_o_ranges_)

@@ -31,7 +31,6 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include <queue>
 
 #include "TH1D.h"
 #include "TH2D.h"
@@ -59,8 +58,7 @@ private:
 
 	// ------------ x alignment ------------
 	static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
-	static TDirectory* findDirectoryWithName(TDirectory *dir, std::string searchName);
-	TGraphErrors* buildGraphFromDirectory(TDirectory *dir, const RPConfig &rpd);
+	TGraphErrors* buildGraphFromVector(const std::vector<PointErrors> &pv);
 	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
 	                                            const std::vector<MonitorElement*> &mes);
 	int doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
@@ -127,73 +125,15 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 	return 0;
 }
 
-TDirectory* PPSAlignmentHarvester::findDirectoryWithName(TDirectory *dir, std::string searchName)
-{
-	TIter next(dir->GetListOfKeys());
-	std::queue<TDirectory *> dirQueue;
-	TObject *o;
-	while ((o = next()))
-	{
-		TKey *k = (TKey *) o;
-		
-		std::string name = k->GetName();
-		if (name == searchName)
-			return dir;
-		else if (name == "EventInfo")
-			continue;
-
-		if (((TSystemFile *) k)->IsDirectory())
-			dirQueue.push((TDirectory *) k->ReadObj());
-	}
-
-	while(!dirQueue.empty())
-	{
-		TDirectory *resultDir = findDirectoryWithName(dirQueue.front(), searchName);
-		dirQueue.pop();
-		if (resultDir != nullptr)
-			return resultDir;
-	}
-
-	return nullptr;
-}
-
-TGraphErrors* PPSAlignmentHarvester::buildGraphFromDirectory(TDirectory *dir, const RPConfig &rpd)
+TGraphErrors* PPSAlignmentHarvester::buildGraphFromVector(const std::vector<PointErrors> &pv)
 {
 	TGraphErrors *g = new TGraphErrors();
 
-	TIter next(dir->GetListOfKeys());
-	TObject *o;
-	while ((o = next()))
+	for (unsigned int i = 0; i < pv.size(); i++)
 	{
-		TKey *k = (TKey *) o;
-
-		std::string name = k->GetName();
-		size_t d = name.find("-");
-		const double x_min = std::stod(name.substr(0, d));
-		const double x_max = std::stod(name.substr(d+1));
-
-		TDirectory *d_slice = (TDirectory *) k->ReadObj();
-
-		TH1D *h_y = (TH1D *) d_slice->Get("h_y");
-		TProfile *p_y_diffFN_vs_y = (TProfile *) d_slice->Get("p_y_diffFN_vs_y");
-
-		double y_cen = h_y->GetMean();
-		double y_width = h_y->GetRMS();
-
-		y_cen += rpd.y_cen_add;
-		y_width *= rpd.y_width_mult;
-
-		double sl=0., sl_unc=0.;
-		int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
-		if (fr != 0)
-			continue;
-
-		if (debug_)
-			p_y_diffFN_vs_y->Write(name.c_str());
-
-		int idx = g->GetN();
-		g->SetPoint(idx, (x_max + x_min)/2., sl);
-		g->SetPointError(idx, (x_max - x_min)/2., sl_unc);
+		const auto &p = pv[i];
+		g->SetPoint(i, p.x, p.y);
+		g->SetPointError(i, p.ex, p.ey);
 	}
 	g->Sort();
 
@@ -401,79 +341,62 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 	// prepare results
 	CTPPSRPAlignmentCorrectionsData results;
 
-	for (auto ref : cfg->matchingReferenceDatasets())
+	for (const auto &sdp : { std::make_pair(cfg->sectorConfig45(), cfg_ref->sectorConfig45()), 
+								std::make_pair(cfg->sectorConfig56(), cfg_ref->sectorConfig56()) })
 	{
-		TDirectory *refDir = nullptr;
-		if (debug_)
-			refDir = xAliDir->mkdir(std::regex_replace(ref, std::regex("/"), "_").c_str());
-
-		TFile *f_ref = TFile::Open(ref.c_str());
-		TDirectory *ad_ref = findDirectoryWithName((TDirectory *) f_ref, cfg->sectorConfig45().name);
-		if (ad_ref == nullptr)
+		const auto &sd = sdp.first;
+		for (const auto &rpdp : { std::make_pair(sd.rp_F, sdp.second.rp_F), 
+									std::make_pair(sd.rp_N, sdp.second.rp_F) })
 		{
-			edm::LogWarning("x_alignment") << "could not find reference dataset " << ref;
-			continue;
-		}
-		edm::LogInfo("x_alignment") << "loading reference dataset from " << ad_ref->GetPath();
+			const auto &rpd = rpdp.first;
 
-		for (const auto &sdp : { std::make_pair(cfg->sectorConfig45(), cfg_ref->sectorConfig45()), 
-		                         std::make_pair(cfg->sectorConfig56(), cfg_ref->sectorConfig56()) })
-		{
-			const auto &sd = sdp.first;
-			for (const auto &rpdp : { std::make_pair(sd.rp_F, sdp.second.rp_F), 
-			                          std::make_pair(sd.rp_N, sdp.second.rp_F) })
+			auto mes_test = iGetter.getAllContents(folder_ + "/" + sd.name + "/near_far/x slices, " + rpd.position);
+			if (mes_test.empty())
 			{
-				const auto &rpd = rpdp.first;
+				edm::LogWarning("x_alignment") << "could not load mes_test";
+				continue;
+			}
 
-				auto *d_ref = (TDirectory *) ad_ref->Get((sd.name + "/near_far/x slices, " + rpd.position).c_str());
-				if (d_ref == nullptr)
-				{
-					edm::LogWarning("x_alignment") << "could not load d_ref";
-					continue;
-				}
+			TDirectory *rpDir = nullptr;
+			if (debug_)
+				rpDir = xAliDir->mkdir(rpd.name.c_str());
 
-				auto mes_test = iGetter.getAllContents(folder_ + "/" + sd.name + "/near_far/x slices, " + rpd.position);
-				if (mes_test.empty())
-				{
-					edm::LogWarning("x_alignment") << "could not load mes_test";
-					continue;
-				}
+			auto vec_ref = cfg_ref->matchingReferencePoints()[rpd.id];
+			if (vec_ref.empty())
+			{
+				edm::LogWarning("x_alignment") << "reference points vector is empty";
+				continue;
+			}
+			if (debug_)
+				gDirectory = rpDir->mkdir("fits_ref");
 
-				TDirectory *rpDir = nullptr;
-				if (debug_)
-				{
-					rpDir = refDir->mkdir(rpd.name.c_str());
-					gDirectory = rpDir->mkdir("fits_ref");
-				}
-				TGraphErrors *g_ref = buildGraphFromDirectory(d_ref, rpdp.second);
+			TGraphErrors *g_ref = buildGraphFromVector(vec_ref);
 
-				if (debug_)
-					gDirectory = rpDir->mkdir("fits_test");
-				TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, rpd, mes_test);
+			if (debug_)
+				gDirectory = rpDir->mkdir("fits_test");
+			TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, rpd, mes_test);
 
-				if (debug_)
-				{
-					gDirectory = rpDir;
-					g_ref->Write("g_ref");
-					g_test->Write("g_test");
-				}
+			if (debug_)
+			{
+				gDirectory = rpDir;
+				g_ref->Write("g_ref");
+				g_test->Write("g_test");
+			}
 
-				const auto &shiftRange = cfg->matchingShiftRanges()[rpd.id];
-				double sh = 0., sh_unc = 0.;
-				int r = doMatch(g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
-				                cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
-				                shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
-				if (r == 0)
-				{
-					CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-					results.setRPCorrection(rpd.id, rpResult);
-					edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
-					<< "Setting sh_x of " << rpd.name << " to " << sh;
-					sh_x_map[rpd.id] = sh;
-				}
+			const auto &shiftRange = cfg_ref->matchingShiftRanges()[rpd.id];
+			double sh = 0., sh_unc = 0.;
+			int r = doMatch(g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
+							cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
+							shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
+			if (r == 0)
+			{
+				CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+				results.setRPCorrection(rpd.id, rpResult);
+				edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
+				<< "Setting sh_x of " << rpd.name << " to " << sh;
+				sh_x_map[rpd.id] = sh;
 			}
 		}
-		delete f_ref;
 	}
 
 	edm::LogInfo("x_alignment_results") << seqPos + 1 << ": x_alignment:\n"<< results;
