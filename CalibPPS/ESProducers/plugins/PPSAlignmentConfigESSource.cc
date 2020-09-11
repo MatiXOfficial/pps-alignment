@@ -53,6 +53,7 @@ private:
 	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &key, const edm::IOVSyncValue &iosv, 
 	                    edm::ValidityInterval &oValidity) override;
 
+	bool debug;	// only one run
 
 	std::vector<std::string> sequence;
 
@@ -86,6 +87,15 @@ private:
 
 PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &iConfig)
 {
+	label = iConfig.getParameter<std::string>("label");
+
+	debug = iConfig.getParameter<bool>("debug");
+	TFile *debugFile = nullptr;
+	if (debug)
+	{
+		debugFile = new TFile(("debug_producer_" + (label.empty() ? "test" : label) + ".root").c_str(), "recreate");
+	}
+
 	sequence = iConfig.getParameter<std::vector<std::string>>("sequence");
 
 	sectorConfig45.name = "sector 45";
@@ -209,10 +219,14 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 			else
 			{
 				edm::LogInfo("PPSAlignmentConfigESSource") << "loading reference dataset from " << ad_ref->GetPath();
+
 				for (const auto &p : rpTags)
 				{
+					if (debug)
+						gDirectory = debugFile->mkdir(rpConfigs[p.first]->name.c_str())->mkdir("fits_ref");
+
 					auto *d_ref = (TDirectory *) ad_ref->Get((sectorNames[p.first] + "/near_far/x slices, " 
-															+ rpConfigs[p.first]->position).c_str());
+					                                          + rpConfigs[p.first]->position).c_str());
 					if (d_ref == nullptr)
 					{
 						edm::LogWarning("x_alignment") << "could not load d_ref";
@@ -261,9 +275,11 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	binning.y_min = bps.getParameter<double>("y_min");
 	binning.y_max = bps.getParameter<double>("y_max");
 
-	label = iConfig.getParameter<std::string>("label");
 	setWhatProduced(this, label);
 	findingRecord<PPSAlignmentConfigRcd>();
+
+	if (debug)
+		delete debugFile;
 }
 
 //---------------------------------------------------------------------------------------------
@@ -312,6 +328,8 @@ defaults for 2018 period
 void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
 	edm::ParameterSetDescription desc;
+
+	desc.add<bool>("debug", false);
 
 	desc.add<std::string>("label", "");
 
@@ -679,6 +697,9 @@ std::vector<PointErrors> PPSAlignmentConfigESSource::buildVectorFromDirectory(TD
 		if (fr != 0)
 			continue;
 
+		if (debug)
+			p_y_diffFN_vs_y->Write(name.c_str());
+
 		pv.push_back({ (x_max + x_min) / 2., sl, (x_max - x_min) / 2., sl_unc });
 	}
 
@@ -688,8 +709,8 @@ std::vector<PointErrors> PPSAlignmentConfigESSource::buildVectorFromDirectory(TD
 //---------------------------------------------------------------------------------------------
 
 void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetupRecordKey& key,
-												const edm::IOVSyncValue& iosv,
-												edm::ValidityInterval& oValidity) 
+                                                const edm::IOVSyncValue& iosv,
+                                                edm::ValidityInterval& oValidity) 
 {
 	edm::LogInfo("PPSAlignmentConfigESSource")
 	<< ">> PPSAlignmentConfigESSource_setIntervalFor(" << key.name() << ")\n"

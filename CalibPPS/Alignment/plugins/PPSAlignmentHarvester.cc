@@ -367,8 +367,6 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 				edm::LogWarning("x_alignment") << "reference points vector is empty";
 				continue;
 			}
-			if (debug_)
-				gDirectory = rpDir->mkdir("fits_ref");
 
 			TGraphErrors *g_ref = buildGraphFromVector(vec_ref);
 
