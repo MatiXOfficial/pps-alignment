@@ -73,14 +73,17 @@ private:
 	std::map<unsigned int, double> sh_x_map;
 
 	// ------------ x alignment relative ------------
-	void xAlignmentRelative(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
+	void xAlignmentRelative(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
+	                        const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
 
 	// ------------ y alignment ------------
 	static double findMax(TF1 *ff_fit);
-	TGraphErrors* buildModeGraph(MonitorElement *h2_y_vs_x, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
+	TGraphErrors* buildModeGraph(DQMStore::IBooker &iBooker, MonitorElement *h2_y_vs_x, 
+	                             const edm::ESHandle<PPSAlignmentConfig> &cfg, 
 	                             double x_min_mode, double x_max_mode);
 
-	void yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
+	void yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
+	                const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
 
 	// ------------ other member data and methods ------------
 	static TH1D *getTH1DFromTGraphErrors(TGraphErrors *graph, std::string title = "", std::string labels = "");
@@ -413,7 +416,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
 // -------------------------------- x alignment relative methods --------------------------------
 
-void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter, 
+void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
                                                const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos)
 {
 	TDirectory *xAliRelDir = nullptr;
@@ -487,6 +490,12 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 		CTPPSRPAlignmentCorrectionData rpResult_sl_fix_F(-b_fs/2., b_fs_unc/2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 		results_sl_fix.setRPCorrection(sd.rp_F.id, rpResult_sl_fix_F);
 
+		edm::LogInfo("x_alignment_relative") << std::fixed << std::setprecision(3) << "ff: " << ff->GetParameter(0) 
+			                                 << " + " << ff->GetParameter(1) << " * (x - " << ff->GetParameter(2) 
+			                                 << "), ff_sl_fix: " << ff_sl_fix->GetParameter(0) << " + " 
+			                                 << ff_sl_fix->GetParameter(1) << " * (x - " 
+		                                     << ff_sl_fix->GetParameter(2) << ")";
+
 		if (debug_)
 		{
 			p_x_diffFN_vs_x_N->Write("p_x_diffFN_vs_x_N");
@@ -531,7 +540,7 @@ double PPSAlignmentHarvester::findMax(TF1 *ff_fit)
 	return xMax;
 }
 
-TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x, 
+TGraphErrors* PPSAlignmentHarvester::buildModeGraph(DQMStore::IBooker &iBooker, MonitorElement *h2_y_vs_x, 
                                                     const edm::ESHandle<PPSAlignmentConfig> &cfg, 
                                                     double x_min_mode, double x_max_mode)
 {
@@ -543,10 +552,16 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x,
 
 	TGraphErrors *g_y_mode_vs_x = new TGraphErrors();
 
-	for (int bix = 1; bix <= h2_y_vs_x->getNbinsX(); bix++)
+	int h_n = h2_y_vs_x->getNbinsX();
+	double diff = h2_y_vs_x->getTH2D()->GetXaxis()->GetBinWidth(1) / 2.;
+	auto h_mode = iBooker.book1DD("mode", "", h_n, 
+	                              h2_y_vs_x->getTH2D()->GetXaxis()->GetBinCenter(1) - diff,
+								  h2_y_vs_x->getTH2D()->GetXaxis()->GetBinCenter(h_n) + diff);
+
+	for (int bix = 1; bix <= h_n; bix++)
 	{
 		const double x = h2_y_vs_x->getTH2D()->GetXaxis()->GetBinCenter(bix);
-		const double x_unc = h2_y_vs_x->getTH2D()->GetXaxis()->GetBinWidth(bix) / 2;
+		const double x_unc = h2_y_vs_x->getTH2D()->GetXaxis()->GetBinWidth(bix) / 2.;
 
 		char buf[100];
 		sprintf(buf, "h_y_x=%.3f", x);
@@ -615,13 +630,16 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(MonitorElement *h2_y_vs_x,
 		int idx = g_y_mode_vs_x->GetN();
 		g_y_mode_vs_x->SetPoint(idx, x, y_mode);
 		g_y_mode_vs_x->SetPointError(idx, x_unc, y_mode_unc);
+
+		h_mode->Fill(x, y_mode);
+		h_mode->setBinError(bix, y_mode_unc);
 	}
 
 	return g_y_mode_vs_x;
 }
 
-void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
-                                       int seqPos)
+void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
+                                       const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos)
 {
 	TDirectory *yAliDir = nullptr;
 	if (debug_)
@@ -654,7 +672,8 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 				continue;
 			}
 
-			auto *g_y_cen_vs_x = buildModeGraph(h2_y_vs_x, cfg, rpd.x_min_mode, rpd.x_max_mode);
+			iBooker.setCurrentFolder(folder_ + "/harvester/" + sd.name + "/y alignment/" + rpd.name);
+			auto *g_y_cen_vs_x = buildModeGraph(iBooker, h2_y_vs_x, cfg, rpd.x_min_mode, rpd.x_max_mode);
 
 			if (g_y_cen_vs_x->GetN() < 5)
 			{
@@ -694,6 +713,12 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			CTPPSRPAlignmentCorrectionData rpResult_sl_fix(0., 0., b_fs, b_fs_unc, 0., 0., 0., 0., 0., 0., 0., 0.);
 			results_sl_fix.setRPCorrection(rpd.id, rpResult_sl_fix);
 
+			edm::LogInfo("y_alignment") << std::fixed << std::setprecision(3) << "ff: " << ff->GetParameter(0) 
+			                            << " + " << ff->GetParameter(1) << " * (x - " << ff->GetParameter(2) 
+			                            << "), ff_sl_fix: " << ff_sl_fix->GetParameter(0) << " + " 
+			                            << ff_sl_fix->GetParameter(1) << " * (x - " << ff_sl_fix->GetParameter(2) 
+			                            << ")";
+
 			if (debug_)
 			{
 				gDirectory = rpDir;
@@ -732,8 +757,8 @@ TH1D* PPSAlignmentHarvester::getTH1DFromTGraphErrors(TGraphErrors *graph, std::s
 	}
 	else
 	{
-		double interval = graph->GetPointX(1) - graph->GetPointX(0);
-		double diff = interval / 2.;
+		double binWidth = graph->GetPointX(1) - graph->GetPointX(0);
+		double diff = binWidth / 2.;
 		hist = new TH1D(title.c_str(), labels.c_str(), n, graph->GetPointX(0) - diff, graph->GetPointX(n - 1) + diff);
 	}
 
@@ -834,9 +859,9 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 		if (cfg->sequence()[i] == "x alignment")
 			xAlignment(iBooker, iGetter, cfg, cfg_ref, i);
 		else if (cfg->sequence()[i] == "x alignment relative")
-			xAlignmentRelative(iGetter, cfg, i);
+			xAlignmentRelative(iBooker, iGetter, cfg, i);
 		else if (cfg->sequence()[i] == "y alignment")
-			yAlignment(iGetter, cfg, i);
+			yAlignment(iBooker, iGetter, cfg, i);
 		else
 			edm::LogError("harvester_dqmEndRun") << cfg->sequence()[i] << " is a wrong method name.";
 	}
