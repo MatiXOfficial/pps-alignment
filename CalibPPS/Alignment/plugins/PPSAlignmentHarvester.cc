@@ -34,6 +34,7 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TF1.h"
 #include "TProfile.h"
@@ -61,11 +62,12 @@ private:
 	TGraphErrors* buildGraphFromVector(const std::vector<PointErrors> &pv);
 	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
 	                                            const std::vector<MonitorElement*> &mes);
-	int doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
-	            const SelectionRange &range_test, double sh_min, double sh_max, double sh_step,
-	            double &sh_best, double &sh_best_unc);
+	int doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
+	            const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, double sh_max, 
+	            double sh_step, double &sh_best, double &sh_best_unc);
 
-	void xAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg,
+	void xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
+	                const edm::ESHandle<PPSAlignmentConfig> &cfg, 
 	                const edm::ESHandle<PPSAlignmentConfig> &cfg_ref, int seqPos);
 
 	std::map<unsigned int, double> sh_x_map;
@@ -81,11 +83,12 @@ private:
 	void yAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
 
 	// ------------ other member data and methods ------------
+	static TH1D *getTH1DFromTGraphErrors(TGraphErrors *graph, std::string title = "", std::string labels = "");
 	void debugPlots(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg);
 
 	const std::string folder_;
 	const bool debug_;
-	TFile *debug_file_;
+	TFile *debugFile_;
 };
 
 // -------------------------------- x alignment methods --------------------------------
@@ -190,9 +193,9 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 	return g;
 }
 
-int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, 
-                                   const SelectionRange &range_test, double sh_min, double sh_max, double sh_step,
-                                   double &sh_best, double &sh_best_unc)
+int PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
+                                   const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, 
+                                   double sh_max, double sh_step, double &sh_best, double &sh_best_unc)
 {
 	// require minimal number of points
 	if (g_ref->GetN() < 5 || g_test->GetN() < 5)
@@ -286,12 +289,21 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
 	edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
 	<< "sh_best = (" << sh_best << " +- " << sh_best_unc << ") mm";
 
+	TGraphErrors *g_test_shifted = new TGraphErrors(*g_test);
+	for (int i = 0; i < g_test_shifted->GetN(); ++i)
+	{
+		g_test_shifted->GetX()[i] += sh_best;
+	}
+
+	iBooker.book1DD("h_test_shifted", getTH1DFromTGraphErrors(g_test_shifted, "test_shifted"));
+
 	if (debug_)
 	{
 		// save graphs
 		g_n_points->Write();
 		g_chi_sq->Write();
 		g_chi_sq_norm->Write();
+		g_test_shifted->Write("g_test_shifted");
 
 		// save results
 		TGraph *g_results = new TGraph();
@@ -302,12 +314,6 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
 		g_results->Write();
 
 		// save debug canvas
-		TGraphErrors *g_test_shifted = new TGraphErrors(*g_test);
-		for (int i = 0; i < g_test_shifted->GetN(); ++i)
-		{
-			g_test_shifted->GetX()[i] += sh_best;
-		}
-
 		TCanvas *c_cmp = new TCanvas("c_cmp");
 		g_ref->SetLineColor(1);
 		g_ref->SetName("g_ref");
@@ -331,12 +337,13 @@ int PPSAlignmentHarvester::doMatch(TGraphErrors *g_ref, TGraphErrors *g_test, co
 	return 0;
 }
 
-void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg,
-                                       const edm::ESHandle<PPSAlignmentConfig> &cfg_ref, int seqPos)
+void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
+	                                   const edm::ESHandle<PPSAlignmentConfig> &cfg, 
+	                                   const edm::ESHandle<PPSAlignmentConfig> &cfg_ref, int seqPos)
 {
 	TDirectory *xAliDir = nullptr;
 	if (debug_)
-		xAliDir = debug_file_->mkdir((std::to_string(seqPos + 1) + ": x alignment").c_str());
+		xAliDir = debugFile_->mkdir((std::to_string(seqPos + 1) + ": x alignment").c_str());
 
 	// prepare results
 	CTPPSRPAlignmentCorrectionsData results;
@@ -364,7 +371,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			auto vec_ref = cfg_ref->matchingReferencePoints()[rpd.id];
 			if (vec_ref.empty())
 			{
-				edm::LogWarning("x_alignment") << "reference points vector is empty";
+				edm::LogInfo("x_alignment") << "reference points vector is empty";
 				continue;
 			}
 
@@ -373,6 +380,10 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 			if (debug_)
 				gDirectory = rpDir->mkdir("fits_test");
 			TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, rpd, mes_test);
+
+			iBooker.setCurrentFolder(folder_ + "/harvester/" + sd.name + "/x alignment/" + rpd.name);
+			iBooker.book1DD("h_ref", getTH1DFromTGraphErrors(g_ref, "ref"));
+			iBooker.book1DD("h_test", getTH1DFromTGraphErrors(g_test, "test"));
 
 			if (debug_)
 			{
@@ -383,7 +394,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IGetter &iGetter, const edm::ES
 
 			const auto &shiftRange = cfg_ref->matchingShiftRanges()[rpd.id];
 			double sh = 0., sh_unc = 0.;
-			int r = doMatch(g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
+			int r = doMatch(iBooker, g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
 							cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
 							shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
 			if (r == 0)
@@ -407,7 +418,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IGetter &iGetter,
 {
 	TDirectory *xAliRelDir = nullptr;
 	if (debug_)
-		xAliRelDir = debug_file_->mkdir((std::to_string(seqPos + 1) + ": x_alignment_relative").c_str());
+		xAliRelDir = debugFile_->mkdir((std::to_string(seqPos + 1) + ": x_alignment_relative").c_str());
 
 	// prepare results
 	CTPPSRPAlignmentCorrectionsData results;
@@ -614,7 +625,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 {
 	TDirectory *yAliDir = nullptr;
 	if (debug_)
-		yAliDir = debug_file_->mkdir((std::to_string(seqPos + 1) + ": y_alignment").c_str());
+		yAliDir = debugFile_->mkdir((std::to_string(seqPos + 1) + ": y_alignment").c_str());
 
 	// prepare results
 	CTPPSRPAlignmentCorrectionsData results;
@@ -706,9 +717,39 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IGetter &iGetter, const edm::ES
 
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
 
+// Points in TGraph should be sorted (TGraph::Sort())
+TH1D* PPSAlignmentHarvester::getTH1DFromTGraphErrors(TGraphErrors *graph, std::string title, std::string labels)
+{
+	int n = graph->GetN();
+	TH1D *hist;
+	if (n == 0)
+	{
+		hist = new TH1D(title.c_str(), labels.c_str(), 0, -10., 10.);
+	}
+	else if (n == 1)
+	{
+		hist = new TH1D(title.c_str(), labels.c_str(), 1, graph->GetPointX(0) - 5., graph->GetPointX(0) + 5.);
+	}
+	else
+	{
+		double interval = graph->GetPointX(1) - graph->GetPointX(0);
+		double diff = interval / 2.;
+		hist = new TH1D(title.c_str(), labels.c_str(), n, graph->GetPointX(0) - diff, graph->GetPointX(n - 1) + diff);
+	}
+
+	for (int i = 0; i < n; i++)
+	{
+		double x, y;
+		graph->GetPoint(i, x, y);
+		hist->Fill(x, y);
+		hist->SetBinError(i + 1, graph->GetErrorY(i));
+	}
+	return hist;
+}
+
 void PPSAlignmentHarvester::debugPlots(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg)
 {
-	TDirectory *debugPlotsDir = debug_file_->mkdir("misc");
+	TDirectory *debugPlotsDir = debugFile_->mkdir("misc");
 	for (const auto &sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
 	{
 		for (const auto &rpd : { sd.rp_F, sd.rp_N })
@@ -773,7 +814,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	
 	if (debug_)
 	{
-		debug_file_ = new TFile(("debug_" + std::to_string(iRun.run()) + ".root").c_str(), "recreate");
+		debugFile_ = new TFile(("debug_harvester_" + std::to_string(iRun.run()) + ".root").c_str(), "recreate");
 		debugPlots(iGetter, cfg);
 	}
 
@@ -791,7 +832,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	for (unsigned int i = 0; i < cfg->sequence().size(); i++)
 	{
 		if (cfg->sequence()[i] == "x alignment")
-			xAlignment(iGetter, cfg, cfg_ref, i);
+			xAlignment(iBooker, iGetter, cfg, cfg_ref, i);
 		else if (cfg->sequence()[i] == "x alignment relative")
 			xAlignmentRelative(iGetter, cfg, i);
 		else if (cfg->sequence()[i] == "y alignment")
@@ -801,7 +842,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	}
 
 	if (debug_)
-		delete debug_file_;
+		delete debugFile_;
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentHarvester);
