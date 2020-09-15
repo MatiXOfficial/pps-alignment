@@ -360,10 +360,10 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 		{
 			const auto &rpd = rpdp.first;
 
-			auto mes_test = iGetter.getAllContents(folder_ + "/" + sd.name + "/near_far/x slices, " + rpd.position);
+			auto mes_test = iGetter.getAllContents(folder_ + "/worker/" + sd.name + "/near_far/x slices, " + rpd.position);
 			if (mes_test.empty())
 			{
-				edm::LogWarning("x_alignment") << "could not load mes_test";
+				edm::LogWarning("x_alignment") << rpd.name << ": could not load mes_test";
 				continue;
 			}
 
@@ -374,7 +374,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			auto vec_ref = cfg_ref->matchingReferencePoints()[rpd.id];
 			if (vec_ref.empty())
 			{
-				edm::LogInfo("x_alignment") << "reference points vector is empty";
+				edm::LogInfo("x_alignment") << rpd.name << ": reference points vector is empty";
 				continue;
 			}
 
@@ -384,7 +384,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 				gDirectory = rpDir->mkdir("fits_test");
 			TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, rpd, mes_test);
 
-			iBooker.setCurrentFolder(folder_ + "/harvester/" + sd.name + "/x alignment/" + rpd.name);
+			iBooker.setCurrentFolder(folder_ + "/harvester/x alignment/" + rpd.name);
 			iBooker.book1DD("h_ref", getTH1DFromTGraphErrors(g_ref, "ref"));
 			iBooker.book1DD("h_test", getTH1DFromTGraphErrors(g_test, "test"));
 
@@ -440,17 +440,17 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker, DQMSt
 			gDirectory = sectorDir;
 		}
 		
-		auto *p_x_diffFN_vs_x_N_monitor = iGetter.get(folder_ + "/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
+		auto *p_x_diffFN_vs_x_N_monitor = iGetter.get(folder_ + "/worker/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
 		if (p_x_diffFN_vs_x_N_monitor == nullptr)
 		{
-			edm::LogWarning("x_alignment_relative") << "    cannot load data, skipping";
+			edm::LogWarning("x_alignment_relative") << sd.name << ": cannot load data, skipping";
 			continue;
 		}
 		TProfile *p_x_diffFN_vs_x_N = p_x_diffFN_vs_x_N_monitor->getTProfile();
 
 		if (p_x_diffFN_vs_x_N->GetEntries() < 100)
 		{
-			edm::LogInfo("x_alignment_relative") << "insufficient data, skipping";
+			edm::LogInfo("x_alignment_relative") << sd.name << ": insufficient data, skipping";
 			continue;
 		}
 
@@ -664,20 +664,20 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 				gDirectory = rpDir->mkdir("x");
 			}
 
-			auto *h2_y_vs_x = iGetter.get(folder_ + "/" + sd.name + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
+			auto *h2_y_vs_x = iGetter.get(folder_ + "/worker/" + sd.name + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
 
 			if (h2_y_vs_x == nullptr)
 			{
-				edm::LogWarning("y_alignment") << "    cannot load data for " << rpd.name << ", skipping";
+				edm::LogWarning("y_alignment") << rpd.name << ": cannot load data, skipping";
 				continue;
 			}
 
-			iBooker.setCurrentFolder(folder_ + "/harvester/" + sd.name + "/y alignment/" + rpd.name);
+			iBooker.setCurrentFolder(folder_ + "/harvester/y alignment/" + rpd.name);
 			auto *g_y_cen_vs_x = buildModeGraph(iBooker, h2_y_vs_x, cfg, rpd.x_min_mode, rpd.x_max_mode);
 
 			if (g_y_cen_vs_x->GetN() < 5)
 			{
-				edm::LogInfo("y_alignment") << "    insufficient data, skipping";
+				edm::LogInfo("y_alignment") << rpd.name << ": insufficient data, skipping";
 				continue;
 			}
 
@@ -781,7 +781,7 @@ void PPSAlignmentHarvester::debugPlots(DQMStore::IGetter &iGetter, const edm::ES
 		{
 			gDirectory = debugPlotsDir->mkdir(rpd.name.c_str());
 
-			auto *tmp = iGetter.get(folder_ + "/" + sd.name + "/profiles/" + rpd.name + "/m_p_y_vs_x_aft_sel");
+			auto *tmp = iGetter.get(folder_ + "/worker/" + sd.name + "/profiles/" + rpd.name + "/m_p_y_vs_x_aft_sel");
 			if (tmp == nullptr)
 				edm::LogWarning("debug_plots") << "could not load the m_p_y_vs_x_aft_sel Tprofile";
 			auto *profile = tmp->getTProfile();
