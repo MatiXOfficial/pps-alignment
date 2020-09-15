@@ -58,14 +58,27 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_meth_o_ra
 { 
 	return alignment_x_meth_o_ranges_; 
 }
+
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_relative_ranges() const 
 { 
 	return alignment_x_relative_ranges_; 
+}
+unsigned int PPSAlignmentConfig::nearFarMinEntries() const
+{
+	return nearFarMinEntries_;
 }
 
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_y_ranges() const 
 { 
 	return alignment_y_ranges_; 
+}
+unsigned int PPSAlignmentConfig::modeGraphMinN() const
+{
+	return modeGraphMinN_;
+}
+unsigned int PPSAlignmentConfig::multSelProjYMinEntries() const
+{
+	return multSelProjYMinEntries_;
 }
 
 Binning PPSAlignmentConfig::binning() const { return binning_; }
@@ -111,14 +124,27 @@ void PPSAlignmentConfig::setAlignment_x_meth_o_ranges(std::map<unsigned int, Sel
 {
 	alignment_x_meth_o_ranges_ = alignment_x_meth_o_ranges;
 }
+
 void PPSAlignmentConfig::setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges)
 {
 	alignment_x_relative_ranges_ = alignment_x_relative_ranges;   
+}
+void PPSAlignmentConfig::setNearFarMinEntries(unsigned int nearFarMinEntries)
+{
+	nearFarMinEntries_ = nearFarMinEntries;
 }
 
 void PPSAlignmentConfig::setAlignment_y_ranges(std::map<unsigned int, SelectionRange> &alignment_y_ranges)
 {
 	alignment_y_ranges_ = alignment_y_ranges;
+}
+void PPSAlignmentConfig::setModeGraphMinN(unsigned int modeGraphMinN)
+{
+	modeGraphMinN_ = modeGraphMinN;
+}
+void PPSAlignmentConfig::setMultSelProjYMinEntries(unsigned int multSelProjYMinEntries)
+{
+	multSelProjYMinEntries_ = multSelProjYMinEntries;
 }
 
 void PPSAlignmentConfig::setBinning(Binning &binning) { binning_ = binning; }
@@ -234,11 +260,14 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	for (const auto &p : c.alignment_x_relative_ranges_)
 		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
 		   << ", sh_max = " << p.second.x_max << "\n";
+	os << "    near_far_min_entries = " << c.nearFarMinEntries_ << "\n";
 
 	os << "\n" << "* alignment_y\n";
 	for (const auto &p : c.alignment_y_ranges_)
 		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
 		   << ", sh_max = " << p.second.x_max << "\n";
+	os << "    mode_graph_min_N = " << c.modeGraphMinN_ << "\n";
+	os << "    mult_sel_proj_y_min_entries = " << c.multSelProjYMinEntries_ << "\n";
 
 	os << "\n" << "* binning\n";
 	os << c.binning_ << "\n";

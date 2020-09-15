@@ -448,9 +448,11 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker, DQMSt
 		}
 		TProfile *p_x_diffFN_vs_x_N = p_x_diffFN_vs_x_N_monitor->getTProfile();
 
-		if (p_x_diffFN_vs_x_N->GetEntries() < 100)
+		if (p_x_diffFN_vs_x_N->GetEntries() < cfg->nearFarMinEntries())
 		{
-			edm::LogInfo("x_alignment_relative") << sd.name << ": insufficient data, skipping";
+			edm::LogInfo("x_alignment_relative") << sd.name << ": insufficient data, skipping (near_far " 
+			                                     << p_x_diffFN_vs_x_N->GetEntries() << "/" << cfg->nearFarMinEntries() 
+			                                     << ")";
 			continue;
 		}
 
@@ -567,7 +569,7 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(DQMStore::IBooker &iBooker, 
 		sprintf(buf, "h_y_x=%.3f", x);
 		TH1D *h_y = h2_y_vs_x->getTH2D()->ProjectionY(buf, bix, bix);
 
-		if (h_y->GetEntries() < 300)
+		if (h_y->GetEntries() < cfg->multSelProjYMinEntries())
 			continue;
 
 		if (debug_)
@@ -675,9 +677,10 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			iBooker.setCurrentFolder(folder_ + "/harvester/y alignment/" + rpd.name);
 			auto *g_y_cen_vs_x = buildModeGraph(iBooker, h2_y_vs_x, cfg, rpd.x_min_mode, rpd.x_max_mode);
 
-			if (g_y_cen_vs_x->GetN() < 5)
+			if ((unsigned int)g_y_cen_vs_x->GetN() < cfg->modeGraphMinN())
 			{
-				edm::LogInfo("y_alignment") << rpd.name << ": insufficient data, skipping";
+				edm::LogInfo("y_alignment") << rpd.name << ": insufficient data, skipping (mult_sel " 
+				                            << g_y_cen_vs_x->GetN() << "/" << cfg->modeGraphMinN() << ")";
 				continue;
 			}
 

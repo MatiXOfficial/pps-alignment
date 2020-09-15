@@ -74,9 +74,13 @@ private:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges;
+
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges;
+	unsigned int nearFarMinEntries;
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges;
+	unsigned int modeGraphMinN;
+	unsigned int multSelProjYMinEntries; 
 
 	Binning binning;
 
@@ -259,6 +263,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		const auto &ps = c_axr.getParameter<edm::ParameterSet>(p.second);
 		alignment_x_relative_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
+	nearFarMinEntries = c_axr.getParameter<unsigned int>("near_far_min_entries");
 
 	const auto &c_ay = iConfig.getParameter<edm::ParameterSet>("y_alignment");
 	for (const auto &p : rpTags)
@@ -266,6 +271,8 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		const auto &ps = c_ay.getParameter<edm::ParameterSet>(p.second);
 		alignment_y_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
+	modeGraphMinN = c_ay.getParameter<unsigned int>("mode_graph_min_N");
+	multSelProjYMinEntries = c_ay.getParameter<unsigned int>("mult_sel_proj_y_min_entries");
 
 	const auto &bps = iConfig.getParameter<edm::ParameterSet>("binning");
 	binning.bin_size_x = bps.getParameter<double>("bin_size_x");
@@ -309,9 +316,13 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setMatchingShiftRanges(matchingShiftRanges);
 
 	p->setAlignment_x_meth_o_ranges(alignment_x_meth_o_ranges);
+
 	p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);
+	p->setNearFarMinEntries(nearFarMinEntries);
 
 	p->setAlignment_y_ranges(alignment_y_ranges);
+	p->setModeGraphMinN(modeGraphMinN);
+	p->setMultSelProjYMinEntries(multSelProjYMinEntries);
 
 	p->setBinning(binning);
 
@@ -548,6 +559,8 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rpRF.add<double>("x_max", 0.);
 		x_alignment_relative.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
 
+		x_alignment_relative.add<unsigned int>("near_far_min_entries", 100);
+
 		desc.add<edm::ParameterSetDescription>("x_alignment_relative", x_alignment_relative);
 	}
 
@@ -574,6 +587,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rpRF.add<double>("x_min", 44.5);
 		rpRF.add<double>("x_max", 49.);
 		y_alignment.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
+
+		y_alignment.add<unsigned int>("mode_graph_min_N", 5);
+		y_alignment.add<unsigned int>("mult_sel_proj_y_min_entries", 300);
 
 		desc.add<edm::ParameterSetDescription>("y_alignment", y_alignment);
 	}

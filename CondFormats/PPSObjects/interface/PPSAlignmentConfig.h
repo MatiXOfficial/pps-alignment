@@ -123,9 +123,13 @@ public:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges() const;
+
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges() const;
+	unsigned int nearFarMinEntries() const;
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges() const;
+	unsigned int modeGraphMinN() const;
+	unsigned int multSelProjYMinEntries() const;
 
 	Binning binning() const;
 
@@ -151,9 +155,13 @@ public:
 	void setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges);
 
 	void setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges);
+
 	void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
+	void setNearFarMinEntries(unsigned int nearFarMinEntries);
 
 	void setAlignment_y_ranges(std::map<unsigned int, SelectionRange> &alignment_y_ranges);
+	void setModeGraphMinN(unsigned int modeGraphMinN);
+	void setMultSelProjYMinEntries(unsigned int multSelProjYMinEntries);
 
 	void setBinning(Binning &binning);
 
@@ -180,9 +188,13 @@ private:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges_;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges_;
+
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges_;
+	unsigned int nearFarMinEntries_;
 
 	std::map<unsigned int, SelectionRange> alignment_y_ranges_;
+	unsigned int modeGraphMinN_;
+	unsigned int multSelProjYMinEntries_; 
 
 	Binning binning_;
 
