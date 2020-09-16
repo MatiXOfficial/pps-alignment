@@ -55,6 +55,9 @@ struct RPConfig
 	double y_cen_add;
 	double y_width_mult;
 
+	int x_slice_n;
+	double x_slice_min, x_slice_w;
+
 	COND_SERIALIZABLE;
 };
 std::ostream &operator<<(std::ostream &os, RPConfig &rc);
@@ -72,11 +75,6 @@ struct SectorConfig
 
 	bool cut_v_apply;
 	double cut_v_a, cut_v_c, cut_v_si;
-
-	int nr_x_slice_n;
-	double nr_x_slice_min, nr_x_slice_w;
-	int fr_x_slice_n;
-	double fr_x_slice_min, fr_x_slice_w;
 
 	COND_SERIALIZABLE;
 };

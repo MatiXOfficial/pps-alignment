@@ -165,7 +165,10 @@ std::ostream &operator<<(std::ostream &os, RPConfig &rc)
 	os << "    " << rc.name << ", id = " << rc.id << ", position = " << rc.position << ":\n";
 	os << "        slope = " << rc.slope << ", sh_x = " << rc.sh_x << "\n";
 	os << "        x_min_mode = " << rc.x_min_mode << ", x_max_mode = " << rc.x_max_mode << "\n";
-	os << "        y_cen_add = " << rc.y_cen_add << ", y_width_mult = " << rc.y_width_mult;
+	os << "        y_cen_add = " << rc.y_cen_add << ", y_width_mult = " << rc.y_width_mult << "\n";
+	os << std::setprecision(2);
+	os << "        x slices: min = " << rc.x_slice_min << ", w = " << rc.x_slice_w << ", n = " 
+	   << rc.x_slice_n;
 
 	return os;
 }
@@ -178,14 +181,9 @@ std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
 	os << sc.rp_N << "\n" << sc.rp_F << "\n";
 	os << "    slope = " << sc.slope << "\n";
 	os << "    cut_h: apply = " << sc.cut_h_apply << ", a = " << sc.cut_h_a << ", c = " 
-		<< sc.cut_h_c << ", si = " << sc.cut_h_si << "\n";
+	   << sc.cut_h_c << ", si = " << sc.cut_h_si << "\n";
 	os << "    cut_v: apply = " << sc.cut_v_apply << ", a = " << sc.cut_v_a << ", c = " 
-		<< sc.cut_v_c << ", si = " << sc.cut_v_si << "\n";
-	os << std::setprecision(2);
-	os << "    x slices, nr: min = " << sc.nr_x_slice_min << ", w = " << sc.nr_x_slice_w 
-		<< ", n = " << sc.nr_x_slice_n << "\n";
-	os << "    x slices, fr: min = " << sc.fr_x_slice_min << ", w = " << sc.fr_x_slice_w 
-		<< ", n = " << sc.fr_x_slice_n;
+	   << sc.cut_v_c << ", si = " << sc.cut_v_si << "\n";
 
 	return os;
 }

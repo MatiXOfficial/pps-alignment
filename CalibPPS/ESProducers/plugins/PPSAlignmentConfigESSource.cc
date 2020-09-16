@@ -122,29 +122,30 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		else
 			sc = &sectorConfig56;
 
-		const auto &rnps = sps.getParameter<edm::ParameterSet>("rp_N");
-		sc->rp_N.name = rnps.getParameter<std::string>("name");
-		sc->rp_N.id = rnps.getParameter<int>("id");
+		for (std::string rpName : {"rp_N", "rp_F"})
+		{
+			const auto &rpps = sps.getParameter<edm::ParameterSet>(rpName);
+			RPConfig *rc;
+			if (rpName == "rp_N")
+				rc = &sc->rp_N;
+			else
+				rc = &sc->rp_F;
 
-		sc->rp_N.slope = rnps.getParameter<double>("slope");
-		sc->rp_N.sh_x = rnps.getParameter<double>("sh_x");
+			rc->name = rpps.getParameter<std::string>("name");
+			rc->id = rpps.getParameter<int>("id");
 
-		sc->rp_N.x_min_mode = rnps.getParameter<double>("x_min_mode");
-		sc->rp_N.x_max_mode = rnps.getParameter<double>("x_max_mode");
-		sc->rp_N.y_cen_add = rnps.getParameter<double>("y_cen_add");
-		sc->rp_N.y_width_mult = rnps.getParameter<double>("y_width_mult");
+			rc->slope = rpps.getParameter<double>("slope");
+			rc->sh_x = rpps.getParameter<double>("sh_x");
 
-		const auto &rfps = sps.getParameter<edm::ParameterSet>("rp_F");
-		sc->rp_F.name = rfps.getParameter<std::string>("name");
-		sc->rp_F.id = rfps.getParameter<int>("id");
+			rc->x_min_mode = rpps.getParameter<double>("x_min_mode");
+			rc->x_max_mode = rpps.getParameter<double>("x_max_mode");
+			rc->y_cen_add = rpps.getParameter<double>("y_cen_add");
+			rc->y_width_mult = rpps.getParameter<double>("y_width_mult");
 
-		sc->rp_F.slope = rfps.getParameter<double>("slope");
-		sc->rp_F.sh_x = rfps.getParameter<double>("sh_x");
-
-		sc->rp_F.x_min_mode = rfps.getParameter<double>("x_min_mode");
-		sc->rp_F.x_max_mode = rfps.getParameter<double>("x_max_mode");
-		sc->rp_F.y_cen_add = rfps.getParameter<double>("y_cen_add");
-		sc->rp_F.y_width_mult = rfps.getParameter<double>("y_width_mult");
+			rc->x_slice_min = rpps.getParameter<double>("x_slice_min");
+			rc->x_slice_w = rpps.getParameter<double>("x_slice_w");
+			rc->x_slice_n = std::ceil((rpps.getParameter<double>("x_slice_max") - rc->x_slice_min) / rc->x_slice_w);
+		}
 
 		sc->slope = sps.getParameter<double>("slope");
 
@@ -157,14 +158,6 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		sc->cut_v_a = sps.getParameter<double>("cut_v_a");
 		sc->cut_v_c = sps.getParameter<double>("cut_v_c");
 		sc->cut_v_si = sps.getParameter<double>("cut_v_si");
-
-		sc->nr_x_slice_min = sps.getParameter<double>("nr_x_slice_min");
-		sc->nr_x_slice_w = sps.getParameter<double>("nr_x_slice_w");
-		sc->nr_x_slice_n = std::ceil((sps.getParameter<double>("nr_x_slice_max") - sc->nr_x_slice_min) / sc->nr_x_slice_w);
-
-		sc->fr_x_slice_min = sps.getParameter<double>("fr_x_slice_min");
-		sc->fr_x_slice_w = sps.getParameter<double>("fr_x_slice_w");
-		sc->fr_x_slice_n = std::ceil((sps.getParameter<double>("fr_x_slice_max") - sc->fr_x_slice_min) / sc->fr_x_slice_w);
 	}
 
 	std::map<unsigned int, std::string> rpTags = {
@@ -364,6 +357,10 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rp_N.add<double>("x_max_mode", 7.0);
 		rp_N.add<double>("y_cen_add", -0.3);
 		rp_N.add<double>("y_width_mult", 1.1);
+
+		rp_N.add<double>("x_slice_min", 7.);
+		rp_N.add<double>("x_slice_max", 19.);
+		rp_N.add<double>("x_slice_w", 0.2);
 		sector45.add<edm::ParameterSetDescription>("rp_N", rp_N);
 
 		edm::ParameterSetDescription rp_F;
@@ -377,6 +374,10 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rp_F.add<double>("x_max_mode", 7.5);
 		rp_F.add<double>("y_cen_add", -0.3);
 		rp_F.add<double>("y_width_mult", 1.1);
+
+		rp_F.add<double>("x_slice_min", 46.);
+		rp_F.add<double>("x_slice_max", 58.);
+		rp_F.add<double>("x_slice_w", 0.2);
 		sector45.add<edm::ParameterSetDescription>("rp_F", rp_F);
 
 		sector45.add<double>("slope", 0.006);
@@ -388,12 +389,6 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector45.add<double>("cut_v_a", -1.07);
 		sector45.add<double>("cut_v_c", 1.63);
 		sector45.add<double>("cut_v_si", 0.15);
-		sector45.add<double>("nr_x_slice_min", 7.);
-		sector45.add<double>("nr_x_slice_max", 19.);
-		sector45.add<double>("nr_x_slice_w", 0.2);
-		sector45.add<double>("fr_x_slice_min", 46.);
-		sector45.add<double>("fr_x_slice_max", 58.);
-		sector45.add<double>("fr_x_slice_w", 0.2);
 
 		desc.add<edm::ParameterSetDescription>("sector_45", sector45);
 	}
@@ -413,6 +408,10 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rp_N.add<double>("x_max_mode", 7.4);
 		rp_N.add<double>("y_cen_add", -0.8);
 		rp_N.add<double>("y_width_mult", 1.0);
+
+		rp_N.add<double>("x_slice_min", 6.);
+		rp_N.add<double>("x_slice_max", 17.);
+		rp_N.add<double>("x_slice_w", 0.2);
 		sector56.add<edm::ParameterSetDescription>("rp_N", rp_N);
 
 		edm::ParameterSetDescription rp_F;
@@ -426,6 +425,10 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rp_F.add<double>("x_max_mode", 8.0);
 		rp_F.add<double>("y_cen_add", -0.8);
 		rp_F.add<double>("y_width_mult", 1.0);
+
+		rp_F.add<double>("x_slice_min", 45.);
+		rp_F.add<double>("x_slice_max", 57.);
+		rp_F.add<double>("x_slice_w", 0.2);
 		sector56.add<edm::ParameterSetDescription>("rp_F", rp_F);
 
 		sector56.add<double>("slope", -0.015);
@@ -437,12 +440,6 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector56.add<double>("cut_v_a", -1.07);
 		sector56.add<double>("cut_v_c", 1.49);
 		sector56.add<double>("cut_v_si", 0.15);
-		sector56.add<double>("nr_x_slice_min", 6.);
-		sector56.add<double>("nr_x_slice_max", 17.);
-		sector56.add<double>("nr_x_slice_w", 0.2);
-		sector56.add<double>("fr_x_slice_min", 45.);
-		sector56.add<double>("fr_x_slice_max", 57.);
-		sector56.add<double>("fr_x_slice_w", 0.2);
 
 		desc.add<edm::ParameterSetDescription>("sector_56", sector56);
 	}

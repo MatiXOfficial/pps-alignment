@@ -105,6 +105,7 @@ private:
 
 	std::string folder_;
 	std::string label_;
+	bool debug_;
 };
 
 // -------------------------------- SectorData and SlicePlots methods --------------------------------
@@ -203,10 +204,10 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, const edm:
 	// auto tmp_p_y_diffFN_vs_y_F = new TProfile("", ";y_{F};y_{F} - y_{N}", 200, -10., 10.);
 	// p_y_diffFN_vs_y_F = iBooker.bookProfile("p_y_diffFN_vs_y_F", tmp_p_y_diffFN_vs_y_F);
 
-	for (int i = 0; i < scfg.nr_x_slice_n; i++)
+	for (int i = 0; i < scfg.rp_N.x_slice_n; i++)
 	{
-		const double xMin = scfg.nr_x_slice_min + i * scfg.nr_x_slice_w;
-		const double xMax = scfg.nr_x_slice_min + (i + 1) * scfg.nr_x_slice_w;
+		const double xMin = scfg.rp_N.x_slice_min + i * scfg.rp_N.x_slice_w;
+		const double xMax = scfg.rp_N.x_slice_min + (i + 1) * scfg.rp_N.x_slice_w;
 
 		char buf[100];
 		sprintf(buf, "%.1f-%.1f", xMin, xMax);
@@ -215,10 +216,10 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, const edm:
 		x_slice_plots_N.insert({i, SlicePlots(iBooker)});
 	}
 
-	for (int i = 0; i < scfg.fr_x_slice_n; i++)
+	for (int i = 0; i < scfg.rp_F.x_slice_n; i++)
 	{
-		const double xMin = scfg.fr_x_slice_min + i * scfg.fr_x_slice_w;
-		const double xMax = scfg.fr_x_slice_min + (i + 1) * scfg.fr_x_slice_w;
+		const double xMin = scfg.rp_F.x_slice_min + i * scfg.rp_F.x_slice_w;
+		const double xMax = scfg.rp_F.x_slice_min + (i + 1) * scfg.rp_F.x_slice_w;
 
 		char buf[100];
 		sprintf(buf, "%.1f-%.1f", xMin, xMax);
@@ -344,16 +345,16 @@ unsigned int PPSAlignmentWorker::SectorData::process(const CTPPSLocalTrackLiteCo
 				// 	p_y_diffFN_vs_y_F->Fill(trDw.y(), trDw.y() - trUp.y());         
 				// }                                                                
 
-				idx = (trUp.x() - scfg.nr_x_slice_min) / scfg.nr_x_slice_w;
-				if (idx >= 0 && idx < scfg.nr_x_slice_n)
+				idx = (trUp.x() - scfg.rp_N.x_slice_min) / scfg.rp_N.x_slice_w;
+				if (idx >= 0 && idx < scfg.rp_N.x_slice_n)
 				{
 					x_slice_plots_N[idx].h_y->Fill(trUp.y());
 					x_slice_plots_N[idx].h2_y_diffFN_vs_y->Fill(trUp.y(), trDw.y() - trUp.y());
 					x_slice_plots_N[idx].p_y_diffFN_vs_y->Fill(trUp.y(), trDw.y() - trUp.y());
 				}
 
-				idx = (trDw.x() - scfg.fr_x_slice_min) / scfg.fr_x_slice_w;
-				if (idx >= 0 && idx < scfg.fr_x_slice_n)
+				idx = (trDw.x() - scfg.rp_F.x_slice_min) / scfg.rp_F.x_slice_w;
+				if (idx >= 0 && idx < scfg.rp_F.x_slice_n)
 				{
 					x_slice_plots_F[idx].h_y->Fill(trDw.y());
 					x_slice_plots_F[idx].h2_y_diffFN_vs_y->Fill(trDw.y(), trDw.y() - trUp.y());
@@ -371,7 +372,8 @@ unsigned int PPSAlignmentWorker::SectorData::process(const CTPPSLocalTrackLiteCo
 PPSAlignmentWorker::PPSAlignmentWorker(const edm::ParameterSet &iConfig) 
 	: tracksToken_(consumes<CTPPSLocalTrackLiteCollection>(iConfig.getParameter<edm::InputTag>("tagTracks"))),
 	  folder_(iConfig.getParameter<std::string>("folder")),
-	  label_(iConfig.getParameter<std::string>("label"))
+	  label_(iConfig.getParameter<std::string>("label")),
+	  debug_(iConfig.getParameter<bool>("debug"))
 {}
 
 void PPSAlignmentWorker::bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, 
