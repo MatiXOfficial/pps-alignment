@@ -347,11 +347,11 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 	CTPPSRPAlignmentCorrectionsData results;
 
 	for (const auto &sdp : { std::make_pair(cfg->sectorConfig45(), cfg_ref->sectorConfig45()), 
-								std::make_pair(cfg->sectorConfig56(), cfg_ref->sectorConfig56()) })
+	                         std::make_pair(cfg->sectorConfig56(), cfg_ref->sectorConfig56()) })
 	{
 		const auto &sd = sdp.first;
 		for (const auto &rpdp : { std::make_pair(sd.rp_F, sdp.second.rp_F), 
-									std::make_pair(sd.rp_N, sdp.second.rp_F) })
+		                          std::make_pair(sd.rp_N, sdp.second.rp_F) })
 		{
 			const auto &rpd = rpdp.first;
 
