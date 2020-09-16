@@ -62,7 +62,7 @@ private:
 	TGraphErrors* buildGraphFromVector(const std::vector<PointErrors> &pv);
 	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
 	                                            const std::vector<MonitorElement*> &mes);
-	int doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
+	void doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
 	            const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, double sh_max, 
 	            double sh_step, double &sh_best, double &sh_best_unc);
 
@@ -196,14 +196,10 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 	return g;
 }
 
-int PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
+void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
                                    const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, 
                                    double sh_max, double sh_step, double &sh_best, double &sh_best_unc)
 {
-	// require minimal number of points
-	if (g_ref->GetN() < 5 || g_test->GetN() < 5)
-		return 1;
-
 	// print config
 	edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
 	<< "ref: x_min = " << range_ref.x_min << ", x_max = " << range_ref.x_max << "\n"
@@ -336,10 +332,9 @@ int PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_r
 
 	// clean up
 	delete s_ref;
-
-	return 0;
 }
 
+// method o
 void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
 	                                   const edm::ESHandle<PPSAlignmentConfig> &cfg, 
 	                                   const edm::ESHandle<PPSAlignmentConfig> &cfg_ref, int seqPos)
@@ -384,6 +379,15 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 				gDirectory = rpDir->mkdir("fits_test");
 			TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, rpd, mes_test);
 
+			// require minimal number of points
+			if (g_ref->GetN() < (int)cfg->methOGraphMinN() || g_test->GetN() < (int)cfg->methOGraphMinN())
+			{
+				edm::LogWarning("x_alignment") << rpd.name << ": insufficient data, skipping (g_ref " 
+			                                  << g_ref->GetN() << "/" << cfg->methOGraphMinN() << ", g_test " 
+				                              << g_test->GetN() << "/" << cfg->methOGraphMinN() << ")";
+				continue;
+			}
+
 			iBooker.setCurrentFolder(folder_ + "/harvester/x alignment/" + rpd.name);
 			iBooker.book1DD("h_ref", getTH1DFromTGraphErrors(g_ref, "ref"));
 			iBooker.book1DD("h_test", getTH1DFromTGraphErrors(g_test, "test"));
@@ -397,17 +401,15 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
 			const auto &shiftRange = cfg_ref->matchingShiftRanges()[rpd.id];
 			double sh = 0., sh_unc = 0.;
-			int r = doMatch(iBooker, g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
-							cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
-							shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
-			if (r == 0)
-			{
-				CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-				results.setRPCorrection(rpd.id, rpResult);
-				edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
-				<< "Setting sh_x of " << rpd.name << " to " << sh;
-				sh_x_map[rpd.id] = sh;
-			}
+			doMatch(iBooker, g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
+			        cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
+			        shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
+			
+			CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
+			results.setRPCorrection(rpd.id, rpResult);
+			edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
+			<< "Setting sh_x of " << rpd.name << " to " << sh;
+			sh_x_map[rpd.id] = sh;
 		}
 	}
 
@@ -450,9 +452,9 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker, DQMSt
 
 		if (p_x_diffFN_vs_x_N->GetEntries() < cfg->nearFarMinEntries())
 		{
-			edm::LogInfo("x_alignment_relative") << sd.name << ": insufficient data, skipping (near_far " 
-			                                     << p_x_diffFN_vs_x_N->GetEntries() << "/" << cfg->nearFarMinEntries() 
-			                                     << ")";
+			edm::LogWarning("x_alignment_relative") << sd.name << ": insufficient data, skipping (near_far " 
+			                                        << p_x_diffFN_vs_x_N->GetEntries() << "/" << cfg->nearFarMinEntries() 
+			                                        << ")";
 			continue;
 		}
 
@@ -679,8 +681,8 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
 			if ((unsigned int)g_y_cen_vs_x->GetN() < cfg->modeGraphMinN())
 			{
-				edm::LogInfo("y_alignment") << rpd.name << ": insufficient data, skipping (mult_sel " 
-				                            << g_y_cen_vs_x->GetN() << "/" << cfg->modeGraphMinN() << ")";
+				edm::LogWarning("y_alignment") << rpd.name << ": insufficient data, skipping (mode graph " 
+				                               << g_y_cen_vs_x->GetN() << "/" << cfg->modeGraphMinN() << ")";
 				continue;
 			}
 

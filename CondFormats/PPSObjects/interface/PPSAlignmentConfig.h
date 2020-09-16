@@ -123,6 +123,7 @@ public:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges() const;
+	unsigned int methOGraphMinN() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges() const;
 	unsigned int nearFarMinEntries() const;
@@ -155,6 +156,7 @@ public:
 	void setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges);
 
 	void setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges);
+	void setMethOGraphMinN(unsigned int methOGraphMinN);
 
 	void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
 	void setNearFarMinEntries(unsigned int nearFarMinEntries);
@@ -188,6 +190,7 @@ private:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges_;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges_;
+	unsigned int methOGraphMinN_;
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges_;
 	unsigned int nearFarMinEntries_;

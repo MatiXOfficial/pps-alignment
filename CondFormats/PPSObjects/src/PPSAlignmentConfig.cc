@@ -58,6 +58,10 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_meth_o_ra
 { 
 	return alignment_x_meth_o_ranges_; 
 }
+unsigned int PPSAlignmentConfig::methOGraphMinN() const
+{
+	return methOGraphMinN_;
+}
 
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_relative_ranges() const 
 { 
@@ -123,6 +127,10 @@ void PPSAlignmentConfig::setMatchingShiftRanges(std::map<unsigned int, Selection
 void PPSAlignmentConfig::setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges)
 {
 	alignment_x_meth_o_ranges_ = alignment_x_meth_o_ranges;
+}
+void PPSAlignmentConfig::setMethOGraphMinN(unsigned int methOGraphMinN)
+{
+	methOGraphMinN_ = methOGraphMinN;
 }
 
 void PPSAlignmentConfig::setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges)
@@ -255,6 +263,7 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	for (const auto &p : c.alignment_x_meth_o_ranges_)
 		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
 		   << ", sh_max = " << p.second.x_max << "\n";
+	os << "    meth_o_graph_min_N = " << c.methOGraphMinN_ << "\n";
 
 	os << "\n" << "* alignment_x_relative\n";
 	for (const auto &p : c.alignment_x_relative_ranges_)

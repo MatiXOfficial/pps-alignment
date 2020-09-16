@@ -74,6 +74,7 @@ private:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges;
+	unsigned int methOGraphMinN;
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges;
 	unsigned int nearFarMinEntries;
@@ -256,6 +257,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		const auto &ps = c_axo.getParameter<edm::ParameterSet>(p.second);
 		alignment_x_meth_o_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
 	}
+	methOGraphMinN = c_axo.getParameter<unsigned int>("meth_o_graph_min_N");
 
 	const auto &c_axr = iConfig.getParameter<edm::ParameterSet>("x_alignment_relative");
 	for (const auto &p : rpTags)
@@ -316,6 +318,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setMatchingShiftRanges(matchingShiftRanges);
 
 	p->setAlignment_x_meth_o_ranges(alignment_x_meth_o_ranges);
+	p->setMethOGraphMinN(methOGraphMinN);
 
 	p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);
 	p->setNearFarMinEntries(nearFarMinEntries);
@@ -531,6 +534,8 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rpRF.add<double>("x_min", 46.);
 		rpRF.add<double>("x_max", 54.);
 		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
+
+		x_alignment_meth_o.add<unsigned int>("meth_o_graph_min_N", 5);
 
 		desc.add<edm::ParameterSetDescription>("x_alignment_meth_o", x_alignment_meth_o);
 	}
