@@ -66,6 +66,7 @@ private:
 	double y_mode_unc_max_valid;
 	double y_mode_max_valid;
 
+	unsigned int minRPTracksSize;
 	double n_si;
 
 	std::map<unsigned int, std::vector<PointErrors>> matchingReferencePoints;
@@ -186,6 +187,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	y_mode_unc_max_valid = iConfig.getParameter<double>("y_mode_unc_max_valid");
 	y_mode_max_valid = iConfig.getParameter<double>("y_mode_max_valid");
 
+	minRPTracksSize = iConfig.getParameter<unsigned int>("min_RP_tracks_size");
 	n_si = iConfig.getParameter<double>("n_si");
 
 	const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
@@ -292,6 +294,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setY_mode_unc_max_valid(y_mode_unc_max_valid);
 	p->setY_mode_max_valid(y_mode_max_valid);
 
+	p->setMinRPTracksSize(minRPTracksSize);
 	p->setN_si(n_si);
 
 	p->setMatchingReferencePoints(matchingReferencePoints);
@@ -438,6 +441,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	desc.add<double>("y_mode_unc_max_valid", 5.);
 	desc.add<double>("y_mode_max_valid", 20.);
 
+	desc.add<unsigned int>("min_RP_tracks_size", 2);
 	desc.add<double>("n_si", 4.);
 
 	// matching

@@ -240,10 +240,10 @@ unsigned int PPSAlignmentWorker::SectorData::process(const CTPPSLocalTrackLiteCo
 		m_h2_y_vs_x_bef_sel[scfg.rp_F.id]->Fill(tr.x(), tr.y());
 
 	// skip crowded events
-	if (tracksUp.size() > 2)
+	if (tracksUp.size() > cfg->minRPTracksSize())
 		return 0;
 
-	if (tracksDw.size() > 2)
+	if (tracksDw.size() > cfg->minRPTracksSize())
 		return 0;
 
 	// update plots with multiplicity selection

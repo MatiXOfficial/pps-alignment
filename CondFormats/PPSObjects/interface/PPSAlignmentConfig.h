@@ -112,6 +112,7 @@ public:
 	double y_mode_unc_max_valid() const;
 	double y_mode_max_valid() const;
 
+	double minRPTracksSize() const;
 	double n_si() const;
 
 	std::map<unsigned int, std::vector<PointErrors>> matchingReferencePoints() const;
@@ -142,6 +143,7 @@ public:
 	void setY_mode_unc_max_valid(double y_mode_unc_max_valid);
 	void setY_mode_max_valid(double y_mode_max_valid);
 
+	void setMinRPTracksSize(unsigned int minRPTracksSize);
 	void setN_si(double n_si);
 
 	void setMatchingReferencePoints(std::map<unsigned int, std::vector<PointErrors>> &matchingReferencePoints);
@@ -174,6 +176,7 @@ private:
 	double y_mode_unc_max_valid_;
 	double y_mode_max_valid_;
 
+	unsigned int minRPTracksSize_;
 	double n_si_;
 
 	std::map<unsigned int, std::vector<PointErrors>> matchingReferencePoints_;

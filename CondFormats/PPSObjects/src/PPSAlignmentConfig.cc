@@ -34,6 +34,7 @@ double PPSAlignmentConfig::chiSqThreshold() const { return chiSqThreshold_; }
 double PPSAlignmentConfig::y_mode_unc_max_valid() const { return y_mode_unc_max_valid_; }
 double PPSAlignmentConfig::y_mode_max_valid() const { return y_mode_max_valid_; }
 
+double PPSAlignmentConfig::minRPTracksSize() const { return minRPTracksSize_; }
 double PPSAlignmentConfig::n_si() const { return n_si_; }
 
 std::map<unsigned int, std::vector<PointErrors>> PPSAlignmentConfig::matchingReferencePoints() const 
@@ -95,6 +96,7 @@ void PPSAlignmentConfig::setY_mode_unc_max_valid(double y_mode_unc_max_valid)
 }
 void PPSAlignmentConfig::setY_mode_max_valid(double y_mode_max_valid) { y_mode_max_valid_ = y_mode_max_valid; }
 
+void PPSAlignmentConfig::setMinRPTracksSize(unsigned int minRPTracksSize) { minRPTracksSize_ = minRPTracksSize; }
 void PPSAlignmentConfig::setN_si(double n_si) { n_si_ = n_si; }
 
 void PPSAlignmentConfig::setMatchingReferencePoints(std::map<unsigned int, std::vector<PointErrors>> &matchingReferencePoints)
@@ -206,6 +208,9 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	os << "    chiSqThreshold = " << c.chiSqThreshold_ << "\n";
 	os << "    y_mode_unc_max_valid = " << c.y_mode_unc_max_valid_ << "\n";
 	os << "    y_mode_max_valid = " << c.y_mode_max_valid_ << "\n\n";
+
+	os << "* selection\n";
+	os << "    min_RP_tracks_size = " << c.minRPTracksSize_ << "\n\n";
 
 	os << "* cuts\n";
 	os << "    n_si = " << c.n_si_ << "\n\n";
