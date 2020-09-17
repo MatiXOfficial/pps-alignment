@@ -64,7 +64,7 @@ private:
 	                                            const std::vector<MonitorElement*> &mes);
 	void doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
 	            const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, double sh_max, 
-	            double sh_step, double &sh_best, double &sh_best_unc);
+	            double sh_step, double x_slice_n, double x_slice_w, double x_slice_min, double &sh_best, double &sh_best_unc);
 
 	void xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
 	                const edm::ESHandle<PPSAlignmentConfig> &cfg, 
@@ -86,7 +86,8 @@ private:
 	                const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
 
 	// ------------ other member data and methods ------------
-	static TH1D *getTH1DFromTGraphErrors(TGraphErrors *graph, std::string title = "", std::string labels = "");
+	static TH1D *getTH1DFromTGraphErrors(TGraphErrors *graph, std::string title = "", std::string labels = "", 
+	                                     int n = -1, double binWidth = -1., double min = -1.);
 	void debugPlots(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg);
 
 	const std::string folder_;
@@ -98,13 +99,13 @@ private:
 
 int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc)
 {
-	if (p->GetEntries() < 50)
+	if (p->GetEntries() < 50)	// not necessary
 		return 1;
 
 	unsigned int n_reasonable = 0;
 	for (int bi = 1; bi <= p->GetNbinsX(); bi++)
 	{
-		if (p->GetBinEntries(bi) < 5)
+		if (p->GetBinEntries(bi) < 5)	// to parameter
 		{
 			p->SetBinContent(bi, 0.);
 			p->SetBinError(bi, 0.);
@@ -115,7 +116,7 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 		}
 	}
 
-	if (n_reasonable < 10)
+	if (n_reasonable < 10)	// to parameter
 		return 2;
 
 	double xMin = x_mean - x_rms, xMax = x_mean + x_rms;
@@ -198,7 +199,8 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 
 void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
                                    const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, 
-                                   double sh_max, double sh_step, double &sh_best, double &sh_best_unc)
+                                   double sh_max, double sh_step, double x_slice_n, double x_slice_w, double x_slice_min,
+                                   double &sh_best, double &sh_best_unc)
 {
 	// print config
 	edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
@@ -294,7 +296,8 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_
 		g_test_shifted->GetX()[i] += sh_best;
 	}
 
-	iBooker.book1DD("h_test_shifted", getTH1DFromTGraphErrors(g_test_shifted, "test_shifted"));
+	iBooker.book1DD("h_test_shifted", getTH1DFromTGraphErrors(g_test_shifted, "test_shifted", "", x_slice_n, x_slice_w,
+	                                                          x_slice_min + sh_best));
 
 	if (debug_)
 	{
@@ -389,8 +392,10 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			}
 
 			iBooker.setCurrentFolder(folder_ + "/harvester/x alignment/" + rpd.name);
-			iBooker.book1DD("h_ref", getTH1DFromTGraphErrors(g_ref, "ref"));
-			iBooker.book1DD("h_test", getTH1DFromTGraphErrors(g_test, "test"));
+			iBooker.book1DD("h_ref", getTH1DFromTGraphErrors(g_ref, "ref", "", rpdp.second.x_slice_n, 
+			                                                 rpdp.second.x_slice_w, rpdp.second.x_slice_min));
+			iBooker.book1DD("h_test", getTH1DFromTGraphErrors(g_test, "test", "", rpd.x_slice_n, rpd.x_slice_w, 
+			                                                  rpd.x_slice_min));
 
 			if (debug_)
 			{
@@ -402,8 +407,8 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			const auto &shiftRange = cfg_ref->matchingShiftRanges()[rpd.id];
 			double sh = 0., sh_unc = 0.;
 			doMatch(iBooker, g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
-			        cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, 
-			        shiftRange.x_max, cfg->x_ali_sh_step(), sh, sh_unc);
+			        cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, shiftRange.x_max, 
+			        cfg->x_ali_sh_step(), rpd.x_slice_n, rpd.x_slice_w, rpd.x_slice_min, sh, sh_unc);
 			
 			CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 			results.setRPCorrection(rpd.id, rpResult);
@@ -748,9 +753,10 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
 
 // Points in TGraph should be sorted (TGraph::Sort())
-TH1D* PPSAlignmentHarvester::getTH1DFromTGraphErrors(TGraphErrors *graph, std::string title, std::string labels)
+// if n, binWidth, or min is set to -1, method will find it on its own
+TH1D* PPSAlignmentHarvester::getTH1DFromTGraphErrors(TGraphErrors *graph, std::string title, std::string labels, 
+                                                     int n, double binWidth, double min)
 {
-	int n = graph->GetN();
 	TH1D *hist;
 	if (n == 0)
 	{
@@ -762,17 +768,20 @@ TH1D* PPSAlignmentHarvester::getTH1DFromTGraphErrors(TGraphErrors *graph, std::s
 	}
 	else
 	{
-		double binWidth = graph->GetPointX(1) - graph->GetPointX(0);
+		n = n == -1 ? graph->GetN() : n;
+		binWidth = binWidth == -1 ? graph->GetPointX(1) - graph->GetPointX(0) : binWidth;
 		double diff = binWidth / 2.;
-		hist = new TH1D(title.c_str(), labels.c_str(), n, graph->GetPointX(0) - diff, graph->GetPointX(n - 1) + diff);
+		min = min == -1 ? graph->GetPointX(0) - diff : min;
+		double max = min + n * binWidth;
+		hist = new TH1D(title.c_str(), labels.c_str(), n, min, max);
 	}
 
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < graph->GetN(); i++)
 	{
 		double x, y;
 		graph->GetPoint(i, x, y);
 		hist->Fill(x, y);
-		hist->SetBinError(i + 1, graph->GetErrorY(i));
+		hist->SetBinError(hist->GetXaxis()->FindBin(x), graph->GetErrorY(i));
 	}
 	return hist;
 }
