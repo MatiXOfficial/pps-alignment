@@ -88,7 +88,6 @@ private:
 	// ------------ other member data and methods ------------
 	static TH1D *getTH1DFromTGraphErrors(TGraphErrors *graph, std::string title = "", std::string labels = "", 
 	                                     int n = -1, double binWidth = -1., double min = -1.);
-	void debugPlots(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg);
 
 	const std::string folder_;
 	const bool debug_;
@@ -786,51 +785,6 @@ TH1D* PPSAlignmentHarvester::getTH1DFromTGraphErrors(TGraphErrors *graph, std::s
 	return hist;
 }
 
-void PPSAlignmentHarvester::debugPlots(DQMStore::IGetter &iGetter, const edm::ESHandle<PPSAlignmentConfig> &cfg)
-{
-	TDirectory *debugPlotsDir = debugFile_->mkdir("misc");
-	for (const auto &sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
-	{
-		for (const auto &rpd : { sd.rp_F, sd.rp_N })
-		{
-			gDirectory = debugPlotsDir->mkdir(rpd.name.c_str());
-
-			auto *tmp = iGetter.get(folder_ + "/worker/" + sd.name + "/profiles/" + rpd.name + "/m_p_y_vs_x_aft_sel");
-			if (tmp == nullptr)
-				edm::LogWarning("debug_plots") << "could not load the m_p_y_vs_x_aft_sel Tprofile";
-			auto *profile = tmp->getTProfile();
-
-			int bins = profile->GetXaxis()->GetNbins();
-			double xMin = profile->GetXaxis()->GetXmin();
-			double xMax = profile->GetXaxis()->GetXmax();
-
-			auto *h_entries = new TH1D("h_entries", ";x", bins, xMin, xMax);
-			auto *h_mean = new TH1D("h_mean", ";x", bins, xMin, xMax);
-			auto *h_stddev = new TH1D("h_stddev", ";x", bins, xMin, xMax);
-			
-			for (int bin = 1; bin < bins; bin++)
-			{
-				int N = profile->GetBinEntries(bin);
-				h_entries->SetBinContent(bin, N);
-
-				h_mean->SetBinContent(bin, profile->GetBinContent(bin));
-				h_mean->SetBinError(bin, profile->GetBinError(bin));
-
-				profile->SetErrorOption("s");
-				double s = profile->GetBinError(bin);
-				h_stddev->SetBinContent(bin, s);
-				h_stddev->SetBinError(bin, (N > 0) ? s / std::sqrt(2. * N) : 0.);
-
-				profile->SetErrorOption();
-			}
-
-			h_entries->Write("h_entries");
-			h_mean->Write("h_mean");
-			h_stddev->Write("h_stddev");
-		}
-	}
-}
-
 PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
 	: folder_(iConfig.getParameter<std::string>("folder")),
 	  debug_(iConfig.getParameter<bool>("debug"))
@@ -852,10 +806,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	iSetup.get<PPSAlignmentConfigRcd>().get("reference", cfg_ref);
 	
 	if (debug_)
-	{
 		debugFile_ = new TFile(("debug_harvester_" + std::to_string(iRun.run()) + ".root").c_str(), "recreate");
-		debugPlots(iGetter, cfg);
-	}
 
 	// setting default sh_x values from config
 	for (const auto sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
