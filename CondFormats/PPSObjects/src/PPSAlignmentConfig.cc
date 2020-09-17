@@ -27,15 +27,6 @@ std::vector<std::string> PPSAlignmentConfig::sequence() const { return sequence_
 SectorConfig PPSAlignmentConfig::sectorConfig45() const { return sectorConfig45_; }
 SectorConfig PPSAlignmentConfig::sectorConfig56() const { return sectorConfig56_; }
 
-std::map<unsigned int, double> PPSAlignmentConfig::alignmentCorrectionsX() const 
-{ 
-	return alignmentCorrectionsX_; 
-}
-std::map<unsigned int, double> PPSAlignmentConfig::alignmentCorrectionsY() const 
-{ 
-	return alignmentCorrectionsY_;
-}
-
 double PPSAlignmentConfig::x_ali_sh_step() const { return x_ali_sh_step_; }
 
 double PPSAlignmentConfig::y_mode_sys_unc() const { return y_mode_sys_unc_; }
@@ -93,15 +84,6 @@ void PPSAlignmentConfig::setSequence(std::vector<std::string> &sequence) { seque
 
 void PPSAlignmentConfig::setSectorConfig45(SectorConfig &sectorConfig45) { sectorConfig45_ = sectorConfig45; }
 void PPSAlignmentConfig::setSectorConfig56(SectorConfig &sectorConfig56) { sectorConfig56_ = sectorConfig56; }
-
-void PPSAlignmentConfig::setAlignmentCorrectionsX(std::map<unsigned int, double> &alignmentCorrectionsX) 
-{ 
-	alignmentCorrectionsX_ = alignmentCorrectionsX; 
-}
-void PPSAlignmentConfig::setAlignmentCorrectionsY(std::map<unsigned int, double> &alignmentCorrectionsY) 
-{ 
-	alignmentCorrectionsY_ = alignmentCorrectionsY; 
-}
 
 void PPSAlignmentConfig::setX_ali_sh_step(double x_ali_sh_step) { x_ali_sh_step_ = x_ali_sh_step; }
 
@@ -215,14 +197,6 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 		{ c.sectorConfig56_.rp_N.id, c.sectorConfig56_.rp_N.name },
 		{ c.sectorConfig56_.rp_F.id, c.sectorConfig56_.rp_F.name }
 	};
-
-	os << "* alignment corrections\n" << std::setprecision(3);
-	for (const auto &p : c.alignmentCorrectionsX_)
-	{
-		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): de_x = " 
-		   << p.second << " mm, de_y = " << c.alignmentCorrectionsY_[p.first] << " mm\n";
-	}
-	os << "\n";
 
 	os << "* x alignment shift step\n";
 	os << "    x_ali_sh_step = " << c.x_ali_sh_step_ << "\n\n";

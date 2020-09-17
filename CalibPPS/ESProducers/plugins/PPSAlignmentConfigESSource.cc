@@ -59,8 +59,6 @@ private:
 
 	SectorConfig sectorConfig45, sectorConfig56;
 
-	std::map<unsigned int, double> alignmentCorrectionsX, alignmentCorrectionsY;
-
 	double x_ali_sh_step;
 
 	double y_mode_sys_unc;
@@ -181,14 +179,6 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		{ sectorConfig56.rp_F.id, &sectorConfig56.rp_F }
 	};
 
-	const auto &acc = iConfig.getParameter<edm::ParameterSet>("alignment_corrections");
-	for (const auto &p : rpTags)
-	{
-		const auto &ps = acc.getParameter<edm::ParameterSet>(p.second);
-		alignmentCorrectionsX[p.first] = ps.getParameter<double>("de_x");
-		alignmentCorrectionsY[p.first] = ps.getParameter<double>("de_y");
-	}
-
 	x_ali_sh_step = iConfig.getParameter<double>("x_ali_sh_step");
 
 	y_mode_sys_unc = iConfig.getParameter<double>("y_mode_sys_unc");
@@ -294,9 +284,6 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 	p->setSectorConfig45(sectorConfig45);
 	p->setSectorConfig56(sectorConfig56);
-
-	p->setAlignmentCorrectionsX(alignmentCorrectionsX);
-	p->setAlignmentCorrectionsY(alignmentCorrectionsY);
 
 	p->setX_ali_sh_step(x_ali_sh_step);
 
@@ -442,33 +429,6 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		sector56.add<double>("cut_v_si", 0.15);
 
 		desc.add<edm::ParameterSetDescription>("sector_56", sector56);
-	}
-
-	// alignment_corrections
-	{
-		edm::ParameterSetDescription alignmentCorrections;
-
-		edm::ParameterSetDescription rpLF;
-		rpLF.add<double>("de_x", 0.);
-		rpLF.add<double>("de_y", 0.);
-		alignmentCorrections.add<edm::ParameterSetDescription>("rp_L_F", rpLF);
-
-		edm::ParameterSetDescription rpLN;
-		rpLN.add<double>("de_x", 0.);
-		rpLN.add<double>("de_y", 0.);
-		alignmentCorrections.add<edm::ParameterSetDescription>("rp_L_N", rpLN);
-
-		edm::ParameterSetDescription rpRN;
-		rpRN.add<double>("de_x", 0.);
-		rpRN.add<double>("de_y", 0.);
-		alignmentCorrections.add<edm::ParameterSetDescription>("rp_R_N", rpRN);
-
-		edm::ParameterSetDescription rpRF;
-		rpRF.add<double>("de_x", 0.);
-		rpRF.add<double>("de_y", 0.);
-		alignmentCorrections.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
-
-		desc.add<edm::ParameterSetDescription>("alignment_corrections", alignmentCorrections);
 	}
 
 	desc.add<double>("x_ali_sh_step", 0.01);

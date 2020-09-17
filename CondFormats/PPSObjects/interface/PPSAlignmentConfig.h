@@ -105,9 +105,6 @@ public:
 	SectorConfig sectorConfig45() const;
 	SectorConfig sectorConfig56() const;
 
-	std::map<unsigned int, double> alignmentCorrectionsX() const;
-	std::map<unsigned int, double> alignmentCorrectionsY() const;
-
 	double x_ali_sh_step() const;
 
 	double y_mode_sys_unc() const;
@@ -137,9 +134,6 @@ public:
 
 	void setSectorConfig45(SectorConfig &sectorConfig45);
 	void setSectorConfig56(SectorConfig &sectorConfig56);
-
-	void setAlignmentCorrectionsX(std::map<unsigned int, double> &alignmentCorrectionsX);
-	void setAlignmentCorrectionsY(std::map<unsigned int, double> &alignmentCorrectionsY);
 
 	void setX_ali_sh_step(double x_ali_sh_step);
 
@@ -172,8 +166,6 @@ private:
 	std::vector<std::string> sequence_;
 
 	SectorConfig sectorConfig45_, sectorConfig56_;
-
-	std::map<unsigned int, double> alignmentCorrectionsX_, alignmentCorrectionsY_;
 
 	double x_ali_sh_step_;	// mm
 

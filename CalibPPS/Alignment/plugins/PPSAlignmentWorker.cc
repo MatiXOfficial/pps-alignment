@@ -219,10 +219,6 @@ unsigned int PPSAlignmentWorker::SectorData::process(const CTPPSLocalTrackLiteCo
 		double x = tr.x();
 		double y = tr.y();
 
-		// apply alignment corrections
-		x += cfg->alignmentCorrectionsX()[rpDecId];
-		y += cfg->alignmentCorrectionsY()[rpDecId];
-
 		// re-build track object
 		CTPPSLocalTrackLite trCorr(tr.rpId(), x, 0., y, 0.,
 		tr.tx(), tr.txUnc(), tr.ty(), tr.tyUnc(),
