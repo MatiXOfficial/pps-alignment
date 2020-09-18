@@ -76,6 +76,7 @@ private:
 	unsigned int fitProfileMinBinEntries;
 	unsigned int fitProfileMinNReasonable;
 	unsigned int methOGraphMinN;
+	double methOUncFitRange;
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges;
 	unsigned int nearFarMinEntries;
@@ -201,6 +202,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	fitProfileMinBinEntries = c_axo.getParameter<unsigned int>("fit_profile_min_bin_entries");
 	fitProfileMinNReasonable = c_axo.getParameter<unsigned int>("fit_profile_min_N_reasonable");
 	methOGraphMinN = c_axo.getParameter<unsigned int>("meth_o_graph_min_N");
+	methOUncFitRange = c_axo.getParameter<double>("meth_o_unc_fit_range");
 
 	const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
 	const auto &referenceDataset = c_m.getParameter<std::string>("reference_dataset");
@@ -308,6 +310,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setFitProfileMinBinEntries(fitProfileMinBinEntries);
 	p->setFitProfileMinNReasonable(fitProfileMinNReasonable);
 	p->setMethOGraphMinN(methOGraphMinN);
+	p->setMethOUncFitRange(methOUncFitRange);
 
 	p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);
 	p->setNearFarMinEntries(nearFarMinEntries);
@@ -505,6 +508,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		x_alignment_meth_o.add<unsigned int>("fit_profile_min_bin_entries", 5);
 		x_alignment_meth_o.add<unsigned int>("fit_profile_min_N_reasonable", 10);
 		x_alignment_meth_o.add<unsigned int>("meth_o_graph_min_N", 5);
+		x_alignment_meth_o.add<double>("meth_o_unc_fit_range", 0.5);
 
 		desc.add<edm::ParameterSetDescription>("x_alignment_meth_o", x_alignment_meth_o);
 	}

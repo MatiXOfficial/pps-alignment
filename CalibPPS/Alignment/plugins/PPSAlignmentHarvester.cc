@@ -65,9 +65,9 @@ private:
 	                                            const std::vector<MonitorElement*> &mes, 
 	                                            unsigned int fitProfileMinBinEntries, 
 	                                            unsigned int fitProfileMinNReasonable);
-	void doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
-	            const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, double sh_max, 
-	            double sh_step, double x_slice_n, double x_slice_w, double x_slice_min, double &sh_best, double &sh_best_unc);
+	void doMatch(DQMStore::IBooker &iBooker, const edm::ESHandle<PPSAlignmentConfig> &cfg, const RPConfig &rpd, 
+	             TGraphErrors *g_ref, TGraphErrors *g_test, const SelectionRange &range_ref, double sh_min, 
+	             double sh_max, double &sh_best, double &sh_best_unc);
 
 	void xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
 	                const edm::ESHandle<PPSAlignmentConfig> &cfg, 
@@ -200,11 +200,13 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 	return g;
 }
 
-void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
-                                   const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, 
-                                   double sh_max, double sh_step, double x_slice_n, double x_slice_w, double x_slice_min,
-                                   double &sh_best, double &sh_best_unc)
+void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
+                                    const RPConfig &rpd, TGraphErrors *g_ref, TGraphErrors *g_test, 
+                                    const SelectionRange &range_ref, double sh_min, double sh_max, 
+                                    double &sh_best, double &sh_best_unc)
 {
+	const auto range_test = cfg->alignment_x_meth_o_ranges()[rpd.id];	// Does not work with reference (wrong results)
+
 	// print config
 	edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 
 	<< "ref: x_min = " << range_ref.x_min << ", x_max = " << range_ref.x_max << "\n"
@@ -221,7 +223,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_
 	// optimalisation variables
 	double S2_norm_best = 1E100;
 
-	for (double sh = sh_min; sh <= sh_max; sh += sh_step)
+	for (double sh = sh_min; sh <= sh_max; sh += cfg->x_ali_sh_step())
 	{
 		// calculate chi^2
 		int n_points = 0;
@@ -285,7 +287,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_
 	TF1 *ff_pol2 = new TF1("ff_pol2", "[0] + [1]*x + [2]*x*x");
 
 	// determine uncertainty
-	double fit_range = 0.5;	// mm
+	double fit_range = cfg->methOUncFitRange();
 	g_chi_sq->Fit(ff_pol2, "Q", "", sh_best - fit_range, sh_best + fit_range);
 	sh_best_unc = 1. / sqrt(ff_pol2->GetParameter(2));
 
@@ -299,8 +301,8 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_
 		g_test_shifted->GetX()[i] += sh_best;
 	}
 
-	iBooker.book1DD("h_test_shifted", getTH1DFromTGraphErrors(g_test_shifted, "test_shifted", "", x_slice_n, x_slice_w,
-	                                                          x_slice_min + sh_best));
+	iBooker.book1DD("h_test_shifted", getTH1DFromTGraphErrors(g_test_shifted, "test_shifted", "", rpd.x_slice_n, rpd.x_slice_w,
+	                                                          rpd.x_slice_min + sh_best));
 
 	if (debug_)
 	{
@@ -410,9 +412,8 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
 			const auto &shiftRange = cfg_ref->matchingShiftRanges()[rpd.id];
 			double sh = 0., sh_unc = 0.;
-			doMatch(iBooker, g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
-			        cfg->alignment_x_meth_o_ranges()[rpd.id], shiftRange.x_min, shiftRange.x_max, 
-			        cfg->x_ali_sh_step(), rpd.x_slice_n, rpd.x_slice_w, rpd.x_slice_min, sh, sh_unc);
+			doMatch(iBooker, cfg, rpd, g_ref, g_test, cfg_ref->alignment_x_meth_o_ranges()[rpd.id], 
+			        shiftRange.x_min, shiftRange.x_max, sh, sh_unc);
 			
 			CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 			results.setRPCorrection(rpd.id, rpResult);

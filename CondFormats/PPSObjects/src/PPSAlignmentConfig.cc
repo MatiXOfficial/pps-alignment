@@ -53,6 +53,7 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_meth_o_ra
 unsigned int PPSAlignmentConfig::fitProfileMinBinEntries() const { return fitProfileMinBinEntries_; }
 unsigned int PPSAlignmentConfig::fitProfileMinNReasonable() const { return fitProfileMinNReasonable_; }
 unsigned int PPSAlignmentConfig::methOGraphMinN() const { return methOGraphMinN_; }
+double PPSAlignmentConfig::methOUncFitRange() const { return methOUncFitRange_; }
 
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_relative_ranges() const 
 { 
@@ -113,6 +114,10 @@ void PPSAlignmentConfig::setFitProfileMinNReasonable(unsigned int fitProfileMinN
 void PPSAlignmentConfig::setMethOGraphMinN(unsigned int methOGraphMinN)
 {
 	methOGraphMinN_ = methOGraphMinN;
+}
+void PPSAlignmentConfig::setMethOUncFitRange(double methOUncFitRange)
+{
+	methOUncFitRange_ = methOUncFitRange;
 }
 
 void PPSAlignmentConfig::setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges)
@@ -241,6 +246,7 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	os << "    fit_profile_min_bin_entries = " << c.fitProfileMinBinEntries_ << "\n";
 	os << "    fit_profile_min_N_reasonable = " << c.fitProfileMinNReasonable_ << "\n";
 	os << "    meth_o_graph_min_N = " << c.methOGraphMinN_ << "\n";
+	os << "    meth_o_unc_fit_range = " << c.methOUncFitRange_ << "\n";
 
 	os << "\n" << "* alignment_x_relative\n";
 	for (const auto &p : c.alignment_x_relative_ranges_)

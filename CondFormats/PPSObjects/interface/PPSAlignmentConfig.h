@@ -122,6 +122,7 @@ public:
 	unsigned int fitProfileMinBinEntries() const;
 	unsigned int fitProfileMinNReasonable() const;
 	unsigned int methOGraphMinN() const;
+	double methOUncFitRange() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges() const;
 	unsigned int nearFarMinEntries() const;
@@ -155,6 +156,7 @@ public:
 	void setFitProfileMinBinEntries(unsigned int fitProfileMinBinEntries);
 	void setFitProfileMinNReasonable(unsigned int fitProfileMinNReasonable);
 	void setMethOGraphMinN(unsigned int methOGraphMinN);
+	void setMethOUncFitRange(double methOUncFitRange);
 
 	void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
 	void setNearFarMinEntries(unsigned int nearFarMinEntries);
@@ -190,6 +192,7 @@ private:
 	unsigned int fitProfileMinBinEntries_;
 	unsigned int fitProfileMinNReasonable_;
 	unsigned int methOGraphMinN_;
+	double methOUncFitRange_; // mm
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges_;
 	unsigned int nearFarMinEntries_;
