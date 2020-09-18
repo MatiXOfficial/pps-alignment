@@ -73,6 +73,8 @@ private:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges;
+	unsigned int fitProfileMinBinEntries;
+	unsigned int fitProfileMinNReasonable;
 	unsigned int methOGraphMinN;
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges;
@@ -190,6 +192,16 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	minRPTracksSize = iConfig.getParameter<unsigned int>("min_RP_tracks_size");
 	n_si = iConfig.getParameter<double>("n_si");
 
+	const auto &c_axo = iConfig.getParameter<edm::ParameterSet>("x_alignment_meth_o");
+	for (const auto &p : rpTags)
+	{
+		const auto &ps = c_axo.getParameter<edm::ParameterSet>(p.second);
+		alignment_x_meth_o_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
+	}
+	fitProfileMinBinEntries = c_axo.getParameter<unsigned int>("fit_profile_min_bin_entries");
+	fitProfileMinNReasonable = c_axo.getParameter<unsigned int>("fit_profile_min_N_reasonable");
+	methOGraphMinN = c_axo.getParameter<unsigned int>("meth_o_graph_min_N");
+
 	const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
 	const auto &referenceDataset = c_m.getParameter<std::string>("reference_dataset");
 	if (!referenceDataset.empty())
@@ -235,14 +247,6 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		const auto &ps = c_m.getParameter<edm::ParameterSet>(p.second);
 		matchingShiftRanges[p.first] = {ps.getParameter<double>("sh_min"), ps.getParameter<double>("sh_max")};
 	}
-
-	const auto &c_axo = iConfig.getParameter<edm::ParameterSet>("x_alignment_meth_o");
-	for (const auto &p : rpTags)
-	{
-		const auto &ps = c_axo.getParameter<edm::ParameterSet>(p.second);
-		alignment_x_meth_o_ranges[p.first] = {ps.getParameter<double>("x_min"), ps.getParameter<double>("x_max")};
-	}
-	methOGraphMinN = c_axo.getParameter<unsigned int>("meth_o_graph_min_N");
 
 	const auto &c_axr = iConfig.getParameter<edm::ParameterSet>("x_alignment_relative");
 	for (const auto &p : rpTags)
@@ -301,6 +305,8 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	p->setMatchingShiftRanges(matchingShiftRanges);
 
 	p->setAlignment_x_meth_o_ranges(alignment_x_meth_o_ranges);
+	p->setFitProfileMinBinEntries(fitProfileMinBinEntries);
+	p->setFitProfileMinNReasonable(fitProfileMinNReasonable);
 	p->setMethOGraphMinN(methOGraphMinN);
 
 	p->setAlignment_x_relative_ranges(alignment_x_relative_ranges);
@@ -496,6 +502,8 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rpRF.add<double>("x_max", 54.);
 		x_alignment_meth_o.add<edm::ParameterSetDescription>("rp_R_F", rpRF);
 
+		x_alignment_meth_o.add<unsigned int>("fit_profile_min_bin_entries", 5);
+		x_alignment_meth_o.add<unsigned int>("fit_profile_min_N_reasonable", 10);
 		x_alignment_meth_o.add<unsigned int>("meth_o_graph_min_N", 5);
 
 		desc.add<edm::ParameterSetDescription>("x_alignment_meth_o", x_alignment_meth_o);
@@ -581,13 +589,10 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 
 int PPSAlignmentConfigESSource::fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc)
 {
-	if (p->GetEntries() < 50)
-		return 1;
-
 	unsigned int n_reasonable = 0;
 	for (int bi = 1; bi <= p->GetNbinsX(); bi++)
 	{
-		if (p->GetBinEntries(bi) < 5)
+		if (p->GetBinEntries(bi) < fitProfileMinBinEntries)
 		{
 			p->SetBinContent(bi, 0.);
 			p->SetBinError(bi, 0.);
@@ -598,8 +603,8 @@ int PPSAlignmentConfigESSource::fitProfile(TProfile *p, double x_mean, double x_
 		}
 	}
 
-	if (n_reasonable < 10)
-		return 2;
+	if (n_reasonable < fitProfileMinNReasonable)
+		return 1;
 
 	double xMin = x_mean - x_rms, xMax = x_mean + x_rms;
 

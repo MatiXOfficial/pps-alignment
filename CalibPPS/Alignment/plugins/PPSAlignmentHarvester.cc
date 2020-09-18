@@ -58,10 +58,13 @@ private:
 	               edm::EventSetup const &iSetup);
 
 	// ------------ x alignment ------------
-	static int fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc);
+	static int fitProfile(TProfile *p, double x_mean, double x_rms, unsigned int fitProfileMinBinEntries, 
+	                      unsigned int fitProfileMinNReasonable, double &sl, double &sl_unc);
 	TGraphErrors* buildGraphFromVector(const std::vector<PointErrors> &pv);
 	TGraphErrors* buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
-	                                            const std::vector<MonitorElement*> &mes);
+	                                            const std::vector<MonitorElement*> &mes, 
+	                                            unsigned int fitProfileMinBinEntries, 
+	                                            unsigned int fitProfileMinNReasonable);
 	void doMatch(DQMStore::IBooker &iBooker, TGraphErrors *g_ref, TGraphErrors *g_test, 
 	            const SelectionRange &range_ref, const SelectionRange &range_test, double sh_min, double sh_max, 
 	            double sh_step, double x_slice_n, double x_slice_w, double x_slice_min, double &sh_best, double &sh_best_unc);
@@ -96,15 +99,13 @@ private:
 
 // -------------------------------- x alignment methods --------------------------------
 
-int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc)
+int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, unsigned int fitProfileMinBinEntries, 
+                                      unsigned int fitProfileMinNReasonable, double &sl, double &sl_unc)
 {
-	if (p->GetEntries() < 50)	// not necessary
-		return 1;
-
 	unsigned int n_reasonable = 0;
 	for (int bi = 1; bi <= p->GetNbinsX(); bi++)
 	{
-		if (p->GetBinEntries(bi) < 5)	// to parameter
+		if (p->GetBinEntries(bi) < 10)
 		{
 			p->SetBinContent(bi, 0.);
 			p->SetBinError(bi, 0.);
@@ -115,8 +116,8 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 		}
 	}
 
-	if (n_reasonable < 10)	// to parameter
-		return 2;
+	if (n_reasonable < 5)
+		return 1;
 
 	double xMin = x_mean - x_rms, xMax = x_mean + x_rms;
 
@@ -147,7 +148,9 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromVector(const std::vector<Poin
 }
 
 TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
-                                                                   const std::vector<MonitorElement*> &mes)
+                                                                   const std::vector<MonitorElement*> &mes, 
+                                                                   unsigned int fitProfileMinBinEntries, 
+                                                                   unsigned int fitProfileMinNReasonable)
 {
 	TGraphErrors *g = new TGraphErrors();
 
@@ -179,7 +182,8 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 			y_width *= rpd.y_width_mult;
 			
 			double sl = 0., sl_unc = 0.;
-			int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);
+			int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, fitProfileMinBinEntries, fitProfileMinNReasonable, 
+			                    sl, sl_unc);
 			if (fr != 0)
 				continue;
 
@@ -379,7 +383,8 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
 			if (debug_)
 				gDirectory = rpDir->mkdir("fits_test");
-			TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, rpd, mes_test);
+			TGraphErrors *g_test = buildGraphFromMonitorElements(iGetter, rpd, mes_test, cfg->fitProfileMinBinEntries(),
+			                                                     cfg->fitProfileMinNReasonable());
 
 			// require minimal number of points
 			if (g_ref->GetN() < (int)cfg->methOGraphMinN() || g_test->GetN() < (int)cfg->methOGraphMinN())

@@ -50,32 +50,22 @@ std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_meth_o_ra
 { 
 	return alignment_x_meth_o_ranges_; 
 }
-unsigned int PPSAlignmentConfig::methOGraphMinN() const
-{
-	return methOGraphMinN_;
-}
+unsigned int PPSAlignmentConfig::fitProfileMinBinEntries() const { return fitProfileMinBinEntries_; }
+unsigned int PPSAlignmentConfig::fitProfileMinNReasonable() const { return fitProfileMinNReasonable_; }
+unsigned int PPSAlignmentConfig::methOGraphMinN() const { return methOGraphMinN_; }
 
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_x_relative_ranges() const 
 { 
 	return alignment_x_relative_ranges_; 
 }
-unsigned int PPSAlignmentConfig::nearFarMinEntries() const
-{
-	return nearFarMinEntries_;
-}
+unsigned int PPSAlignmentConfig::nearFarMinEntries() const { return nearFarMinEntries_; }
 
 std::map<unsigned int, SelectionRange> PPSAlignmentConfig::alignment_y_ranges() const 
 { 
 	return alignment_y_ranges_; 
 }
-unsigned int PPSAlignmentConfig::modeGraphMinN() const
-{
-	return modeGraphMinN_;
-}
-unsigned int PPSAlignmentConfig::multSelProjYMinEntries() const
-{
-	return multSelProjYMinEntries_;
-}
+unsigned int PPSAlignmentConfig::modeGraphMinN() const { return modeGraphMinN_; }
+unsigned int PPSAlignmentConfig::multSelProjYMinEntries() const { return multSelProjYMinEntries_; }
 
 Binning PPSAlignmentConfig::binning() const { return binning_; }
 
@@ -111,6 +101,14 @@ void PPSAlignmentConfig::setMatchingShiftRanges(std::map<unsigned int, Selection
 void PPSAlignmentConfig::setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges)
 {
 	alignment_x_meth_o_ranges_ = alignment_x_meth_o_ranges;
+}
+void PPSAlignmentConfig::setFitProfileMinBinEntries(unsigned int fitProfileMinBinEntries)
+{
+	fitProfileMinBinEntries_ = fitProfileMinBinEntries;
+}
+void PPSAlignmentConfig::setFitProfileMinNReasonable(unsigned int fitProfileMinNReasonable)
+{
+	fitProfileMinNReasonable_ = fitProfileMinNReasonable;
 }
 void PPSAlignmentConfig::setMethOGraphMinN(unsigned int methOGraphMinN)
 {
@@ -240,6 +238,8 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 	for (const auto &p : c.alignment_x_meth_o_ranges_)
 		os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min 
 		   << ", sh_max = " << p.second.x_max << "\n";
+	os << "    fit_profile_min_bin_entries = " << c.fitProfileMinBinEntries_ << "\n";
+	os << "    fit_profile_min_N_reasonable = " << c.fitProfileMinNReasonable_ << "\n";
 	os << "    meth_o_graph_min_N = " << c.methOGraphMinN_ << "\n";
 
 	os << "\n" << "* alignment_x_relative\n";

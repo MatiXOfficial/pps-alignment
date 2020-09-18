@@ -119,6 +119,8 @@ public:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges() const;
+	unsigned int fitProfileMinBinEntries() const;
+	unsigned int fitProfileMinNReasonable() const;
 	unsigned int methOGraphMinN() const;
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges() const;
@@ -150,6 +152,8 @@ public:
 	void setMatchingShiftRanges(std::map<unsigned int, SelectionRange> &matchingShiftRanges);
 
 	void setAlignment_x_meth_o_ranges(std::map<unsigned int, SelectionRange> &alignment_x_meth_o_ranges);
+	void setFitProfileMinBinEntries(unsigned int fitProfileMinBinEntries);
+	void setFitProfileMinNReasonable(unsigned int fitProfileMinNReasonable);
 	void setMethOGraphMinN(unsigned int methOGraphMinN);
 
 	void setAlignment_x_relative_ranges(std::map<unsigned int, SelectionRange> &alignment_x_relative_ranges);
@@ -183,6 +187,8 @@ private:
 	std::map<unsigned int, SelectionRange> matchingShiftRanges_;
 
 	std::map<unsigned int, SelectionRange> alignment_x_meth_o_ranges_;
+	unsigned int fitProfileMinBinEntries_;
+	unsigned int fitProfileMinNReasonable_;
 	unsigned int methOGraphMinN_;
 
 	std::map<unsigned int, SelectionRange> alignment_x_relative_ranges_;
