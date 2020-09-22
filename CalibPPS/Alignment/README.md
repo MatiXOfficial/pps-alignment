@@ -21,40 +21,40 @@
 # Event Setup
 Default values come from the `fillDescriptions` method in `CalibPPS/ESProducers/plugins/PPSAlignmentConfigESSource.cc`.<br>
 NB: Parameters here are written in snake_case. Many of them are in camelCase in the code (as PPSAlignmentConfig getters).
-| Name                   | Type          | Default       | Description                                                                                                  |
-|------------------------|---------------|---------------|--------------------------------------------------------------------------------------------------------------|
-| `debug`                | `cms.bool`    | `False`       | When set to `True`, the ESProducer will produce an extra ROOT file with   debug plots (from reference run).  |
-| `label`                | `cms.string`  | `""`          | label to distinguish reference and test fill configs. Should be set   either to `""` (test) or `"reference"` |
-| `sequence`             | `cms.vstring` | empty vector  | Determines order of the alignment methods: `"x_alignemnt"`,   `"x_alignment_relative"`, `"y_alignment"`.     |
-| `sector_45`            | `cms.PSet`    | details below | Configuration of sector 45. Details below                                                                    |
-| `sector_56`            | `cms.PSet`    | details below | Configuration of sector 56. Details below                                                                    |
-| `x_ali_sh_step`        | `cms.double`  | `0.01`        | Step for x alignment algorithm                                                                               |
-| `y_mode_sys_unc`       | `cms.double`  | `0.03`        | Squared is an element of y mode uncertainity in y alignment (harvester -   line 623).                        |
-| `chiSqThreshold`       | `cms.double`  | `50.`         | Chi-square threshold of y mode (harvester - line 626)                                                        |
-| `y_mode_unc_max_valid` | `cms.double`  | `5.`          | Maximal valid y mode uncertainity (harvester - line 628)                                                     |
-| `y_mode_max_valid`     | `cms.double`  | `20.`         | Maximal valid y mode (harvester - line 629)                                                                  |
-| `max_RP_tracks_size`   | `cms.uint32`  | `2.`          | Maximal tracksUp or tracksDw size to avoid crowded events (worker - line   243)                              |
-| `n_si`                 | `cms.double`  | `4.`          | Element of determing checking whether the cuts passed (worker - line 268,   272)                             |
-| `matching`             | `cms.PSet`    | details below | Reference dataset parameters. Details below                                                                  |
-| `x_alignment_meth_o`   | `cms.PSet`    | details below | X alignment parameters. Details below                                                                        |
-| `x_alignment_relative` | `cms.PSet`    | details below | Relative x alignment parameters. Details below                                                               |
-| `y_alignment`          | `cms.PSet`    | details below | Y alignment parameters. Details below                                                                        |
-| `binning`              | `cms.PSet`    | details below | Binning parameters. Details below                                                                            |
+| Name                   | Type          | Default                                 | Description                                                                                                  |
+|------------------------|---------------|-----------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `debug`                | `cms.bool`    | `False`                                 | When set to `True`, the ESProducer will produce an extra ROOT file with   debug plots (from reference run).  |
+| `label`                | `cms.string`  | `""`                                    | label to distinguish reference and test fill configs. Should be set   either to `""` (test) or `"reference"` |
+| `sequence`             | `cms.vstring` | empty vector                            | Determines order of the alignment methods: `"x_alignemnt"`,   `"x_alignment_relative"`, `"y_alignment"`.     |
+| `sector_45`            | `cms.PSet`    | [details below](##Sector-config)        | Configuration of sector 45. [Details below](##Sector-config)                                                 |
+| `sector_56`            | `cms.PSet`    | [details below](##Sector-config)        | Configuration of sector 56. [Details below](##Sector-config)                                                 |
+| `x_ali_sh_step`        | `cms.double`  | `0.01`                                  | Step for x alignment algorithm                                                                               |
+| `y_mode_sys_unc`       | `cms.double`  | `0.03`                                  | Squared is an element of y mode uncertainity in y alignment.                                                 |
+| `chiSqThreshold`       | `cms.double`  | `50.`                                   | Chi-square threshold of y mode                                                                               |
+| `y_mode_unc_max_valid` | `cms.double`  | `5.`                                    | Maximal valid y mode uncertainity                                                                            |
+| `y_mode_max_valid`     | `cms.double`  | `20.`                                   | Maximal valid y mode                                                                                         |
+| `max_RP_tracks_size`   | `cms.uint32`  | `2.`                                    | Maximal tracksUp or tracksDw size to avoid crowded events                                                    |
+| `n_si`                 | `cms.double`  | `4.`                                    | Element of determing checking whether the cuts passed                                                        |
+| `matching`             | `cms.PSet`    | [details below](##matching)             | Reference dataset parameters. [Details below](##matching)                                                    |
+| `x_alignment_meth_o`   | `cms.PSet`    | [details below](##x_alignment_meth_o)   | X alignment parameters. [Details below](##x_alignment_meth_o)                                                |
+| `x_alignment_relative` | `cms.PSet`    | [details below](##x_aligmment_relative) | Relative x alignment parameters. [Details below](##x_aligmment_relative)                                     |
+| `y_alignment`          | `cms.PSet`    | [details below](##y_alignment)          | Y alignment parameters. [Details below](##y_alignment)                                                       |
+| `binning`              | `cms.PSet`    | [details below](##binning)              | Binning parameters for worker. [Details below](##binning)                                                    |
 
 ## Sector config
-| Name          | Type         | Default (s_45) | Default (s_56) | Description                          |
-|---------------|--------------|----------------|----------------|--------------------------------------|
-| `rp_N`        | `cms.PSet`   | details below  | details below  | Near RP configuration. Details below |
-| `rp_F`        | `cms.PSet`   | details below  | details below  | Far RP configuration. Details below  |
-| `slope`       | `cms.double` | `0.006`        | `-0.015`       | Base slope value                     |
-| `cut_h_apply` | `cms.bool`   | `True`         | `True`         | If set to `True`, cut_h is applied   |
-| `cut_h_a`     | `cms.double` | `-1.`          | `-1.`          | cut_h parameter                      |
-| `cut_h_c`     | `cms.double` | `-38.55`       | `-39.26`       | cut_h parameter                      |
-| `cut_h_si`    | `cms.double` | `0.2`          | `0.2`          | cut_h parameter                      |
-| `cut_v_apply` | `cms.bool`   | `True`         | `True`         | If set to `True`, cut_v is applied   |
-| `cut_v_a`     | `cms.double` | `-1.07`        | `-1.07`        | cut_v parameter                      |
-| `cut_v_c`     | `cms.double` | `1.63`         | `1.49`         | cut_v parameter                      |
-| `cut_v_si`    | `cms.double` | `0.15`         | `0.15`         | cut_v parameter                      |
+| Name          | Type         | Default (s_45)                | Default (s_56)                | Description                                          |
+|---------------|--------------|-------------------------------|-------------------------------|------------------------------------------------------|
+| `rp_N`        | `cms.PSet`   | [details below](###RP-config) | [details below](###RP-config) | Near RP configuration. [Details below](###RP-config) |
+| `rp_F`        | `cms.PSet`   | [details below](###RP-config) | [details below](###RP-config) | Far RP configuration. [Details below](###RP-config)  |
+| `slope`       | `cms.double` | `0.006`                       | `-0.015`                      | Base slope value                                     |
+| `cut_h_apply` | `cms.bool`   | `True`                        | `True`                        | If set to `True`, cut_h is applied                   |
+| `cut_h_a`     | `cms.double` | `-1.`                         | `-1.`                         | cut_h parameter                                      |
+| `cut_h_c`     | `cms.double` | `-38.55`                      | `-39.26`                      | cut_h parameter                                      |
+| `cut_h_si`    | `cms.double` | `0.2`                         | `0.2`                         | cut_h parameter                                      |
+| `cut_v_apply` | `cms.bool`   | `True`                        | `True`                        | If set to `True`, cut_v is applied                   |
+| `cut_v_a`     | `cms.double` | `-1.07`                       | `-1.07`                       | cut_v parameter                                      |
+| `cut_v_c`     | `cms.double` | `1.63`                        | `1.49`                        | cut_v parameter                                      |
+| `cut_v_si`    | `cms.double` | `0.15`                        | `0.15`                        | cut_v parameter                                      |
 
 ### RP config
 | Name           | Type         | Default (s_45, rp_N) | Default (s_45, rp_F) | Default (s_56, rp_N) | Default (s_56, rp_F) | Description                                                                                |
@@ -71,7 +71,7 @@ NB: Parameters here are written in snake_case. Many of them are in camelCase in 
 | `x_slice_max`  | `cms.double` | `19.`                | `58.`                | `17.`                | `57.`                | Max x for slice plots (x alignment)                                                        |
 | `x_slice_w`    | `cms.double` | `0.2`                | `0.2`                | `0.2`                | `0.2`                | X width for slice plots (x alignment)                                                      |
 
-## Matching
+## matching
 Should be set in the reference config!
 | Name                | Type         | Default           | Description                                                                                                        |
 |---------------------|--------------|-------------------|--------------------------------------------------------------------------------------------------------------------|
