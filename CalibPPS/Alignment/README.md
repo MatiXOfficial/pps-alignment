@@ -26,26 +26,26 @@ NB: Parameters here are written in snake_case. Many of them are in camelCase in 
 | `debug`                | `cms.bool`    | `False`                                 | When set to `True`, the ESProducer will produce an extra ROOT file with   debug plots (from reference run).  |
 | `label`                | `cms.string`  | `""`                                    | label to distinguish reference and test fill configs. Should be set   either to `""` (test) or `"reference"` |
 | `sequence`             | `cms.vstring` | empty vector                            | Determines order of the alignment methods: `"x_alignemnt"`,   `"x_alignment_relative"`, `"y_alignment"`.     |
-| `sector_45`            | `cms.PSet`    | [details below](##Sector-config)        | Configuration of sector 45. [Details below](##Sector-config)                                                 |
-| `sector_56`            | `cms.PSet`    | [details below](##Sector-config)        | Configuration of sector 56. [Details below](##Sector-config)                                                 |
+| `sector_45`            | `cms.PSet`    | [details below](#Sector-config)        | Configuration of sector 45. [Details below](#Sector-config)                                                 |
+| `sector_56`            | `cms.PSet`    | [details below](#Sector-config)        | Configuration of sector 56. [Details below](#Sector-config)                                                 |
 | `x_ali_sh_step`        | `cms.double`  | `0.01`                                  | Step for x alignment algorithm                                                                               |
 | `y_mode_sys_unc`       | `cms.double`  | `0.03`                                  | Squared is an element of y mode uncertainity in y alignment.                                                 |
 | `chiSqThreshold`       | `cms.double`  | `50.`                                   | Chi-square threshold of y mode                                                                               |
 | `y_mode_unc_max_valid` | `cms.double`  | `5.`                                    | Maximal valid y mode uncertainity                                                                            |
 | `y_mode_max_valid`     | `cms.double`  | `20.`                                   | Maximal valid y mode                                                                                         |
 | `max_RP_tracks_size`   | `cms.uint32`  | `2.`                                    | Maximal tracksUp or tracksDw size to avoid crowded events                                                    |
-| `n_si`                 | `cms.double`  | `4.`                                    | Element of determing checking whether the cuts passed                                                        |
-| `matching`             | `cms.PSet`    | [details below](##matching)             | Reference dataset parameters. [Details below](##matching)                                                    |
-| `x_alignment_meth_o`   | `cms.PSet`    | [details below](##x_alignment_meth_o)   | X alignment parameters. [Details below](##x_alignment_meth_o)                                                |
-| `x_alignment_relative` | `cms.PSet`    | [details below](##x_aligmment_relative) | Relative x alignment parameters. [Details below](##x_aligmment_relative)                                     |
-| `y_alignment`          | `cms.PSet`    | [details below](##y_alignment)          | Y alignment parameters. [Details below](##y_alignment)                                                       |
-| `binning`              | `cms.PSet`    | [details below](##binning)              | Binning parameters for worker. [Details below](##binning)                                                    |
+| `n_si`                 | `cms.double`  | `4.`                                    | Element of checking whether the cuts passed                                                                  |
+| `matching`             | `cms.PSet`    | [details below](#matching)             | Reference dataset parameters. [Details below](#matching)                                                    |
+| `x_alignment_meth_o`   | `cms.PSet`    | [details below](#x_alignment_meth_o)   | X alignment parameters. [Details below](#x_alignment_meth_o)                                                |
+| `x_alignment_relative` | `cms.PSet`    | [details below](#x_aligmment_relative) | Relative x alignment parameters. [Details below](#x_aligmment_relative)                                     |
+| `y_alignment`          | `cms.PSet`    | [details below](#y_alignment)          | Y alignment parameters. [Details below](#y_alignment)                                                       |
+| `binning`              | `cms.PSet`    | [details below](#binning)              | Binning parameters for worker. [Details below](#binning)                                                    |
 
 ## Sector config
 | Name          | Type         | Default (s_45)                | Default (s_56)                | Description                                          |
 |---------------|--------------|-------------------------------|-------------------------------|------------------------------------------------------|
-| `rp_N`        | `cms.PSet`   | [details below](###RP-config) | [details below](###RP-config) | Near RP configuration. [Details below](###RP-config) |
-| `rp_F`        | `cms.PSet`   | [details below](###RP-config) | [details below](###RP-config) | Far RP configuration. [Details below](###RP-config)  |
+| `rp_N`        | `cms.PSet`   | [details below](#RP-config) | [details below](#RP-config) | Near RP configuration. [Details below](#RP-config) |
+| `rp_F`        | `cms.PSet`   | [details below](#RP-config) | [details below](#RP-config) | Far RP configuration. [Details below](#RP-config)  |
 | `slope`       | `cms.double` | `0.006`                       | `-0.015`                      | Base slope value                                     |
 | `cut_h_apply` | `cms.bool`   | `True`                        | `True`                        | If set to `True`, cut_h is applied                   |
 | `cut_h_a`     | `cms.double` | `-1.`                         | `-1.`                         | cut_h parameter                                      |
