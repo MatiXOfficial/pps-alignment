@@ -105,7 +105,7 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 	unsigned int n_reasonable = 0;
 	for (int bi = 1; bi <= p->GetNbinsX(); bi++)
 	{
-		if (p->GetBinEntries(bi) < 10)
+		if (p->GetBinEntries(bi) < fitProfileMinBinEntries)
 		{
 			p->SetBinContent(bi, 0.);
 			p->SetBinError(bi, 0.);
@@ -116,7 +116,7 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 		}
 	}
 
-	if (n_reasonable < 5)
+	if (n_reasonable < fitProfileMinNReasonable)
 		return 1;
 
 	double xMin = x_mean - x_rms, xMax = x_mean + x_rms;
