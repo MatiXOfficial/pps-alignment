@@ -13,10 +13,10 @@
 ## Config example:
 `CalibPPS/Alignment/python/ppsAlignmentHarvester_cfi.py`
 ## Parameters:
-| Name     | Type         | Description                                                                                     |
-|----------|--------------|-------------------------------------------------------------------------------------------------|
-| `folder` | `cms.string` | Should be the same as the `folder` parameter in DQM configuration.                              |
-| `debug`  | `cms.bool`   | When set to `True`, the harvester harvester will produce an extra ROOT   file with debug plots. |
+| Name     | Type         | Description                                                                           |
+|----------|--------------|---------------------------------------------------------------------------------------|
+| `folder` | `cms.string` | Should be the same as the `folder` parameter in DQM configuration.                    |
+| `debug`  | `cms.bool`   | When set to `True`, the harvester will produce an extra ROOT   file with debug plots. |
 
 # Event Setup
 Default values come from the `fillDescriptions` method in `CalibPPS/ESProducers/plugins/PPSAlignmentConfigESSource.cc`.<br>
@@ -26,26 +26,26 @@ NB: Parameters here are written in snake_case. Many of them are in camelCase in 
 | `debug`                | `cms.bool`    | `False`                                 | When set to `True`, the ESProducer will produce an extra ROOT file with   debug plots (from reference run).  |
 | `label`                | `cms.string`  | `""`                                    | label to distinguish reference and test fill configs. Should be set   either to `""` (test) or `"reference"` |
 | `sequence`             | `cms.vstring` | empty vector                            | Determines order of the alignment methods: `"x_alignemnt"`,   `"x_alignment_relative"`, `"y_alignment"`.     |
-| `sector_45`            | `cms.PSet`    | [details below](#Sector-config)        | Configuration of sector 45. [Details below](#Sector-config)                                                   |
-| `sector_56`            | `cms.PSet`    | [details below](#Sector-config)        | Configuration of sector 56. [Details below](#Sector-config)                                                   |
+| `sector_45`            | `cms.PSet`    | [details below](#Sector-config)         | Configuration of sector 45. [Details below](#Sector-config)                                                  |
+| `sector_56`            | `cms.PSet`    | [details below](#Sector-config)         | Configuration of sector 56. [Details below](#Sector-config)                                                  |
 | `x_ali_sh_step`        | `cms.double`  | `0.01`                                  | Step for x alignment algorithm                                                                               |
-| `y_mode_sys_unc`       | `cms.double`  | `0.03`                                  | Squared is an element of y mode uncertainity in y alignment.                                                 |
+| `y_mode_sys_unc`       | `cms.double`  | `0.03`                                  | Squared is an element of y mode uncertainty in y alignment.                                                  |
 | `chiSqThreshold`       | `cms.double`  | `50.`                                   | Chi-square threshold of y mode                                                                               |
-| `y_mode_unc_max_valid` | `cms.double`  | `5.`                                    | Maximal valid y mode uncertainity                                                                            |
+| `y_mode_unc_max_valid` | `cms.double`  | `5.`                                    | Maximal valid y mode uncertainty                                                                             |
 | `y_mode_max_valid`     | `cms.double`  | `20.`                                   | Maximal valid y mode                                                                                         |
 | `max_RP_tracks_size`   | `cms.uint32`  | `2.`                                    | Maximal tracksUp or tracksDw size to avoid crowded events                                                    |
 | `n_si`                 | `cms.double`  | `4.`                                    | Element of checking whether the cuts passed                                                                  |
-| `matching`             | `cms.PSet`    | [details below](#matching)             | Reference dataset parameters. [Details below](#matching)                                                      |
-| `x_alignment_meth_o`   | `cms.PSet`    | [details below](#x_alignment_meth_o)   | X alignment parameters. [Details below](#x_alignment_meth_o)                                                  |
-| `x_alignment_relative` | `cms.PSet`    | [details below](#x_alignment_relative) | Relative x alignment parameters. [Details below](#x_alignment_relative)                                       |
-| `y_alignment`          | `cms.PSet`    | [details below](#y_alignment)          | Y alignment parameters. [Details below](#y_alignment)                                                         |
-| `binning`              | `cms.PSet`    | [details below](#binning)              | Binning parameters for worker. [Details below](#binning)                                                      |
+| `matching`             | `cms.PSet`    | [details below](#matching)              | Reference dataset parameters. [Details below](#matching)                                                     |
+| `x_alignment_meth_o`   | `cms.PSet`    | [details below](#x_alignment_meth_o)    | X alignment parameters. [Details below](#x_alignment_meth_o)                                                 |
+| `x_alignment_relative` | `cms.PSet`    | [details below](#x_alignment_relative)  | Relative x alignment parameters. [Details below](#x_alignment_relative)                                      |
+| `y_alignment`          | `cms.PSet`    | [details below](#y_alignment)           | Y alignment parameters. [Details below](#y_alignment)                                                        |
+| `binning`              | `cms.PSet`    | [details below](#binning)               | Binning parameters for worker. [Details below](#binning)                                                     |
 
 ## Sector config
 | Name          | Type         | Default (s_45)                | Default (s_56)                | Description                                          |
 |---------------|--------------|-------------------------------|-------------------------------|------------------------------------------------------|
-| `rp_N`        | `cms.PSet`   | [details below](#RP-config) | [details below](#RP-config) | Near RP configuration. [Details below](#RP-config)       |
-| `rp_F`        | `cms.PSet`   | [details below](#RP-config) | [details below](#RP-config) | Far RP configuration. [Details below](#RP-config)        |
+| `rp_N`        | `cms.PSet`   | [details below](#RP-config)   | [details below](#RP-config)   | Near RP configuration. [Details below](#RP-config)   |
+| `rp_F`        | `cms.PSet`   | [details below](#RP-config)   | [details below](#RP-config)   | Far RP configuration. [Details below](#RP-config)    |
 | `slope`       | `cms.double` | `0.006`                       | `-0.015`                      | Base slope value                                     |
 | `cut_h_apply` | `cms.bool`   | `True`                        | `True`                        | If set to `True`, cut_h is applied                   |
 | `cut_h_a`     | `cms.double` | `-1.`                         | `-1.`                         | cut_h parameter                                      |
@@ -57,19 +57,19 @@ NB: Parameters here are written in snake_case. Many of them are in camelCase in 
 | `cut_v_si`    | `cms.double` | `0.15`                        | `0.15`                        | cut_v parameter                                      |
 
 ### RP config
-| Name           | Type         | Default (s_45, rp_N) | Default (s_45, rp_F) | Default (s_56, rp_N) | Default (s_56, rp_F) | Description                                                                                |
-|----------------|--------------|----------------------|----------------------|----------------------|----------------------|--------------------------------------------------------------------------------------------|
-| `name`         | `cms.string` | `"L_1_F"`            | `"L_2_F"`            | `"R_1_F"`            | `"R_2_F"`            | Name of the RP                                                                             |
-| `id`           | `cms.int32`  | `3`                  | `23`                 | `103`                | `123`                | ID of the RP                                                                               |
-| `slope`        | `cms.double` | `0.19`               | `0.19`               | `0.40`               | `0.39`               | Base slope value                                                                           |
-| `sh_x`         | `cms.double` | `-3.6`               | `-42.`               | `-2.8`               | `-41.9`              | Base sh_x value. X alignment method overrides it.                                          |
-| `x_min_mode`   | `cms.double` | `2.`                 | `2.`                 | `2.`                 | `2.`                 | Min x for mode graph                                                                       |
-| `x_max_mode`   | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Max x for mode graph                                                                       |
-| `y_cen_add`    | `cms.double` | `-0.3`               | `-0.3`               | `-0.8`               | `-0.8`               | The value is added to y_cen (mean of y) while constructing a graph in x   alignment.       |
-| `y_width_mult` | `cms.double` | `1.1`                | `1.1`                | `1.0`                | `1.`                 | y_width (RMS of y) is multiplied by the value whils constructing a graph   in x alignment. |
-| `x_slice_min`  | `cms.double` | `7.`                 | `46.`                | `6.`                 | `45.`                | Min x for slice plots (x alignment)                                                        |
-| `x_slice_max`  | `cms.double` | `19.`                | `58.`                | `17.`                | `57.`                | Max x for slice plots (x alignment)                                                        |
-| `x_slice_w`    | `cms.double` | `0.2`                | `0.2`                | `0.2`                | `0.2`                | X width for slice plots (x alignment)                                                      |
+| Name           | Type         | Default (s_45, rp_N) | Default (s_45, rp_F) | Default (s_56, rp_N) | Default (s_56, rp_F) | Description                                                                             |
+|----------------|--------------|----------------------|----------------------|----------------------|----------------------|-----------------------------------------------------------------------------------------|
+| `name`         | `cms.string` | `"L_1_F"`            | `"L_2_F"`            | `"R_1_F"`            | `"R_2_F"`            | Name of the RP                                                                          |
+| `id`           | `cms.int32`  | `3`                  | `23`                 | `103`                | `123`                | ID of the RP                                                                            |
+| `slope`        | `cms.double` | `0.19`               | `0.19`               | `0.40`               | `0.39`               | Base slope value                                                                        |
+| `sh_x`         | `cms.double` | `-3.6`               | `-42.`               | `-2.8`               | `-41.9`              | Base sh_x value. X alignment method overwrites it.                                      |
+| `x_min_mode`   | `cms.double` | `2.`                 | `2.`                 | `2.`                 | `2.`                 | Min x for mode graph                                                                    |
+| `x_max_mode`   | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Max x for mode graph                                                                    |
+| `y_cen_add`    | `cms.double` | `-0.3`               | `-0.3`               | `-0.8`               | `-0.8`               | The value is added to y_cen (mean of y) while constructing a graph in x alignment.      |
+| `y_width_mult` | `cms.double` | `1.1`                | `1.1`                | `1.0`                | `1.`                 | y_width (RMS of y) is multiplied by the value when constructing a graph in x alignment. |
+| `x_slice_min`  | `cms.double` | `7.`                 | `46.`                | `6.`                 | `45.`                | Min x for slice plots (x alignment)                                                     |
+| `x_slice_max`  | `cms.double` | `19.`                | `58.`                | `17.`                | `57.`                | Max x for slice plots (x alignment)                                                     |
+| `x_slice_w`    | `cms.double` | `0.2`                | `0.2`                | `0.2`                | `0.2`                | X width for slice plots (x alignment)                                                   |
 
 ## matching
 Should be set in the reference config!
