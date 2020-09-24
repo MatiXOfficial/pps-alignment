@@ -1,6 +1,6 @@
 # PPSAlignmentWorker
 ## Config example:
-[`ppsAlignmentWorker_cfi.py`](https://github.com/MatiXOfficial/pps-alignment/blob/master/CalibPPS/Alignment/python/ppsAlignmentWorker_cfi.py)
+[`ppsAlignmentWorker_cfi.py`](CalibPPS/Alignment/python/ppsAlignmentWorker_cfi.py)
 ## Parameters:
 | Name        | Type           | Description                                                              |
 |-------------|----------------|--------------------------------------------------------------------------|
@@ -11,7 +11,7 @@
 
 # PPSAlignmentHarvester
 ## Config example:
-[`ppsAlignmentHarvester_cfi.py`](https://github.com/MatiXOfficial/pps-alignment/blob/master/CalibPPS/Alignment/python/ppsAlignmentHarvester_cfi.py)
+[`ppsAlignmentHarvester_cfi.py`](CalibPPS/Alignment/python/ppsAlignmentHarvester_cfi.py)
 ## Parameters:
 | Name     | Type         | Description                                                                           |
 |----------|--------------|---------------------------------------------------------------------------------------|
@@ -57,20 +57,20 @@ NB: Parameters here are written in snake_case. Many of them are in camelCase in 
 | `cut_v_si`    | `cms.double` | `0.15`                        | `0.15`                        | cut_v parameter                                      |
 
 ### RP config
-| Name             | Type         | Default (s_45, rp_N) | Default (s_45, rp_F) | Default (s_56, rp_N) | Default (s_56, rp_F) | Description                                                                                                                                                                                                 |
-|------------------|--------------|----------------------|----------------------|----------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `name`           | `cms.string` | `"L_1_F"`            | `"L_2_F"`            | `"R_1_F"`            | `"R_2_F"`            | Name of the RP                                                                                                                                                                                              |
-| `id`             | `cms.int32`  | `3`                  | `23`                 | `103`                | `123`                | ID of the RP                                                                                                                                                                                                |
-| `slope`          | `cms.double` | `0.19`               | `0.19`               | `0.40`               | `0.39`               | Base slope value                                                                                                                                                                                            |
-| `sh_x`           | `cms.double` | `-3.6`               | `-42.`               | `-2.8`               | `-41.9`              | Base sh_x value. X alignment method overwrites it.                                                                                                                                                          |
-| `x_min_fit_mode` | `cms.double` | `2.`                 | `2.`                 | `2.`                 | `2.`                 | Mode graph parameter. See [buildModeGraph](https://github.com/MatiXOfficial/pps-alignment/blob/master/CalibPPS/Alignment/plugins/PPSAlignmentHarvester.cc#L605).                                            |
-| `x_max_fit_mode` | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Mode graph parameter. See [buildModeGraph](https://github.com/MatiXOfficial/pps-alignment/blob/master/CalibPPS/Alignment/plugins/PPSAlignmentHarvester.cc#L605).                                            |
-| `y_max_fit_mode` | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Mode graph parameter (in 2018 the same value as x_max_fit_mode). See [buildModeGraph](https://github.com/MatiXOfficial/pps-alignment/blob/master/CalibPPS/Alignment/plugins/PPSAlignmentHarvester.cc#L611). |
-| `y_cen_add`      | `cms.double` | `-0.3`               | `-0.3`               | `-0.8`               | `-0.8`               | The value is added to y_cen (mean of y) while constructing a graph in x alignment.                                                                                                                          |
-| `y_width_mult`   | `cms.double` | `1.1`                | `1.1`                | `1.0`                | `1.`                 | y_width (RMS of y) is multiplied by the value when constructing a graph in x alignment.                                                                                                                     |
-| `x_slice_min`    | `cms.double` | `7.`                 | `46.`                | `6.`                 | `45.`                | Min x for slice plots (x alignment)                                                                                                                                                                         |
-| `x_slice_max`    | `cms.double` | `19.`                | `58.`                | `17.`                | `57.`                | Max x for slice plots (x alignment)                                                                                                                                                                         |
-| `x_slice_w`      | `cms.double` | `0.2`                | `0.2`                | `0.2`                | `0.2`                | X width for slice plots (x alignment)                                                                                                                                                                       |
+| Name             | Type         | Default (s_45, rp_N) | Default (s_45, rp_F) | Default (s_56, rp_N) | Default (s_56, rp_F) | Description                                                                                                                                        |
+|------------------|--------------|----------------------|----------------------|----------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`           | `cms.string` | `"L_1_F"`            | `"L_2_F"`            | `"R_1_F"`            | `"R_2_F"`            | Name of the RP                                                                                                                                     |
+| `id`             | `cms.int32`  | `3`                  | `23`                 | `103`                | `123`                | ID of the RP                                                                                                                                       |
+| `slope`          | `cms.double` | `0.19`               | `0.19`               | `0.40`               | `0.39`               | Base slope value                                                                                                                                   |
+| `sh_x`           | `cms.double` | `-3.6`               | `-42.`               | `-2.8`               | `-41.9`              | Base sh_x value. X alignment method overwrites it.                                                                                                 |
+| `x_min_fit_mode` | `cms.double` | `2.`                 | `2.`                 | `2.`                 | `2.`                 | Mode graph parameter. See   [buildModeGraph](CalibPPS/Alignment/plugins/PPSAlignmentHarvester.cc#L605).                                            |
+| `x_max_fit_mode` | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Mode graph parameter. See   [buildModeGraph](CalibPPS/Alignment/plugins/PPSAlignmentHarvester.cc#L605).                                            |
+| `y_max_fit_mode` | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Mode graph parameter (in 2018 the same value as x_max_fit_mode). See   [buildModeGraph](CalibPPS/Alignment/plugins/PPSAlignmentHarvester.cc#L611). |
+| `y_cen_add`      | `cms.double` | `-0.3`               | `-0.3`               | `-0.8`               | `-0.8`               | The value is added to y_cen (mean of y) while constructing a graph in x   alignment.                                                               |
+| `y_width_mult`   | `cms.double` | `1.1`                | `1.1`                | `1.0`                | `1.`                 | y_width (RMS of y) is multiplied by the value when constructing a graph   in x alignment.                                                          |
+| `x_slice_min`    | `cms.double` | `7.`                 | `46.`                | `6.`                 | `45.`                | Min x for slice plots (x alignment)                                                                                                                |
+| `x_slice_max`    | `cms.double` | `19.`                | `58.`                | `17.`                | `57.`                | Max x for slice plots (x alignment)                                                                                                                |
+| `x_slice_w`      | `cms.double` | `0.2`                | `0.2`                | `0.2`                | `0.2`                | X width for slice plots (x alignment)                                                                                                              |
 
 ## matching
 Should be set in the reference config!
