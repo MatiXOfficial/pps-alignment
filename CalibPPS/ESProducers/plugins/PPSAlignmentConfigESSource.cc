@@ -139,8 +139,9 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 			rc->slope = rpps.getParameter<double>("slope");
 			rc->sh_x = rpps.getParameter<double>("sh_x");
 
-			rc->x_min_mode = rpps.getParameter<double>("x_min_mode");
-			rc->x_max_mode = rpps.getParameter<double>("x_max_mode");
+			rc->x_min_fit_mode = rpps.getParameter<double>("x_min_fit_mode");
+			rc->x_max_fit_mode = rpps.getParameter<double>("x_max_fit_mode");
+			rc->y_max_fit_mode = rpps.getParameter<double>("y_max_fit_mode");
 			rc->y_cen_add = rpps.getParameter<double>("y_cen_add");
 			rc->y_width_mult = rpps.getParameter<double>("y_width_mult");
 
@@ -352,8 +353,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rp_N.add<double>("slope", 0.19);
 		rp_N.add<double>("sh_x", -3.6);
 
-		rp_N.add<double>("x_min_mode", 2.);
-		rp_N.add<double>("x_max_mode", 7.0);
+		rp_N.add<double>("x_min_fit_mode", 2.);
+		rp_N.add<double>("x_max_fit_mode", 7.0);
+		rp_N.add<double>("y_max_fit_mode", 7.0);
 		rp_N.add<double>("y_cen_add", -0.3);
 		rp_N.add<double>("y_width_mult", 1.1);
 
@@ -369,8 +371,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rp_F.add<double>("slope", 0.19);
 		rp_F.add<double>("sh_x", -42.);
 
-		rp_F.add<double>("x_min_mode", 2.);
-		rp_F.add<double>("x_max_mode", 7.5);
+		rp_F.add<double>("x_min_fit_mode", 2.);
+		rp_F.add<double>("x_max_fit_mode", 7.5);
+		rp_F.add<double>("y_max_fit_mode", 7.5);
 		rp_F.add<double>("y_cen_add", -0.3);
 		rp_F.add<double>("y_width_mult", 1.1);
 
@@ -403,8 +406,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rp_N.add<double>("slope", 0.40);
 		rp_N.add<double>("sh_x", -2.8);
 
-		rp_N.add<double>("x_min_mode", 2.);
-		rp_N.add<double>("x_max_mode", 7.4);
+		rp_N.add<double>("x_min_fit_mode", 2.);
+		rp_N.add<double>("x_max_fit_mode", 7.4);
+		rp_N.add<double>("y_max_fit_mode", 7.4);
 		rp_N.add<double>("y_cen_add", -0.8);
 		rp_N.add<double>("y_width_mult", 1.0);
 
@@ -420,8 +424,9 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 		rp_F.add<double>("slope", 0.39);
 		rp_F.add<double>("sh_x", -41.9);
 
-		rp_F.add<double>("x_min_mode", 2.);
-		rp_F.add<double>("x_max_mode", 8.0);
+		rp_F.add<double>("x_min_fit_mode", 2.);
+		rp_F.add<double>("x_max_fit_mode", 8.0);
+		rp_F.add<double>("y_max_fit_mode", 8.0);
 		rp_F.add<double>("y_cen_add", -0.8);
 		rp_F.add<double>("y_width_mult", 1.0);
 

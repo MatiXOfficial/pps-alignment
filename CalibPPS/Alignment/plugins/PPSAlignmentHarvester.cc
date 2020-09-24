@@ -82,8 +82,7 @@ private:
 	// ------------ y alignment ------------
 	static double findMax(TF1 *ff_fit);
 	TGraphErrors* buildModeGraph(DQMStore::IBooker &iBooker, MonitorElement *h2_y_vs_x, 
-	                             const edm::ESHandle<PPSAlignmentConfig> &cfg, 
-	                             double x_min_mode, double x_max_mode);
+	                             const edm::ESHandle<PPSAlignmentConfig> &cfg, const RPConfig &rpd);
 
 	void yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter, 
 	                const edm::ESHandle<PPSAlignmentConfig> &cfg, int seqPos);
@@ -555,8 +554,7 @@ double PPSAlignmentHarvester::findMax(TF1 *ff_fit)
 }
 
 TGraphErrors* PPSAlignmentHarvester::buildModeGraph(DQMStore::IBooker &iBooker, MonitorElement *h2_y_vs_x, 
-                                                    const edm::ESHandle<PPSAlignmentConfig> &cfg, 
-                                                    double x_min_mode, double x_max_mode)
+                                                    const edm::ESHandle<PPSAlignmentConfig> &cfg, const RPConfig &rpd)
 {
 	TDirectory *d_top = nullptr;
 	if (debug_) 
@@ -604,14 +602,13 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(DQMStore::IBooker &iBooker, 
 		ff_fit->SetParameters(conMax, conMax_x, h_y->GetRMS() * 0.75, 0., 0.);
 		ff_fit->FixParameter(4, 0.);
 
-		double xMin = x_min_mode, xMax = x_max_mode;	// previously: xMax = yMaxFit
-
+		double xMin = rpd.x_min_fit_mode, xMax = rpd.x_max_fit_mode;
 		h_y->Fit(ff_fit, "Q", "", xMin, xMax);
 
 		ff_fit->ReleaseParameter(4);
 		double w = std::min(4., 2. * ff_fit->GetParameter(2));
 		xMin = ff_fit->GetParameter(1) - w;
-		xMax = std::min(x_max_mode, ff_fit->GetParameter(1) + w);
+		xMax = std::min(rpd.y_max_fit_mode, ff_fit->GetParameter(1) + w);
 
 		h_y->Fit(ff_fit, "Q", "", xMin, xMax);
 
@@ -687,7 +684,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			}
 
 			iBooker.setCurrentFolder(folder_ + "/harvester/y alignment/" + rpd.name);
-			auto *g_y_cen_vs_x = buildModeGraph(iBooker, h2_y_vs_x, cfg, rpd.x_min_mode, rpd.x_max_mode);
+			auto *g_y_cen_vs_x = buildModeGraph(iBooker, h2_y_vs_x, cfg, rpd);
 
 			if ((unsigned int)g_y_cen_vs_x->GetN() < cfg->modeGraphMinN())
 			{
