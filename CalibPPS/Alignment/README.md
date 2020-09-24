@@ -4,7 +4,7 @@
 ## Parameters:
 | Name        | Type           | Description                                                              |
 |-------------|----------------|--------------------------------------------------------------------------|
-| `tagTracks` | `cms.InputTag` | Should be set to `""ctppsLocalTrackLiteProducer""`.                      |
+| `tagTracks` | `cms.InputTag` | Should be set to `"ctppsLocalTrackLiteProducer"`.                      |
 | `folder`    | `cms.string`   | Should be the same as the `folder` parameter in DQM configuration.       |
 | `label`     | `cms.string`   | Label for EventSetup                                                     |
 | `debug`     | `cms.bool`     | When set to `True`, the worker will produce some extra debug histograms. |
@@ -74,13 +74,13 @@ NB: Parameters here are written in snake_case. Many of them are in camelCase in 
 
 ## matching
 Should be set in the reference config!
-| Name                | Type         | Default           | Description                                                                                                                                                                                     |   |
-|---------------------|--------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|
-| `reference_dataset` | `cms.string` | `""`              | Directory of the file with reference   dataset histograms. Should be empty when running the worker for the reference   dataset. After that, should be set to the name of the created ROOT file. |   |
-| `rp_L_F`            | `cms.PSet`   | `-43.` - `-41.`   | Left far RP. Contains two parameters of type `cms.double`: `sh_min` and   `sh_max` - shift range for x alignment                                                                                |   |
-| `rp_L_N`            | `cms.PSet`   | `-4.2` - `-2.4`   | Left near RP. Contains two parameters of type `cms.double`: `sh_min` and   `sh_max` - shift range for x alignment                                                                               |   |
-| `rp_R_N`            | `cms.PSet`   | `-3.6` - `-1.8`   | Right near RP. Contains two parameters of type `cms.double`: `sh_min` and   `sh_max` - shift range for x alignment                                                                              |   |
-| `rp_R_F`            | `cms.PSet`   | `-43.2` - `-41.2` | Right far RP. Contains two parameters of type `cms.double`: `sh_min` and   `sh_max` - shift range for x alignment                                                                               |   |
+| Name                | Type         | Default           | | Name                | Type         | Default           | Description                                                                                                                                                                                     |
+|---------------------|--------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `reference_dataset` | `cms.string` | `""`              | Directory of the file with reference dataset histograms. Should be empty   when running the worker for the reference dataset. After that, should be set   to the name of the created ROOT file. |
+| `rp_L_F`            | `cms.PSet`   | `-43.` - `-41.`   | Left far RP. Contains two parameters of type `cms.double`: `sh_min` and   `sh_max` - shift range for x alignment                                                                                |
+| `rp_L_N`            | `cms.PSet`   | `-4.2` - `-2.4`   | Left near RP. Contains two parameters of type `cms.double`: `sh_min` and   `sh_max` - shift range for x alignment                                                                               |
+| `rp_R_N`            | `cms.PSet`   | `-3.6` - `-1.8`   | Right near RP. Contains two parameters of type `cms.double`: `sh_min` and   `sh_max` - shift range for x alignment                                                                              |
+| `rp_R_F`            | `cms.PSet`   | `-43.2` - `-41.2` | Right far RP. Contains two parameters of type `cms.double`: `sh_min` and   `sh_max` - shift range for x alignment                                                                               |
 
 ## x_alignment_meth_o
 | Name                           | Type         | Default        | Description                                                                                                  |
