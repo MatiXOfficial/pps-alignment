@@ -358,7 +358,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 	{
 		const auto &sd = sdp.first;
 		for (const auto &rpdp : { std::make_pair(sd.rp_F, sdp.second.rp_F), 
-		                          std::make_pair(sd.rp_N, sdp.second.rp_F) })
+		                          std::make_pair(sd.rp_N, sdp.second.rp_N) })
 		{
 			const auto &rpd = rpdp.first;
 
