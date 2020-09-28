@@ -4,7 +4,7 @@
  *
  *  Description : PPS Alignment DQM harvester
  *
- * Authors:
+ *  Authors:
  *  - Jan Kašpar
  *  - Mateusz Kocot
  *
@@ -98,6 +98,7 @@ private:
 
 // -------------------------------- x alignment methods --------------------------------
 
+// Fits a linear function to a TProfile (similar method in PPSAlignmentConfigESSource).
 int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, unsigned int fitProfileMinBinEntries, 
                                       unsigned int fitProfileMinNReasonable, double &sl, double &sl_unc)
 {
@@ -131,6 +132,7 @@ int PPSAlignmentHarvester::fitProfile(TProfile *p, double x_mean, double x_rms, 
 	return 0;
 }
 
+// Builds graph from a vector of points (with errors).
 TGraphErrors* PPSAlignmentHarvester::buildGraphFromVector(const std::vector<PointErrors> &pv)
 {
 	TGraphErrors *g = new TGraphErrors();
@@ -146,6 +148,7 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromVector(const std::vector<Poin
 	return g;
 }
 
+// Builds a TGraphErrors from slice plots represented as MonitorElements.
 TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGetter &iGetter, const RPConfig &rpd,
                                                                    const std::vector<MonitorElement*> &mes, 
                                                                    unsigned int fitProfileMinBinEntries, 
@@ -155,8 +158,9 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 
 	for (auto *me : mes)
 	{
-		if (me->getName() == "h_y")
+		if (me->getName() == "h_y")	// find "h_y"
 		{
+			// retrieve parent directory
 			std::string parentPath = me->getPathname();
 			size_t parentPos = parentPath.substr(0, parentPath.size() - 1).find_last_of("/") + 1;
 			std::string parentName = parentPath.substr(parentPos);
@@ -166,6 +170,7 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 
 			TH1D *h_y = me->getTH1D();
 
+			// collect "p_y_diffFN_vs_y" corresponding to found "h_y"
 			auto *p_y_diffFN_vs_y_monitor = iGetter.get(parentPath + "p_y_diffFN_vs_y");
 			if (p_y_diffFN_vs_y_monitor == nullptr)
 			{
@@ -199,12 +204,14 @@ TGraphErrors* PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
 	return g;
 }
 
+// Matches reference data with test data.
 void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, const edm::ESHandle<PPSAlignmentConfig> &cfg, 
                                     const RPConfig &rpd, TGraphErrors *g_ref, TGraphErrors *g_test, 
                                     const SelectionRange &range_ref, double sh_min, double sh_max, 
                                     double &sh_best, double &sh_best_unc)
 {
-	const auto range_test = cfg->alignment_x_meth_o_ranges()[rpd.id];	// Does not work with reference (wrong results)
+	// const auto &range_test = cfg->alignment_x_meth_o_ranges()[rpd.id];	// Does not work (wrong results)
+	const auto range_test = cfg->alignment_x_meth_o_ranges()[rpd.id];
 
 	// print config
 	edm::LogInfo("x_alignment") << std::fixed << std::setprecision(3) 

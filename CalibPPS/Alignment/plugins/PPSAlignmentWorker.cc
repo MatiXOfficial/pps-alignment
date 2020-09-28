@@ -4,7 +4,7 @@
  *
  *  Description : PPS Alignment DQM worker
  *
- * Authors:
+ *  Authors:
  *  - Jan Kašpar
  *  - Mateusz Kocot
  *

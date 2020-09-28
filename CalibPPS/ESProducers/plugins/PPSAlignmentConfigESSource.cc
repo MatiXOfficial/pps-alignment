@@ -1,8 +1,10 @@
 /****************************************************************************
  *
  *  CalibPPS/ESProducers/plugins/PPSAlignmentConfigESSource.cc
+ * 
+ *  Description: Constructs PPSAlignmentConfig instance
  *
- * Authors:
+ *  Authors:
  *  - Jan Kašpar
  *  - Mateusz Kocot
  *
@@ -53,7 +55,7 @@ private:
 	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &key, const edm::IOVSyncValue &iosv, 
 	                    edm::ValidityInterval &oValidity) override;
 
-	bool debug;	// only one run
+	bool debug;
 
 	std::vector<std::string> sequence;
 
@@ -207,6 +209,8 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 
 	const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
 	const auto &referenceDataset = c_m.getParameter<std::string>("reference_dataset");
+
+	// constructing vectors with reference data
 	if (!referenceDataset.empty())
 	{
 		TFile *f_ref = TFile::Open(referenceDataset.c_str());
@@ -329,9 +333,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 //---------------------------------------------------------------------------------------------
 
-/**********************
-defaults for 2018 period
-**********************/
+// most default values come from 2018 period
 void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
 	edm::ParameterSetDescription desc;
@@ -596,6 +598,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 
 //---------------------------------------------------------------------------------------------
 
+// Fits a linear function to a TProfile (similar method in PPSAlignmentHarvester).
 int PPSAlignmentConfigESSource::fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc)
 {
 	unsigned int n_reasonable = 0;
@@ -630,6 +633,8 @@ int PPSAlignmentConfigESSource::fitProfile(TProfile *p, double x_mean, double x_
 
 //---------------------------------------------------------------------------------------------
 
+// Performs a breadth first search on dir. If found, returns the directory with object 
+// named searchName inside. Otherwise, returns nullptr.
 TDirectory* PPSAlignmentConfigESSource::findDirectoryWithName(TDirectory *dir, std::string searchName)
 {
 	TIter next(dir->GetListOfKeys());
@@ -642,8 +647,6 @@ TDirectory* PPSAlignmentConfigESSource::findDirectoryWithName(TDirectory *dir, s
 		std::string name = k->GetName();
 		if (name == searchName)
 			return dir;
-		else if (name == "EventInfo")
-			continue;
 
 		if (((TSystemFile *) k)->IsDirectory())
 			dirQueue.push((TDirectory *) k->ReadObj());
@@ -662,6 +665,7 @@ TDirectory* PPSAlignmentConfigESSource::findDirectoryWithName(TDirectory *dir, s
 
 //---------------------------------------------------------------------------------------------
 
+// Builds vector of PointErrors instances from slice plots in dir.
 std::vector<PointErrors> PPSAlignmentConfigESSource::buildVectorFromDirectory(TDirectory *dir, const RPConfig &rpd)
 {
 	std::vector<PointErrors> pv;

@@ -2,9 +2,9 @@
  *
  *  CondFormats/PPSObjects/interface/PPSAlignmentConfig.cc
  *
- *  Description : Alignment parameters
+ *  Description : Class with alignment parameters
  *
- * Authors:
+ *  Authors:
  *  - Jan Kašpar
  *  - Mateusz Kocot
  *
