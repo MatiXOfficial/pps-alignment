@@ -216,18 +216,18 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 		TFile *f_ref = TFile::Open(referenceDataset.c_str());
 		if (f_ref == nullptr)
 		{
-			edm::LogWarning("PPSAlignmentConfigESSource") << "could not find reference dataset file: " << referenceDataset;
+			edm::LogWarning("PPS") << "[ESSource] could not find reference dataset file: " << referenceDataset;
 		}
 		else
 		{
 			TDirectory *ad_ref = findDirectoryWithName((TDirectory *) f_ref, sectorConfig45.name);
 			if (ad_ref == nullptr)
 			{
-				edm::LogWarning("PPSAlignmentConfigESSource") << "could not find reference dataset in " << referenceDataset;
+				edm::LogWarning("PPS") << "[ESSource] could not find reference dataset in " << referenceDataset;
 			}
 			else
 			{
-				edm::LogInfo("PPSAlignmentConfigESSource") << "loading reference dataset from " << ad_ref->GetPath();
+				edm::LogInfo("PPS") << "[ESSource] loading reference dataset from " << ad_ref->GetPath();
 
 				for (const auto &p : rpTags)
 				{
@@ -238,7 +238,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 					                                          + rpConfigs[p.first]->position).c_str());
 					if (d_ref == nullptr)
 					{
-						edm::LogWarning("x_alignment") << "could not load d_ref";
+						edm::LogWarning("PPS") << "[ESSource] could not load d_ref";
 					}
 					else
 					{
@@ -326,7 +326,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 	p->setBinning(binning);
 
-	edm::LogInfo("produce") << "\n" << (label.empty() ? "empty label" : "label = " + label) << ":\n\n" << (*p);
+	edm::LogInfo("PPS") << "\n" << "[ESSource] " << (label.empty() ? "empty label" : "label = " + label) << ":\n\n" << (*p);
 
 	return p;
 }
@@ -712,8 +712,8 @@ void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetu
                                                 const edm::IOVSyncValue& iosv,
                                                 edm::ValidityInterval& oValidity) 
 {
-	edm::LogInfo("PPSAlignmentConfigESSource")
-	<< ">> PPSAlignmentConfigESSource_setIntervalFor(" << key.name() << ")\n"
+	edm::LogInfo("PPS")
+	<< ">> PPSAlignmentConfigESSource::setIntervalFor(" << key.name() << ")\n"
 	<< "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
 
 	edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());

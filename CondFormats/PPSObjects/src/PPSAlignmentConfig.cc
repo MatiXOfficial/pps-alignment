@@ -11,7 +11,6 @@
  ****************************************************************************/
 
 #include "FWCore/Utilities/interface/typelookup.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include "CondFormats/PPSObjects/interface/PPSAlignmentConfig.h"
 TYPELOOKUP_DATA_REG(PPSAlignmentConfig);
