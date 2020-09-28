@@ -300,7 +300,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, const edm::ESHan
 		g_test_shifted->GetX()[i] += sh_best;
 	}
 
-	iBooker.book1DD("h_test_shifted", getTH1DFromTGraphErrors(g_test_shifted, "test_shifted", "", rpd.x_slice_n, rpd.x_slice_w,
+	iBooker.book1DD("h_test_shifted", getTH1DFromTGraphErrors(g_test_shifted, "test_shifted", ";x (mm);S", rpd.x_slice_n, rpd.x_slice_w,
 	                                                          rpd.x_slice_min + sh_best));
 
 	if (debug_)
@@ -309,6 +309,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, const edm::ESHan
 		g_n_points->Write();
 		g_chi_sq->Write();
 		g_chi_sq_norm->Write();
+		g_test_shifted->SetTitle(";x (mm);S");
 		g_test_shifted->Write("g_test_shifted");
 
 		// save results
@@ -331,6 +332,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, const edm::ESHan
 
 		g_test_shifted->SetLineColor(2);
 		g_test_shifted->SetName("g_test_shifted");
+
 		g_test_shifted->Draw("pl");
 		c_cmp->Write();
 
@@ -397,15 +399,17 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			}
 
 			iBooker.setCurrentFolder(folder_ + "/harvester/x alignment/" + rpd.name);
-			iBooker.book1DD("h_ref", getTH1DFromTGraphErrors(g_ref, "ref", "", rpdp.second.x_slice_n, 
+			iBooker.book1DD("h_ref", getTH1DFromTGraphErrors(g_ref, "ref", ";x (mm);S", rpdp.second.x_slice_n, 
 			                                                 rpdp.second.x_slice_w, rpdp.second.x_slice_min));
-			iBooker.book1DD("h_test", getTH1DFromTGraphErrors(g_test, "test", "", rpd.x_slice_n, rpd.x_slice_w, 
+			iBooker.book1DD("h_test", getTH1DFromTGraphErrors(g_test, "test", ";x (mm);S", rpd.x_slice_n, rpd.x_slice_w, 
 			                                                  rpd.x_slice_min));
 
 			if (debug_)
 			{
 				gDirectory = rpDir;
+				g_ref->SetTitle(";x (mm);S");
 				g_ref->Write("g_ref");
+				g_test->SetTitle(";x (mm);S");
 				g_test->Write("g_test");
 			}
 
@@ -566,7 +570,7 @@ TGraphErrors* PPSAlignmentHarvester::buildModeGraph(DQMStore::IBooker &iBooker, 
 
 	int h_n = h2_y_vs_x->getNbinsX();
 	double diff = h2_y_vs_x->getTH2D()->GetXaxis()->GetBinWidth(1) / 2.;
-	auto h_mode = iBooker.book1DD("mode", "", h_n, 
+	auto h_mode = iBooker.book1DD("mode", ";x (mm); mode of y (mm)", h_n, 
 	                              h2_y_vs_x->getTH2D()->GetXaxis()->GetBinCenter(1) - diff,
 								  h2_y_vs_x->getTH2D()->GetXaxis()->GetBinCenter(h_n) + diff);
 
@@ -735,6 +739,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			{
 				gDirectory = rpDir;
 
+				g_y_cen_vs_x->SetTitle(";x (mm); mode of y (mm)");
 				g_y_cen_vs_x->Write("g_y_cen_vs_x");
 
 				TGraph *g_results = new TGraph();
