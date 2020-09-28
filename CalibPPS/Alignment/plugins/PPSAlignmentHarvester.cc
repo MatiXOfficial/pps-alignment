@@ -29,6 +29,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <cmath>
 
@@ -94,6 +95,8 @@ private:
 	const std::string folder_;
 	const bool debug_;
 	TFile *debugFile_;
+
+	std::ofstream resultsFile;
 };
 
 // -------------------------------- x alignment methods --------------------------------
@@ -214,7 +217,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, const edm::ESHan
 	const auto range_test = cfg->alignment_x_meth_o_ranges()[rpd.id];
 
 	// print config
-	edm::LogInfo("PPS") << std::fixed << std::setprecision(3) << "[x_alignment]"
+	edm::LogInfo("PPS") << std::fixed << std::setprecision(3) << "[x_alignment] "
 	<< "ref: x_min = " << range_ref.x_min << ", x_max = " << range_ref.x_max << "\n"
 	<< "test: x_min = " << range_test.x_min << ", x_max = " << range_test.x_max;
 
@@ -298,7 +301,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker, const edm::ESHan
 	sh_best_unc = 1. / sqrt(ff_pol2->GetParameter(2));
 
 	// print results
-	edm::LogInfo("PPS") << std::fixed << std::setprecision(3) << "[x_alignment]"
+	edm::LogInfo("PPS") << std::fixed << std::setprecision(3) << "[x_alignment] "
 	<< "sh_best = (" << sh_best << " +- " << sh_best_unc << ") mm";
 
 	TGraphErrors *g_test_shifted = new TGraphErrors(*g_test);
@@ -374,7 +377,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			auto mes_test = iGetter.getAllContents(folder_ + "/worker/" + sd.name + "/near_far/x slices, " + rpd.position);
 			if (mes_test.empty())
 			{
-				edm::LogWarning("PPS") << "[x_alignment]" << rpd.name << ": could not load mes_test";
+				edm::LogWarning("PPS") << "[x_alignment] " << rpd.name << ": could not load mes_test";
 				continue;
 			}
 
@@ -385,7 +388,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			auto vec_ref = cfg_ref->matchingReferencePoints()[rpd.id];
 			if (vec_ref.empty())
 			{
-				edm::LogInfo("PPS") << "[x_alignment]" << rpd.name << ": reference points vector is empty";
+				edm::LogInfo("PPS") << "[x_alignment] " << rpd.name << ": reference points vector is empty";
 				continue;
 			}
 
@@ -399,7 +402,7 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			// require minimal number of points
 			if (g_ref->GetN() < (int)cfg->methOGraphMinN() || g_test->GetN() < (int)cfg->methOGraphMinN())
 			{
-				edm::LogWarning("PPS") << "[x_alignment]" << rpd.name << ": insufficient data, skipping (g_ref " 
+				edm::LogWarning("PPS") << "[x_alignment] " << rpd.name << ": insufficient data, skipping (g_ref " 
 			                           << g_ref->GetN() << "/" << cfg->methOGraphMinN() << ", g_test " 
 				                       << g_test->GetN() << "/" << cfg->methOGraphMinN() << ")";
 				continue;
@@ -427,13 +430,16 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			
 			CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
 			results.setRPCorrection(rpd.id, rpResult);
-			edm::LogInfo("PPS") << std::fixed << std::setprecision(3) << "[x_alignment]"
+			edm::LogInfo("PPS") << std::fixed << std::setprecision(3) << "[x_alignment] "
 			                    << "Setting sh_x of " << rpd.name << " to " << sh;
 			sh_x_map[rpd.id] = sh;
 		}
 	}
 
 	edm::LogInfo("PPS") << seqPos + 1 << ": x_alignment:\n"<< results;
+
+	if (resultsFile.is_open())
+		resultsFile << seqPos + 1 << ": x_alignment:\n" << results << "\n\n";
 }
 
 // -------------------------------- x alignment relative methods --------------------------------
@@ -472,7 +478,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker, DQMSt
 
 		if (p_x_diffFN_vs_x_N->GetEntries() < cfg->nearFarMinEntries())
 		{
-			edm::LogWarning("PPS") << "[x_alignment_relative]" << sd.name << ": insufficient data, skipping (near_far " 
+			edm::LogWarning("PPS") << "[x_alignment_relative] " << sd.name << ": insufficient data, skipping (near_far " 
 			                       << p_x_diffFN_vs_x_N->GetEntries() << "/" << cfg->nearFarMinEntries() << ")";
 			continue;
 		}
@@ -491,7 +497,7 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker, DQMSt
 		const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
 		const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
 
-		edm::LogInfo("PPS") << "[x_alignment_relative]" << sd.name << ":\n" << std::fixed << std::setprecision(3)
+		edm::LogInfo("PPS") << "[x_alignment_relative] " << sd.name << ":\n" << std::fixed << std::setprecision(3)
 		<< "    x_min = " << xMin << ", x_max = " << xMax << "\n"
 		<< "    sh_x_N = " << sh_x_N << ", slope (fix) = " << slope << ", slope (fitted) = " << a;
 
@@ -534,6 +540,12 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker, DQMSt
 	// write results
 	edm::LogInfo("PPS") << seqPos + 1 << ": x_alignment_relative:\n" << results
 	<< seqPos + 1 << ": x_alignment_relative_sl_fix:\n" << results_sl_fix;
+
+	if (resultsFile.is_open())
+	{
+		resultsFile << seqPos + 1 << ": x_alignment_relative:\n" << results << "\n";
+		resultsFile << seqPos + 1 << ": x_alignment_relative_sl_fix:\n" << results_sl_fix << "\n\n";
+	}
 }
 
 // -------------------------------- y alignment methods --------------------------------
@@ -697,7 +709,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
 			if ((unsigned int)g_y_cen_vs_x->GetN() < cfg->modeGraphMinN())
 			{
-				edm::LogWarning("PPS") << "[y_alignment]" << rpd.name << ": insufficient data, skipping (mode graph " 
+				edm::LogWarning("PPS") << "[y_alignment] " << rpd.name << ": insufficient data, skipping (mode graph " 
 				                       << g_y_cen_vs_x->GetN() << "/" << cfg->modeGraphMinN() << ")";
 				continue;
 			}
@@ -734,7 +746,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 			CTPPSRPAlignmentCorrectionData rpResult_sl_fix(0., 0., b_fs, b_fs_unc, 0., 0., 0., 0., 0., 0., 0., 0.);
 			results_sl_fix.setRPCorrection(rpd.id, rpResult_sl_fix);
 
-			edm::LogInfo("PPS") << "[y_alignment]" << std::fixed << std::setprecision(3) << "ff: " << ff->GetParameter(0) 
+			edm::LogInfo("PPS") << "[y_alignment] " << std::fixed << std::setprecision(3) << "ff: " << ff->GetParameter(0) 
 			                    << " + " << ff->GetParameter(1) << " * (x - " << ff->GetParameter(2) 
 			                    << "), ff_sl_fix: " << ff_sl_fix->GetParameter(0) << " + " 
 			                    << ff_sl_fix->GetParameter(1) << " * (x - " << ff_sl_fix->GetParameter(2) << ")";
@@ -759,6 +771,12 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 	// write results
 	edm::LogInfo("PPS") << seqPos + 1 << ": y_alignment:\n" << results 
 	<< seqPos + 1 << ": y_alignment_sl_fix:\n" << results_sl_fix;
+
+	if (resultsFile.is_open())
+	{
+		resultsFile << seqPos + 1 << ": y_alignment:\n" << results << "\n";
+		resultsFile << seqPos + 1 << ": y_alignment_sl_fix:\n" << results_sl_fix << "\n\n";
+	}
 }
 
 // -------------------------------- PPSAlignmentHarvester methods --------------------------------
@@ -820,6 +838,9 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	if (debug_)
 		debugFile_ = new TFile(("debug_harvester_" + std::to_string(iRun.run()) + ".root").c_str(), "recreate");
 
+	if (!cfg->resultsDir().empty())
+		resultsFile.open(cfg->resultsDir(), std::ios::out | std::ios::trunc);
+
 	// setting default sh_x values from config
 	for (const auto sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
 	{
@@ -840,11 +861,14 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 		else if (cfg->sequence()[i] == "y alignment")
 			yAlignment(iBooker, iGetter, cfg, i);
 		else
-			edm::LogError("PPS") << "[harvester]" << cfg->sequence()[i] << " is a wrong method name.";
+			edm::LogError("PPS") << "[harvester] " << cfg->sequence()[i] << " is a wrong method name.";
 	}
 
 	if (debug_)
 		delete debugFile_;
+
+	if (resultsFile.is_open())
+		resultsFile.close();
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentHarvester);

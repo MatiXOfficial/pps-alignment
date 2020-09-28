@@ -22,6 +22,7 @@ TYPELOOKUP_DATA_REG(PPSAlignmentConfig);
 // -------------------------------- PPSAlignmentConfig getters --------------------------------
 
 std::vector<std::string> PPSAlignmentConfig::sequence() const { return sequence_; }
+std::string PPSAlignmentConfig::resultsDir() const { return resultsDir_; }
 
 SectorConfig PPSAlignmentConfig::sectorConfig45() const { return sectorConfig45_; }
 SectorConfig PPSAlignmentConfig::sectorConfig56() const { return sectorConfig56_; }
@@ -72,6 +73,7 @@ Binning PPSAlignmentConfig::binning() const { return binning_; }
 // -------------------------------- PPSAlignmentConfig setters --------------------------------
 
 void PPSAlignmentConfig::setSequence(std::vector<std::string> &sequence) { sequence_ = sequence; }
+void PPSAlignmentConfig::setResultsDir(std::string &resultsDir) { resultsDir_ = resultsDir; }
 
 void PPSAlignmentConfig::setSectorConfig45(SectorConfig &sectorConfig45) { sectorConfig45_ = sectorConfig45; }
 void PPSAlignmentConfig::setSectorConfig56(SectorConfig &sectorConfig56) { sectorConfig56_ = sectorConfig56; }
@@ -193,6 +195,16 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c)
 		os << "    " << i + 1 << ": " << c.sequence_[i] << "\n";
 	}
 	os << "\n";
+
+	if (c.resultsDir_.empty())
+	{
+		os << "* no results file\n\n";
+	}
+	else 
+	{
+		os << "* results file directory:\n";
+		os << "    " << c.resultsDir_ << "\n\n";
+	}
 
 	os << "* " << c.sectorConfig45_ << "\n\n";
 	os << "* " << c.sectorConfig56_ << "\n\n";

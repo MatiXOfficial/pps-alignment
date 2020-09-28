@@ -21,25 +21,26 @@
 # Event Setup
 Default values come from the `fillDescriptions` method in `CalibPPS/ESProducers/plugins/PPSAlignmentConfigESSource.cc`.<br>
 NB: Parameters here are written in snake_case. Many of them are in camelCase in the code (as PPSAlignmentConfig getters).
-| Name                   | Type          | Default                                 | Description                                                                                                  |
-|------------------------|---------------|-----------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| `debug`                | `cms.bool`    | `False`                                 | When set to `True`, the ESProducer will produce an extra ROOT file with   debug plots (from reference run).  |
-| `label`                | `cms.string`  | `""`                                    | label to distinguish reference and test fill configs. Should be set   either to `""` (test) or `"reference"` |
-| `sequence`             | `cms.vstring` | empty vector                            | Determines order of the alignment methods: `"x_alignemnt"`,   `"x_alignment_relative"`, `"y_alignment"`.     |
-| `sector_45`            | `cms.PSet`    | [details below](#Sector-config)         | Configuration of sector 45. [Details below](#Sector-config)                                                  |
-| `sector_56`            | `cms.PSet`    | [details below](#Sector-config)         | Configuration of sector 56. [Details below](#Sector-config)                                                  |
-| `x_ali_sh_step`        | `cms.double`  | `0.01`                                  | Step for x alignment algorithm                                                                               |
-| `y_mode_sys_unc`       | `cms.double`  | `0.03`                                  | Squared is an element of y mode uncertainty in y alignment.                                                  |
-| `chiSqThreshold`       | `cms.double`  | `50.`                                   | Chi-square threshold of y mode                                                                               |
-| `y_mode_unc_max_valid` | `cms.double`  | `5.`                                    | Maximal valid y mode uncertainty                                                                             |
-| `y_mode_max_valid`     | `cms.double`  | `20.`                                   | Maximal valid y mode                                                                                         |
-| `max_RP_tracks_size`   | `cms.uint32`  | `2.`                                    | Maximal tracksUp or tracksDw size to avoid crowded events                                                    |
-| `n_si`                 | `cms.double`  | `4.`                                    | Element of checking whether the cuts passed                                                                  |
-| `matching`             | `cms.PSet`    | [details below](#matching)              | Reference dataset parameters. [Details below](#matching)                                                     |
-| `x_alignment_meth_o`   | `cms.PSet`    | [details below](#x_alignment_meth_o)    | X alignment parameters. [Details below](#x_alignment_meth_o)                                                 |
-| `x_alignment_relative` | `cms.PSet`    | [details below](#x_alignment_relative)  | Relative x alignment parameters. [Details below](#x_alignment_relative)                                      |
-| `y_alignment`          | `cms.PSet`    | [details below](#y_alignment)           | Y alignment parameters. [Details below](#y_alignment)                                                        |
-| `binning`              | `cms.PSet`    | [details below](#binning)               | Binning parameters for worker. [Details below](#binning)                                                     |
+| Name                   | Type          | Default                                | Description                                                                                                  |
+|------------------------|---------------|----------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `debug`                | `cms.bool`    | `False`                                | When set to `True`, the ESProducer will produce an extra ROOT file with   debug plots (from reference run).  |
+| `label`                | `cms.string`  | `""`                                   | label to distinguish reference and test fill configs. Should be set   either to `""` (test) or `"reference"` |
+| `sequence`             | `cms.vstring` | empty vector                           | Determines order of the alignment methods: `"x_alignemnt"`,   `"x_alignment_relative"`, `"y_alignment"`.     |
+| `results_dir`          | `cms.string`  | `"alignment_results.txt"`              | Directory of a file with the results. If empty (`""`), the file   will not be created.                       |
+| `sector_45`            | `cms.PSet`    | [details below](#Sector-config)        | Configuration of sector 45. [Details below](#Sector-config)                                                  |
+| `sector_56`            | `cms.PSet`    | [details below](#Sector-config)        | Configuration of sector 56. [Details below](#Sector-config)                                                  |
+| `x_ali_sh_step`        | `cms.double`  | `0.01`                                 | Step for x alignment algorithm                                                                               |
+| `y_mode_sys_unc`       | `cms.double`  | `0.03`                                 | Squared is an element of y mode uncertainty in y alignment.                                                  |
+| `chiSqThreshold`       | `cms.double`  | `50.`                                  | Chi-square threshold of y mode                                                                               |
+| `y_mode_unc_max_valid` | `cms.double`  | `5.`                                   | Maximal valid y mode uncertainty                                                                             |
+| `y_mode_max_valid`     | `cms.double`  | `20.`                                  | Maximal valid y mode                                                                                         |
+| `max_RP_tracks_size`   | `cms.uint32`  | `2.`                                   | Maximal tracksUp or tracksDw size to avoid crowded events                                                    |
+| `n_si`                 | `cms.double`  | `4.`                                   | Element of checking whether the cuts passed                                                                  |
+| `matching`             | `cms.PSet`    | [details below](#matching)             | Reference dataset parameters. [Details below](#matching)                                                     |
+| `x_alignment_meth_o`   | `cms.PSet`    | [details below](#x_alignment_meth_o)   | X alignment parameters. (Details below)[#x_alignment_meth_o]                                                 |
+| `x_alignment_relative` | `cms.PSet`    | [details below](#x_alignment_relative) | Relative x alignment parameters. [Details below](#x_aligmment_relative)                                      |
+| `y_alignment`          | `cms.PSet`    | [details below](#y_alignment)          | Y alignment parameters. [Details below](#y_alignment)                                                        |
+| `binning`              | `cms.PSet`    | [details below](#binning)              | Binning parameters for worker. [Details below](#binning)                                                     |
 
 ## Sector config
 | Name          | Type         | Default (s_45)                | Default (s_56)                | Description                                          |
@@ -63,9 +64,9 @@ NB: Parameters here are written in snake_case. Many of them are in camelCase in 
 | `id`             | `cms.int32`  | `3`                  | `23`                 | `103`                | `123`                | ID of the RP                                                                                                                    |
 | `slope`          | `cms.double` | `0.19`               | `0.19`               | `0.40`               | `0.39`               | Base slope value                                                                                                                |
 | `sh_x`           | `cms.double` | `-3.6`               | `-42.`               | `-2.8`               | `-41.9`              | Base sh_x value. X alignment method overwrites it.                                                                              |
-| `x_min_fit_mode` | `cms.double` | `2.`                 | `2.`                 | `2.`                 | `2.`                 | Mode graph parameter. See   [buildModeGraph](plugins/PPSAlignmentHarvester.cc#L614).                                            |
-| `x_max_fit_mode` | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Mode graph parameter. See   [buildModeGraph](plugins/PPSAlignmentHarvester.cc#L614).                                            |
-| `y_max_fit_mode` | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Mode graph parameter (in 2018 the same value as x_max_fit_mode). See   [buildModeGraph](plugins/PPSAlignmentHarvester.cc#L620). |
+| `x_min_fit_mode` | `cms.double` | `2.`                 | `2.`                 | `2.`                 | `2.`                 | Mode graph parameter. See   [buildModeGraph](plugins/PPSAlignmentHarvester.cc#L626).                                            |
+| `x_max_fit_mode` | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Mode graph parameter. See   [buildModeGraph](plugins/PPSAlignmentHarvester.cc#L626).                                            |
+| `y_max_fit_mode` | `cms.double` | `7.`                 | `7.5`                | `7.4`                | `8.`                 | Mode graph parameter (in 2018 the same value as x_max_fit_mode). See   [buildModeGraph](plugins/PPSAlignmentHarvester.cc#L632). |
 | `y_cen_add`      | `cms.double` | `-0.3`               | `-0.3`               | `-0.8`               | `-0.8`               | The value is added to y_cen (mean of y) while constructing a graph in x   alignment.                                            |
 | `y_width_mult`   | `cms.double` | `1.1`                | `1.1`                | `1.0`                | `1.`                 | y_width (RMS of y) is multiplied by the value when constructing a graph   in x alignment.                                       |
 | `x_slice_min`    | `cms.double` | `7.`                 | `46.`                | `6.`                 | `45.`                | Min x for slice plots (x alignment)                                                                                             |

@@ -58,6 +58,7 @@ private:
 	bool debug;
 
 	std::vector<std::string> sequence;
+	std::string resultsDir;
 
 	SectorConfig sectorConfig45, sectorConfig56;
 
@@ -106,6 +107,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	}
 
 	sequence = iConfig.getParameter<std::vector<std::string>>("sequence");
+	resultsDir = iConfig.getParameter<std::string>("results_dir");
 
 	sectorConfig45.name = "sector 45";
 
@@ -294,6 +296,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	auto p = std::make_unique<PPSAlignmentConfig>();
 
 	p->setSequence(sequence);
+	p->setResultsDir(resultsDir);
 
 	p->setSectorConfig45(sectorConfig45);
 	p->setSectorConfig56(sectorConfig56);
@@ -343,6 +346,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	desc.add<std::string>("label", "");
 
 	desc.add<std::vector<std::string>>("sequence", {});
+	desc.add<std::string>("results_dir", "./alignment_results.txt");
 
 	// sector_45
 	{
