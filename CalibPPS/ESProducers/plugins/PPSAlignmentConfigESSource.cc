@@ -346,7 +346,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	desc.add<std::string>("label", "");
 
 	desc.add<std::vector<std::string>>("sequence", {});
-	desc.add<std::string>("results_dir", "./alignment_results.txt");
+	desc.add<std::string>("results_dir", "./results_alignment");
 
 	// sector_45
 	{

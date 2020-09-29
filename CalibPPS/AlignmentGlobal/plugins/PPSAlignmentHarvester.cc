@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *  CalibPPS/Alignment/plugins/PPSAlignmentHarvester.cc
+ *  CalibPPS/AlignmentGlobal/plugins/PPSAlignmentHarvester.cc
  *
  *  Description : PPS Alignment DQM harvester
  *

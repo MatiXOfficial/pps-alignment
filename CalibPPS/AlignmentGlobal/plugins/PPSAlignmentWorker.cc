@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *  CalibPPS/Alignment/plugins/PPSAlignmentWorker.cc
+ *  CalibPPS/AlignmentGlobal/plugins/PPSAlignmentWorker.cc
  *
  *  Description : PPS Alignment DQM worker
  *
