@@ -836,7 +836,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	iSetup.get<PPSAlignmentConfigRcd>().get("reference", cfg_ref);
 	
 	if (debug_)
-		debugFile_ = new TFile(("debug_harvester_" + std::to_string(iRun.run()) + ".root").c_str(), "recreate");
+		debugFile_ = new TFile("debug_harvester.root", "recreate");
 
 	if (!cfg->resultsDir().empty())
 		resultsFile.open(cfg->resultsDir(), std::ios::out | std::ios::trunc);
@@ -854,11 +854,11 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 
 	for (unsigned int i = 0; i < cfg->sequence().size(); i++)
 	{
-		if (cfg->sequence()[i] == "x alignment")
+		if (cfg->sequence()[i] == "x_alignment")
 			xAlignment(iBooker, iGetter, cfg, cfg_ref, i);
-		else if (cfg->sequence()[i] == "x alignment relative")
+		else if (cfg->sequence()[i] == "x_alignment_relative")
 			xAlignmentRelative(iBooker, iGetter, cfg, i);
-		else if (cfg->sequence()[i] == "y alignment")
+		else if (cfg->sequence()[i] == "y_alignment")
 			yAlignment(iBooker, iGetter, cfg, i);
 		else
 			edm::LogError("PPS") << "[harvester] " << cfg->sequence()[i] << " is a wrong method name.";
