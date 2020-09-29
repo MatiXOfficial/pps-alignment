@@ -216,7 +216,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	if (!referenceDataset.empty())
 	{
 		TFile *f_ref = TFile::Open(referenceDataset.c_str());
-		if (f_ref == nullptr)
+		if (!f_ref->IsOpen())
 		{
 			edm::LogWarning("PPS") << "[ESSource] could not find reference dataset file: " << referenceDataset;
 		}
@@ -249,6 +249,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 				}
 			}
 		}
+		delete f_ref;
 	}
 
 	for (const auto &p : rpTags)
@@ -346,7 +347,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	desc.add<std::string>("label", "");
 
 	desc.add<std::vector<std::string>>("sequence", {});
-	desc.add<std::string>("results_dir", "./results_alignment");
+	desc.add<std::string>("results_dir", "./alignment_results.txt");
 
 	// sector_45
 	{
