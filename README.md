@@ -8,8 +8,3 @@ cmsenv
 git clone https://github.com/MatiXOfficial/pps-alignment.git .
 scram b -j 8
 ```
-<!-- ## Run test
-```
-cd CalibPPS/Alignment/test
-cmsRun test_PPSAlignment_cfg.py
-``` -->

@@ -1,10 +1,10 @@
 /****************************************************************************
  *
- *  CalibPPS/Alignment/plugins/PPSAlignmentWorker.cc
+ *  CalibPPS/AlignmentGlobal/plugins/PPSAlignmentWorker.cc
  *
  *  Description : PPS Alignment DQM worker
  *
- * Authors:
+ *  Authors:
  *  - Jan Kašpar
  *  - Mateusz Kocot
  *

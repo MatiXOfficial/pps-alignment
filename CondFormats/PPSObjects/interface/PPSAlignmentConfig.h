@@ -2,9 +2,9 @@
  *
  *  CondFormats/PPSObjects/interface/PPSAlignmentConfig.h
  *
- *  Description : Alignment parameters
+ *  Description : Class with alignment parameters
  *
- * Authors:
+ *  Authors:
  *  - Jan Kašpar
  *  - Mateusz Kocot
  *
@@ -102,6 +102,7 @@ class PPSAlignmentConfig
 public:
 	// Getters
 	std::vector<std::string> sequence() const;
+	std::string resultsDir() const;
 
 	SectorConfig sectorConfig45() const;
 	SectorConfig sectorConfig56() const;
@@ -136,6 +137,7 @@ public:
 
 	// Setters 
 	void setSequence(std::vector<std::string> &sequence);
+	void setResultsDir(std::string &resultsDir);
 
 	void setSectorConfig45(SectorConfig &sectorConfig45);
 	void setSectorConfig56(SectorConfig &sectorConfig56);
@@ -173,6 +175,7 @@ public:
 
 private:
 	std::vector<std::string> sequence_;
+	std::string resultsDir_;
 
 	SectorConfig sectorConfig45_, sectorConfig56_;
 

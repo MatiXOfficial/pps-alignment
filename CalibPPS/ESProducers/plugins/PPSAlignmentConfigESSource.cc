@@ -1,8 +1,10 @@
 /****************************************************************************
  *
  *  CalibPPS/ESProducers/plugins/PPSAlignmentConfigESSource.cc
+ * 
+ *  Description: Constructs PPSAlignmentConfig instance
  *
- * Authors:
+ *  Authors:
  *  - Jan Kašpar
  *  - Mateusz Kocot
  *
@@ -53,9 +55,10 @@ private:
 	void setIntervalFor(const edm::eventsetup::EventSetupRecordKey &key, const edm::IOVSyncValue &iosv, 
 	                    edm::ValidityInterval &oValidity) override;
 
-	bool debug;	// only one run
+	bool debug;
 
 	std::vector<std::string> sequence;
+	std::string resultsDir;
 
 	SectorConfig sectorConfig45, sectorConfig56;
 
@@ -104,6 +107,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 	}
 
 	sequence = iConfig.getParameter<std::vector<std::string>>("sequence");
+	resultsDir = iConfig.getParameter<std::string>("results_dir");
 
 	sectorConfig45.name = "sector 45";
 
@@ -207,23 +211,25 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 
 	const auto &c_m = iConfig.getParameter<edm::ParameterSet>("matching");
 	const auto &referenceDataset = c_m.getParameter<std::string>("reference_dataset");
+
+	// constructing vectors with reference data
 	if (!referenceDataset.empty())
 	{
 		TFile *f_ref = TFile::Open(referenceDataset.c_str());
-		if (f_ref == nullptr)
+		if (!f_ref->IsOpen())
 		{
-			edm::LogWarning("PPSAlignmentConfigESSource") << "could not find reference dataset file: " << referenceDataset;
+			edm::LogWarning("PPS") << "[ESSource] could not find reference dataset file: " << referenceDataset;
 		}
 		else
 		{
 			TDirectory *ad_ref = findDirectoryWithName((TDirectory *) f_ref, sectorConfig45.name);
 			if (ad_ref == nullptr)
 			{
-				edm::LogWarning("PPSAlignmentConfigESSource") << "could not find reference dataset in " << referenceDataset;
+				edm::LogWarning("PPS") << "[ESSource] could not find reference dataset in " << referenceDataset;
 			}
 			else
 			{
-				edm::LogInfo("PPSAlignmentConfigESSource") << "loading reference dataset from " << ad_ref->GetPath();
+				edm::LogInfo("PPS") << "[ESSource] loading reference dataset from " << ad_ref->GetPath();
 
 				for (const auto &p : rpTags)
 				{
@@ -234,7 +240,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 					                                          + rpConfigs[p.first]->position).c_str());
 					if (d_ref == nullptr)
 					{
-						edm::LogWarning("x_alignment") << "could not load d_ref";
+						edm::LogWarning("PPS") << "[ESSource] could not load d_ref";
 					}
 					else
 					{
@@ -243,6 +249,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 				}
 			}
 		}
+		delete f_ref;
 	}
 
 	for (const auto &p : rpTags)
@@ -290,6 +297,7 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 	auto p = std::make_unique<PPSAlignmentConfig>();
 
 	p->setSequence(sequence);
+	p->setResultsDir(resultsDir);
 
 	p->setSectorConfig45(sectorConfig45);
 	p->setSectorConfig56(sectorConfig56);
@@ -322,16 +330,14 @@ std::unique_ptr<PPSAlignmentConfig> PPSAlignmentConfigESSource::produce(const PP
 
 	p->setBinning(binning);
 
-	edm::LogInfo("produce") << "\n" << (label.empty() ? "empty label" : "label = " + label) << ":\n\n" << (*p);
+	edm::LogInfo("PPS") << "\n" << "[ESSource] " << (label.empty() ? "empty label" : "label = " + label) << ":\n\n" << (*p);
 
 	return p;
 }
 
 //---------------------------------------------------------------------------------------------
 
-/**********************
-defaults for 2018 period
-**********************/
+// most default values come from 2018 period
 void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
 	edm::ParameterSetDescription desc;
@@ -341,6 +347,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 	desc.add<std::string>("label", "");
 
 	desc.add<std::vector<std::string>>("sequence", {});
+	desc.add<std::string>("results_dir", "./alignment_results.txt");
 
 	// sector_45
 	{
@@ -596,6 +603,7 @@ void PPSAlignmentConfigESSource::fillDescriptions(edm::ConfigurationDescriptions
 
 //---------------------------------------------------------------------------------------------
 
+// Fits a linear function to a TProfile (similar method in PPSAlignmentHarvester).
 int PPSAlignmentConfigESSource::fitProfile(TProfile *p, double x_mean, double x_rms, double &sl, double &sl_unc)
 {
 	unsigned int n_reasonable = 0;
@@ -630,6 +638,8 @@ int PPSAlignmentConfigESSource::fitProfile(TProfile *p, double x_mean, double x_
 
 //---------------------------------------------------------------------------------------------
 
+// Performs a breadth first search on dir. If found, returns the directory with object 
+// named searchName inside. Otherwise, returns nullptr.
 TDirectory* PPSAlignmentConfigESSource::findDirectoryWithName(TDirectory *dir, std::string searchName)
 {
 	TIter next(dir->GetListOfKeys());
@@ -642,8 +652,6 @@ TDirectory* PPSAlignmentConfigESSource::findDirectoryWithName(TDirectory *dir, s
 		std::string name = k->GetName();
 		if (name == searchName)
 			return dir;
-		else if (name == "EventInfo")
-			continue;
 
 		if (((TSystemFile *) k)->IsDirectory())
 			dirQueue.push((TDirectory *) k->ReadObj());
@@ -662,6 +670,7 @@ TDirectory* PPSAlignmentConfigESSource::findDirectoryWithName(TDirectory *dir, s
 
 //---------------------------------------------------------------------------------------------
 
+// Builds vector of PointErrors instances from slice plots in dir.
 std::vector<PointErrors> PPSAlignmentConfigESSource::buildVectorFromDirectory(TDirectory *dir, const RPConfig &rpd)
 {
 	std::vector<PointErrors> pv;
@@ -708,8 +717,8 @@ void PPSAlignmentConfigESSource::setIntervalFor(const edm::eventsetup::EventSetu
                                                 const edm::IOVSyncValue& iosv,
                                                 edm::ValidityInterval& oValidity) 
 {
-	edm::LogInfo("PPSAlignmentConfigESSource")
-	<< ">> PPSAlignmentConfigESSource_setIntervalFor(" << key.name() << ")\n"
+	edm::LogInfo("PPS")
+	<< ">> PPSAlignmentConfigESSource::setIntervalFor(" << key.name() << ")\n"
 	<< "    run=" << iosv.eventID().run() << ", event=" << iosv.eventID().event();
 
 	edm::ValidityInterval infinity(iosv.beginOfTime(), iosv.endOfTime());
