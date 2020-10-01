@@ -41,7 +41,6 @@ class PPSAlignmentWorker : public DQMEDAnalyzer
 {
 public:
 	PPSAlignmentWorker(const edm::ParameterSet &iConfig);
-	~PPSAlignmentWorker() override {};
 
 private:
 	void bookHistograms(DQMStore::IBooker &iBooker, edm::Run const &, edm::EventSetup const &iSetup) override;
@@ -68,7 +67,6 @@ private:
 
 		// near-far plots
 		MonitorElement *p_x_diffFN_vs_x_N;
-		// MonitorElement *p_y_diffFN_vs_y_N;   // obsolete
 		MonitorElement *p_y_diffFN_vs_y_F;
 
 		struct SlicePlots
@@ -173,10 +171,6 @@ void PPSAlignmentWorker::SectorData::init(DQMStore::IBooker &iBooker, const edm:
 	iBooker.setCurrentFolder(folder + "/" + scfg.name + "/near_far");
 	auto *tmp = new TProfile("", ";x_{N};x_{F} - x_{N}", 100, 0., 20.);
 	p_x_diffFN_vs_x_N = iBooker.bookProfile("p_x_diffFN_vs_x_N", tmp);
-	// auto tmp_p_y_diffFN_vs_y_N = new TProfile("", ";y_{N};y_{F} - y_{N}", 200, -10., 10.);   // obsolete
-	// p_y_diffFN_vs_y_N = iBooker.bookProfile("p_y_diffFN_vs_y_N", tmp_p_y_diffFN_vs_y_N);
-	// auto tmp_p_y_diffFN_vs_y_F = new TProfile("", ";y_{F};y_{F} - y_{N}", 200, -10., 10.);
-	// p_y_diffFN_vs_y_F = iBooker.bookProfile("p_y_diffFN_vs_y_F", tmp_p_y_diffFN_vs_y_F);
 
 	for (int i = 0; i < scfg.rp_N.x_slice_n; i++)
 	{
@@ -290,14 +284,7 @@ unsigned int PPSAlignmentWorker::SectorData::process(const CTPPSLocalTrackLiteCo
 				m_h2_y_vs_x_aft_sel[scfg.rp_N.id]->Fill(trUp.x(), trUp.y());
 				m_h2_y_vs_x_aft_sel[scfg.rp_F.id]->Fill(trDw.x(), trDw.y());
 
-				p_x_diffFN_vs_x_N->Fill(trUp.x(), trDw.x() - trUp.x());
-
-				// const auto &range = cfg->alignment_y_alt_ranges()[scfg.rp_N.id];   // obsolete   
-				// if (trUp.x() > range.x_min && trUp.x() < range.x_max)            
-				// {                                                                
-				// 	p_y_diffFN_vs_y_N->Fill(trUp.y(), trDw.y() - trUp.y());         
-				// 	p_y_diffFN_vs_y_F->Fill(trDw.y(), trDw.y() - trUp.y());         
-				// }                                                                
+				p_x_diffFN_vs_x_N->Fill(trUp.x(), trDw.x() - trUp.x());                                                            
 
 				int idx = (trUp.x() - scfg.rp_N.x_slice_min) / scfg.rp_N.x_slice_w;
 				if (idx >= 0 && idx < scfg.rp_N.x_slice_n)

@@ -164,7 +164,6 @@ std::ostream &operator<<(std::ostream &os, RPConfig &rc)
 
 std::ostream &operator<<(std::ostream &os, SectorConfig &sc)
 {
-	// to be adjusted
 	os << std::fixed << std::setprecision(3);
 	os << sc.name << ":\n";
 	os << sc.rp_N << "\n" << sc.rp_F << "\n";

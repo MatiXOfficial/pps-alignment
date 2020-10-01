@@ -51,7 +51,6 @@ class PPSAlignmentHarvester : public DQMEDHarvester
 {
 public:
 	PPSAlignmentHarvester(const edm::ParameterSet &iConfig);
-	~PPSAlignmentHarvester() override;
 
 private:
 	void dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter) override;
@@ -95,8 +94,7 @@ private:
 	const std::string folder_;
 	const bool debug_;
 	TFile *debugFile_;
-
-	std::ofstream resultsFile;
+	std::ofstream resultsFile_;
 };
 
 // -------------------------------- x alignment methods --------------------------------
@@ -438,8 +436,8 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 
 	edm::LogInfo("PPS") << seqPos + 1 << ": x_alignment:\n"<< results;
 
-	if (resultsFile.is_open())
-		resultsFile << seqPos + 1 << ": x_alignment:\n" << results << "\n\n";
+	if (resultsFile_.is_open())
+		resultsFile_ << seqPos + 1 << ": x_alignment:\n" << results << "\n\n";
 }
 
 // -------------------------------- x alignment relative methods --------------------------------
@@ -541,10 +539,10 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker, DQMSt
 	edm::LogInfo("PPS") << seqPos + 1 << ": x_alignment_relative:\n" << results
 	<< seqPos + 1 << ": x_alignment_relative_sl_fix:\n" << results_sl_fix;
 
-	if (resultsFile.is_open())
+	if (resultsFile_.is_open())
 	{
-		resultsFile << seqPos + 1 << ": x_alignment_relative:\n" << results << "\n";
-		resultsFile << seqPos + 1 << ": x_alignment_relative_sl_fix:\n" << results_sl_fix << "\n\n";
+		resultsFile_ << seqPos + 1 << ": x_alignment_relative:\n" << results << "\n";
+		resultsFile_ << seqPos + 1 << ": x_alignment_relative_sl_fix:\n" << results_sl_fix << "\n\n";
 	}
 }
 
@@ -772,10 +770,10 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker, DQMStore::IGe
 	edm::LogInfo("PPS") << seqPos + 1 << ": y_alignment:\n" << results 
 	<< seqPos + 1 << ": y_alignment_sl_fix:\n" << results_sl_fix;
 
-	if (resultsFile.is_open())
+	if (resultsFile_.is_open())
 	{
-		resultsFile << seqPos + 1 << ": y_alignment:\n" << results << "\n";
-		resultsFile << seqPos + 1 << ": y_alignment_sl_fix:\n" << results_sl_fix << "\n\n";
+		resultsFile_ << seqPos + 1 << ": y_alignment:\n" << results << "\n";
+		resultsFile_ << seqPos + 1 << ": y_alignment_sl_fix:\n" << results_sl_fix << "\n\n";
 	}
 }
 
@@ -839,7 +837,7 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 		debugFile_ = new TFile("debug_harvester.root", "recreate");
 
 	if (!cfg->resultsDir().empty())
-		resultsFile.open(cfg->resultsDir(), std::ios::out | std::ios::trunc);
+		resultsFile_.open(cfg->resultsDir(), std::ios::out | std::ios::trunc);
 
 	// setting default sh_x values from config
 	for (const auto sd : { cfg->sectorConfig45(), cfg->sectorConfig56() })
@@ -867,8 +865,8 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker, DQMStore::IGet
 	if (debug_)
 		delete debugFile_;
 
-	if (resultsFile.is_open())
-		resultsFile.close();
+	if (resultsFile_.is_open())
+		resultsFile_.close();
 }
 
 DEFINE_FWK_MODULE(PPSAlignmentHarvester);

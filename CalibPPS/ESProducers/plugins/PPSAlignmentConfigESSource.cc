@@ -42,7 +42,6 @@ class PPSAlignmentConfigESSource : public edm::ESProducer, public edm::EventSetu
 {
 public:
 	PPSAlignmentConfigESSource(const edm::ParameterSet &iConfig);
-	~PPSAlignmentConfigESSource() override = default;
 
 	std::unique_ptr<PPSAlignmentConfig> produce(const PPSAlignmentConfigRcd &);
 	static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
