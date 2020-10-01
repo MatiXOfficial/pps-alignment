@@ -829,8 +829,6 @@ TH1D *PPSAlignmentHarvester::getTH1DFromTGraphErrors(
 PPSAlignmentHarvester::PPSAlignmentHarvester(const edm::ParameterSet &iConfig)
     : folder_(iConfig.getParameter<std::string>("folder")), debug_(iConfig.getParameter<bool>("debug")) {}
 
-PPSAlignmentHarvester::~PPSAlignmentHarvester() {}
-
 void PPSAlignmentHarvester::dqmEndJob(DQMStore::IBooker &iBooker, DQMStore::IGetter &iGetter) {}
 
 void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker,
