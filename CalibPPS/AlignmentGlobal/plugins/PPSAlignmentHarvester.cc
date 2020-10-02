@@ -275,7 +275,8 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker,
 
       const double x_ref = x_test + sh;
 
-      if (x_ref < range_ref.x_min_ || x_ref > range_ref.x_max_ || x_test < range_test.x_min_ || x_test > range_test.x_max_)
+      if (x_ref < range_ref.x_min_ || x_ref > range_ref.x_max_ || x_test < range_test.x_min_ ||
+          x_test > range_test.x_max_)
         continue;
 
       const double y_ref = s_ref->Eval(x_ref);
