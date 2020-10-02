@@ -124,36 +124,35 @@ void PPSAlignmentConfig::setBinning(Binning &binning) { binning_ = binning; }
 
 std::ostream &operator<<(std::ostream &os, RPConfig &rc) {
   os << std::fixed << std::setprecision(3);
-  os << "    " << rc.name << ", id = " << rc.id << ", position = " << rc.position << ":\n";
-  os << "        slope = " << rc.slope << ", sh_x = " << rc.sh_x << "\n";
-  os << "        x_min_fit_mode = " << rc.x_min_fit_mode << ", x_max_fit_mode = " << rc.x_max_fit_mode << "\n";
-  os << "        y_max_fit_mode = " << rc.y_max_fit_mode << "\n";
-  os << "        y_cen_add = " << rc.y_cen_add << ", y_width_mult = " << rc.y_width_mult << "\n";
+  os << "    " << rc.name_ << ", id = " << rc.id_ << ", position = " << rc.position_ << ":\n";
+  os << "        slope = " << rc.slope_ << ", sh_x = " << rc.sh_x_ << "\n";
+  os << "        x_min_fit_mode = " << rc.x_min_fit_mode_ << ", x_max_fit_mode = " << rc.x_max_fit_mode_ << "\n";
+  os << "        y_max_fit_mode = " << rc.y_max_fit_mode_ << "\n";
+  os << "        y_cen_add = " << rc.y_cen_add_ << ", y_width_mult = " << rc.y_width_mult_ << "\n";
   os << std::setprecision(2);
-  os << "        x slices: min = " << rc.x_slice_min << ", w = " << rc.x_slice_w << ", n = " << rc.x_slice_n;
+  os << "        x slices: min = " << rc.x_slice_min_ << ", w = " << rc.x_slice_w_ << ", n = " << rc.x_slice_n_;
 
   return os;
 }
 
 std::ostream &operator<<(std::ostream &os, SectorConfig &sc) {
-  // to be adjusted
   os << std::fixed << std::setprecision(3);
-  os << sc.name << ":\n";
-  os << sc.rp_N << "\n" << sc.rp_F << "\n";
+  os << sc.name_ << ":\n";
+  os << sc.rp_N_ << "\n" << sc.rp_F_ << "\n";
   os << std::setprecision(3);
-  os << "    slope = " << sc.slope << "\n";
-  os << "    cut_h: apply = " << sc.cut_h_apply << ", a = " << sc.cut_h_a << ", c = " << sc.cut_h_c
-     << ", si = " << sc.cut_h_si << "\n";
-  os << "    cut_v: apply = " << sc.cut_v_apply << ", a = " << sc.cut_v_a << ", c = " << sc.cut_v_c
-     << ", si = " << sc.cut_v_si << "\n";
+  os << "    slope = " << sc.slope_ << "\n";
+  os << "    cut_h: apply = " << sc.cut_h_apply_ << ", a = " << sc.cut_h_a_ << ", c = " << sc.cut_h_c_
+     << ", si = " << sc.cut_h_si_ << "\n";
+  os << "    cut_v: apply = " << sc.cut_v_apply_ << ", a = " << sc.cut_v_a_ << ", c = " << sc.cut_v_c_
+     << ", si = " << sc.cut_v_si_ << "\n";
 
   return os;
 }
 
 std::ostream &operator<<(std::ostream &os, Binning &b) {
-  os << "    bin_size_x = " << b.bin_size_x << ", n_bins_x = " << b.n_bins_x << "\n";
-  os << "    pixel_x_offset = " << b.pixel_x_offset << "\n";
-  os << "    n_bins_y = " << b.n_bins_y << ", y_min = " << b.y_min << ", y_max = " << b.y_max;
+  os << "    bin_size_x = " << b.bin_size_x_ << ", n_bins_x = " << b.n_bins_x_ << "\n";
+  os << "    pixel_x_offset = " << b.pixel_x_offset_ << "\n";
+  os << "    n_bins_y = " << b.n_bins_y_ << ", y_min = " << b.y_min_ << ", y_max = " << b.y_max_;
 
   return os;
 }
@@ -175,10 +174,10 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c) {
   os << "* " << c.sectorConfig45_ << "\n\n";
   os << "* " << c.sectorConfig56_ << "\n\n";
 
-  std::map<unsigned int, std::string> rpTags = {{c.sectorConfig45_.rp_F.id, c.sectorConfig45_.rp_F.name},
-                                                {c.sectorConfig45_.rp_N.id, c.sectorConfig45_.rp_N.name},
-                                                {c.sectorConfig56_.rp_N.id, c.sectorConfig56_.rp_N.name},
-                                                {c.sectorConfig56_.rp_F.id, c.sectorConfig56_.rp_F.name}};
+  std::map<unsigned int, std::string> rpTags = {{c.sectorConfig45_.rp_F_.id_, c.sectorConfig45_.rp_F_.name_},
+                                                {c.sectorConfig45_.rp_N_.id_, c.sectorConfig45_.rp_N_.name_},
+                                                {c.sectorConfig56_.rp_N_.id_, c.sectorConfig56_.rp_N_.name_},
+                                                {c.sectorConfig56_.rp_F_.id_, c.sectorConfig56_.rp_F_.name_}};
 
   os << "* x alignment shift step\n";
   os << "    x_ali_sh_step = " << c.x_ali_sh_step_ << "\n\n";
@@ -199,8 +198,8 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c) {
 
   os << "    shift ranges:\n";
   for (const auto &p : c.matchingShiftRanges_)
-    os << "        RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min
-       << ", sh_max = " << p.second.x_max << "\n";
+    os << "        RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min_
+       << ", sh_max = " << p.second.x_max_ << "\n";
 
   os << "    reference points:\n";
   for (const auto &pm : c.matchingReferencePoints_) {
@@ -209,7 +208,7 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c) {
       const auto &p = pm.second[i];
       if (i % 5 == 0 && i > 0)
         os << "\n             ";
-      os << "(" << std::setw(6) << p.x << " +- " << p.ex << ", " << std::setw(6) << p.y << " +- " << p.ey << "), ";
+      os << "(" << std::setw(6) << p.x_ << " +- " << p.ex_ << ", " << std::setw(6) << p.y_ << " +- " << p.ey_ << "), ";
     }
     os << "\n";
   }
@@ -217,8 +216,8 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c) {
   os << "\n"
      << "* alignment_x_meth_o\n";
   for (const auto &p : c.alignment_x_meth_o_ranges_)
-    os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min
-       << ", sh_max = " << p.second.x_max << "\n";
+    os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min_
+       << ", sh_max = " << p.second.x_max_ << "\n";
   os << "    fit_profile_min_bin_entries = " << c.fitProfileMinBinEntries_ << "\n";
   os << "    fit_profile_min_N_reasonable = " << c.fitProfileMinNReasonable_ << "\n";
   os << "    meth_o_graph_min_N = " << c.methOGraphMinN_ << "\n";
@@ -227,15 +226,15 @@ std::ostream &operator<<(std::ostream &os, PPSAlignmentConfig c) {
   os << "\n"
      << "* alignment_x_relative\n";
   for (const auto &p : c.alignment_x_relative_ranges_)
-    os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min
-       << ", sh_max = " << p.second.x_max << "\n";
+    os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min_
+       << ", sh_max = " << p.second.x_max_ << "\n";
   os << "    near_far_min_entries = " << c.nearFarMinEntries_ << "\n";
 
   os << "\n"
      << "* alignment_y\n";
   for (const auto &p : c.alignment_y_ranges_)
-    os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min
-       << ", sh_max = " << p.second.x_max << "\n";
+    os << "    RP " << rpTags[p.first] << " (" << std::setw(3) << p.first << "): sh_min = " << p.second.x_min_
+       << ", sh_max = " << p.second.x_max_ << "\n";
   os << "    mode_graph_min_N = " << c.modeGraphMinN_ << "\n";
   os << "    mult_sel_proj_y_min_entries = " << c.multSelProjYMinEntries_ << "\n";
 

@@ -106,15 +106,15 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
   sequence = iConfig.getParameter<std::vector<std::string>>("sequence");
   resultsDir = iConfig.getParameter<std::string>("results_dir");
 
-  sectorConfig45.name = "sector 45";
+  sectorConfig45.name_ = "sector 45";
 
-  sectorConfig45.rp_N.position = "N";
-  sectorConfig45.rp_F.position = "F";
+  sectorConfig45.rp_N_.position_ = "N";
+  sectorConfig45.rp_F_.position_ = "F";
 
-  sectorConfig56.name = "sector 56";
+  sectorConfig56.name_ = "sector 56";
 
-  sectorConfig56.rp_N.position = "N";
-  sectorConfig56.rp_F.position = "F";
+  sectorConfig56.rp_N_.position_ = "N";
+  sectorConfig56.rp_F_.position_ = "F";
 
   for (std::string sectorName : {"sector_45", "sector_56"}) {
     const auto &sps = iConfig.getParameter<edm::ParameterSet>(sectorName);
@@ -128,54 +128,54 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
       const auto &rpps = sps.getParameter<edm::ParameterSet>(rpName);
       RPConfig *rc;
       if (rpName == "rp_N")
-        rc = &sc->rp_N;
+        rc = &sc->rp_N_;
       else
-        rc = &sc->rp_F;
+        rc = &sc->rp_F_;
 
-      rc->name = rpps.getParameter<std::string>("name");
-      rc->id = rpps.getParameter<int>("id");
+      rc->name_ = rpps.getParameter<std::string>("name");
+      rc->id_ = rpps.getParameter<int>("id");
 
-      rc->slope = rpps.getParameter<double>("slope");
-      rc->sh_x = rpps.getParameter<double>("sh_x");
+      rc->slope_ = rpps.getParameter<double>("slope");
+      rc->sh_x_ = rpps.getParameter<double>("sh_x");
 
-      rc->x_min_fit_mode = rpps.getParameter<double>("x_min_fit_mode");
-      rc->x_max_fit_mode = rpps.getParameter<double>("x_max_fit_mode");
-      rc->y_max_fit_mode = rpps.getParameter<double>("y_max_fit_mode");
-      rc->y_cen_add = rpps.getParameter<double>("y_cen_add");
-      rc->y_width_mult = rpps.getParameter<double>("y_width_mult");
+      rc->x_min_fit_mode_ = rpps.getParameter<double>("x_min_fit_mode");
+      rc->x_max_fit_mode_ = rpps.getParameter<double>("x_max_fit_mode");
+      rc->y_max_fit_mode_ = rpps.getParameter<double>("y_max_fit_mode");
+      rc->y_cen_add_ = rpps.getParameter<double>("y_cen_add");
+      rc->y_width_mult_ = rpps.getParameter<double>("y_width_mult");
 
-      rc->x_slice_min = rpps.getParameter<double>("x_slice_min");
-      rc->x_slice_w = rpps.getParameter<double>("x_slice_w");
-      rc->x_slice_n = std::ceil((rpps.getParameter<double>("x_slice_max") - rc->x_slice_min) / rc->x_slice_w);
+      rc->x_slice_min_ = rpps.getParameter<double>("x_slice_min");
+      rc->x_slice_w_ = rpps.getParameter<double>("x_slice_w");
+      rc->x_slice_n_ = std::ceil((rpps.getParameter<double>("x_slice_max") - rc->x_slice_min_) / rc->x_slice_w_);
     }
 
-    sc->slope = sps.getParameter<double>("slope");
+    sc->slope_ = sps.getParameter<double>("slope");
 
-    sc->cut_h_apply = sps.getParameter<bool>("cut_h_apply");
-    sc->cut_h_a = sps.getParameter<double>("cut_h_a");
-    sc->cut_h_c = sps.getParameter<double>("cut_h_c");
-    sc->cut_h_si = sps.getParameter<double>("cut_h_si");
+    sc->cut_h_apply_ = sps.getParameter<bool>("cut_h_apply");
+    sc->cut_h_a_ = sps.getParameter<double>("cut_h_a");
+    sc->cut_h_c_ = sps.getParameter<double>("cut_h_c");
+    sc->cut_h_si_ = sps.getParameter<double>("cut_h_si");
 
-    sc->cut_v_apply = sps.getParameter<bool>("cut_v_apply");
-    sc->cut_v_a = sps.getParameter<double>("cut_v_a");
-    sc->cut_v_c = sps.getParameter<double>("cut_v_c");
-    sc->cut_v_si = sps.getParameter<double>("cut_v_si");
+    sc->cut_v_apply_ = sps.getParameter<bool>("cut_v_apply");
+    sc->cut_v_a_ = sps.getParameter<double>("cut_v_a");
+    sc->cut_v_c_ = sps.getParameter<double>("cut_v_c");
+    sc->cut_v_si_ = sps.getParameter<double>("cut_v_si");
   }
 
-  std::map<unsigned int, std::string> rpTags = {{sectorConfig45.rp_F.id, "rp_L_F"},
-                                                {sectorConfig45.rp_N.id, "rp_L_N"},
-                                                {sectorConfig56.rp_N.id, "rp_R_N"},
-                                                {sectorConfig56.rp_F.id, "rp_R_F"}};
+  std::map<unsigned int, std::string> rpTags = {{sectorConfig45.rp_F_.id_, "rp_L_F"},
+                                                {sectorConfig45.rp_N_.id_, "rp_L_N"},
+                                                {sectorConfig56.rp_N_.id_, "rp_R_N"},
+                                                {sectorConfig56.rp_F_.id_, "rp_R_F"}};
 
-  std::map<unsigned int, std::string> sectorNames = {{sectorConfig45.rp_F.id, sectorConfig45.name},
-                                                     {sectorConfig45.rp_N.id, sectorConfig45.name},
-                                                     {sectorConfig56.rp_N.id, sectorConfig56.name},
-                                                     {sectorConfig56.rp_F.id, sectorConfig56.name}};
+  std::map<unsigned int, std::string> sectorNames = {{sectorConfig45.rp_F_.id_, sectorConfig45.name_},
+                                                     {sectorConfig45.rp_N_.id_, sectorConfig45.name_},
+                                                     {sectorConfig56.rp_N_.id_, sectorConfig56.name_},
+                                                     {sectorConfig56.rp_F_.id_, sectorConfig56.name_}};
 
-  std::map<unsigned int, const RPConfig *> rpConfigs = {{sectorConfig45.rp_F.id, &sectorConfig45.rp_F},
-                                                        {sectorConfig45.rp_N.id, &sectorConfig45.rp_N},
-                                                        {sectorConfig56.rp_N.id, &sectorConfig56.rp_N},
-                                                        {sectorConfig56.rp_F.id, &sectorConfig56.rp_F}};
+  std::map<unsigned int, const RPConfig *> rpConfigs = {{sectorConfig45.rp_F_.id_, &sectorConfig45.rp_F_},
+                                                        {sectorConfig45.rp_N_.id_, &sectorConfig45.rp_N_},
+                                                        {sectorConfig56.rp_N_.id_, &sectorConfig56.rp_N_},
+                                                        {sectorConfig56.rp_F_.id_, &sectorConfig56.rp_F_}};
 
   x_ali_sh_step = iConfig.getParameter<double>("x_ali_sh_step");
 
@@ -206,7 +206,7 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
     if (!f_ref->IsOpen()) {
       edm::LogWarning("PPS") << "[ESSource] could not find reference dataset file: " << referenceDataset;
     } else {
-      TDirectory *ad_ref = findDirectoryWithName((TDirectory *)f_ref, sectorConfig45.name);
+      TDirectory *ad_ref = findDirectoryWithName((TDirectory *)f_ref, sectorConfig45.name_);
       if (ad_ref == nullptr) {
         edm::LogWarning("PPS") << "[ESSource] could not find reference dataset in " << referenceDataset;
       } else {
@@ -214,10 +214,10 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
 
         for (const auto &p : rpTags) {
           if (debug)
-            gDirectory = debugFile->mkdir(rpConfigs[p.first]->name.c_str())->mkdir("fits_ref");
+            gDirectory = debugFile->mkdir(rpConfigs[p.first]->name_.c_str())->mkdir("fits_ref");
 
           auto *d_ref = (TDirectory *)ad_ref->Get(
-              (sectorNames[p.first] + "/near_far/x slices, " + rpConfigs[p.first]->position).c_str());
+              (sectorNames[p.first] + "/near_far/x slices, " + rpConfigs[p.first]->position_).c_str());
           if (d_ref == nullptr) {
             edm::LogWarning("PPS") << "[ESSource] could not load d_ref";
           } else {
@@ -250,12 +250,12 @@ PPSAlignmentConfigESSource::PPSAlignmentConfigESSource(const edm::ParameterSet &
   multSelProjYMinEntries = c_ay.getParameter<unsigned int>("mult_sel_proj_y_min_entries");
 
   const auto &bps = iConfig.getParameter<edm::ParameterSet>("binning");
-  binning.bin_size_x = bps.getParameter<double>("bin_size_x");
-  binning.n_bins_x = bps.getParameter<unsigned int>("n_bins_x");
-  binning.pixel_x_offset = bps.getParameter<double>("pixel_x_offset");
-  binning.n_bins_y = bps.getParameter<unsigned int>("n_bins_y");
-  binning.y_min = bps.getParameter<double>("y_min");
-  binning.y_max = bps.getParameter<double>("y_max");
+  binning.bin_size_x_ = bps.getParameter<double>("bin_size_x");
+  binning.n_bins_x_ = bps.getParameter<unsigned int>("n_bins_x");
+  binning.pixel_x_offset_ = bps.getParameter<double>("pixel_x_offset");
+  binning.n_bins_y_ = bps.getParameter<unsigned int>("n_bins_y");
+  binning.y_min_ = bps.getParameter<double>("y_min");
+  binning.y_max_ = bps.getParameter<double>("y_max");
 
   setWhatProduced(this, label);
   findingRecord<PPSAlignmentConfigRcd>();
@@ -658,8 +658,8 @@ std::vector<PointErrors> PPSAlignmentConfigESSource::buildVectorFromDirectory(TD
     double y_cen = h_y->GetMean();
     double y_width = h_y->GetRMS();
 
-    y_cen += rpd.y_cen_add;
-    y_width *= rpd.y_width_mult;
+    y_cen += rpd.y_cen_add_;
+    y_width *= rpd.y_width_mult_;
 
     double sl = 0., sl_unc = 0.;
     int fr = fitProfile(p_y_diffFN_vs_y, y_cen, y_width, sl, sl_unc);

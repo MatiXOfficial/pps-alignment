@@ -22,10 +22,10 @@
 //---------------------------------------------------------------------------------------------
 
 struct PointErrors {
-  double x;
-  double y;
-  double ex;  // error x
-  double ey;  // error y
+  double x_;
+  double y_;
+  double ex_;  // error x
+  double ey_;  // error y
 
   COND_SERIALIZABLE;
 };
@@ -33,8 +33,8 @@ struct PointErrors {
 //---------------------------------------------------------------------------------------------
 
 struct SelectionRange {
-  double x_min;
-  double x_max;
+  double x_min_;
+  double x_max_;
 
   COND_SERIALIZABLE;
 };
@@ -42,19 +42,19 @@ struct SelectionRange {
 //---------------------------------------------------------------------------------------------
 
 struct RPConfig {
-  std::string name;
-  unsigned int id;
-  std::string position;
-  double slope;
-  double sh_x;
+  std::string name_;
+  unsigned int id_;
+  std::string position_;
+  double slope_;
+  double sh_x_;
 
-  double x_min_fit_mode, x_max_fit_mode;
-  double y_max_fit_mode;
-  double y_cen_add;
-  double y_width_mult;
+  double x_min_fit_mode_, x_max_fit_mode_;
+  double y_max_fit_mode_;
+  double y_cen_add_;
+  double y_width_mult_;
 
-  int x_slice_n;
-  double x_slice_min, x_slice_w;
+  int x_slice_n_;
+  double x_slice_min_, x_slice_w_;
 
   COND_SERIALIZABLE;
 };
@@ -63,15 +63,15 @@ std::ostream &operator<<(std::ostream &os, RPConfig &rc);
 //---------------------------------------------------------------------------------------------
 
 struct SectorConfig {
-  std::string name;
-  RPConfig rp_N, rp_F;
-  double slope;
+  std::string name_;
+  RPConfig rp_N_, rp_F_;
+  double slope_;
 
-  bool cut_h_apply;
-  double cut_h_a, cut_h_c, cut_h_si;
+  bool cut_h_apply_;
+  double cut_h_a_, cut_h_c_, cut_h_si_;
 
-  bool cut_v_apply;
-  double cut_v_a, cut_v_c, cut_v_si;
+  bool cut_v_apply_;
+  double cut_v_a_, cut_v_c_, cut_v_si_;
 
   COND_SERIALIZABLE;
 };
@@ -80,13 +80,13 @@ std::ostream &operator<<(std::ostream &os, SectorConfig &sc);
 //---------------------------------------------------------------------------------------------
 
 struct Binning {
-  double bin_size_x;  // mm
-  unsigned int n_bins_x;
+  double bin_size_x_;  // mm
+  unsigned int n_bins_x_;
 
-  double pixel_x_offset;
+  double pixel_x_offset_;
 
-  unsigned int n_bins_y;
-  double y_min, y_max;
+  unsigned int n_bins_y_;
+  double y_min_, y_max_;
 };
 std::ostream &operator<<(std::ostream &os, Binning &b);
 

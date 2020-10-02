@@ -165,8 +165,8 @@ TGraphErrors *PPSAlignmentHarvester::buildGraphFromVector(const std::vector<Poin
 
   for (unsigned int i = 0; i < pv.size(); i++) {
     const auto &p = pv[i];
-    g->SetPoint(i, p.x, p.y);
-    g->SetPointError(i, p.ex, p.ey);
+    g->SetPoint(i, p.x_, p.y_);
+    g->SetPointError(i, p.ex_, p.ey_);
   }
   g->Sort();
 
@@ -205,8 +205,8 @@ TGraphErrors *PPSAlignmentHarvester::buildGraphFromMonitorElements(DQMStore::IGe
       double y_cen = h_y->GetMean();
       double y_width = h_y->GetRMS();
 
-      y_cen += rpd.y_cen_add;
-      y_width *= rpd.y_width_mult;
+      y_cen += rpd.y_cen_add_;
+      y_width *= rpd.y_width_mult_;
 
       double sl = 0., sl_unc = 0.;
       int fr =
@@ -238,13 +238,13 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker,
                                     double sh_max,
                                     double &sh_best,
                                     double &sh_best_unc) {
-  // const auto &range_test = cfg->alignment_x_meth_o_ranges()[rpd.id];	// Does not work (wrong results)
-  const auto range_test = cfg->alignment_x_meth_o_ranges()[rpd.id];
+  // const auto &range_test = cfg->alignment_x_meth_o_ranges()[rpd.id_];	// Does not work (wrong results)
+  const auto range_test = cfg->alignment_x_meth_o_ranges()[rpd.id_];
 
   // print config
   edm::LogInfo("PPS") << std::fixed << std::setprecision(3) << "[x_alignment] "
-                      << "ref: x_min = " << range_ref.x_min << ", x_max = " << range_ref.x_max << "\n"
-                      << "test: x_min = " << range_test.x_min << ", x_max = " << range_test.x_max;
+                      << "ref: x_min = " << range_ref.x_min_ << ", x_max = " << range_ref.x_max_ << "\n"
+                      << "test: x_min = " << range_test.x_min_ << ", x_max = " << range_test.x_max_;
 
   // make spline from g_ref
   TSpline3 *s_ref = new TSpline3("s_ref", g_ref->GetX(), g_ref->GetY(), g_ref->GetN());
@@ -275,7 +275,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker,
 
       const double x_ref = x_test + sh;
 
-      if (x_ref < range_ref.x_min || x_ref > range_ref.x_max || x_test < range_test.x_min || x_test > range_test.x_max)
+      if (x_ref < range_ref.x_min_ || x_ref > range_ref.x_max_ || x_test < range_test.x_min_ || x_test > range_test.x_max_)
         continue;
 
       const double y_ref = s_ref->Eval(x_ref);
@@ -337,7 +337,7 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker,
   iBooker.book1DD(
       "h_test_shifted",
       getTH1DFromTGraphErrors(
-          g_test_shifted, "test_shifted", ";x (mm);S", rpd.x_slice_n, rpd.x_slice_w, rpd.x_slice_min + sh_best));
+          g_test_shifted, "test_shifted", ";x (mm);S", rpd.x_slice_n_, rpd.x_slice_w_, rpd.x_slice_min_ + sh_best));
 
   if (debug_) {
     // save graphs
@@ -351,8 +351,8 @@ void PPSAlignmentHarvester::doMatch(DQMStore::IBooker &iBooker,
     TGraph *g_results = new TGraph();
     g_results->SetName("g_results");
     g_results->SetPoint(0, sh_best, sh_best_unc);
-    g_results->SetPoint(1, range_ref.x_min, range_ref.x_max);
-    g_results->SetPoint(2, range_test.x_min, range_test.x_max);
+    g_results->SetPoint(1, range_ref.x_min_, range_ref.x_max_);
+    g_results->SetPoint(2, range_test.x_min_, range_test.x_max_);
     g_results->Write();
 
     // save debug canvas
@@ -394,22 +394,22 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker,
   for (const auto &sdp : {std::make_pair(cfg->sectorConfig45(), cfg_ref->sectorConfig45()),
                           std::make_pair(cfg->sectorConfig56(), cfg_ref->sectorConfig56())}) {
     const auto &sd = sdp.first;
-    for (const auto &rpdp : {std::make_pair(sd.rp_F, sdp.second.rp_F), std::make_pair(sd.rp_N, sdp.second.rp_N)}) {
+    for (const auto &rpdp : {std::make_pair(sd.rp_F_, sdp.second.rp_F_), std::make_pair(sd.rp_N_, sdp.second.rp_N_)}) {
       const auto &rpd = rpdp.first;
 
-      auto mes_test = iGetter.getAllContents(folder_ + "/worker/" + sd.name + "/near_far/x slices, " + rpd.position);
+      auto mes_test = iGetter.getAllContents(folder_ + "/worker/" + sd.name_ + "/near_far/x slices, " + rpd.position_);
       if (mes_test.empty()) {
-        edm::LogWarning("PPS") << "[x_alignment] " << rpd.name << ": could not load mes_test";
+        edm::LogWarning("PPS") << "[x_alignment] " << rpd.name_ << ": could not load mes_test";
         continue;
       }
 
       TDirectory *rpDir = nullptr;
       if (debug_)
-        rpDir = xAliDir->mkdir(rpd.name.c_str());
+        rpDir = xAliDir->mkdir(rpd.name_.c_str());
 
-      auto vec_ref = cfg_ref->matchingReferencePoints()[rpd.id];
+      auto vec_ref = cfg_ref->matchingReferencePoints()[rpd.id_];
       if (vec_ref.empty()) {
-        edm::LogInfo("PPS") << "[x_alignment] " << rpd.name << ": reference points vector is empty";
+        edm::LogInfo("PPS") << "[x_alignment] " << rpd.name_ << ": reference points vector is empty";
         continue;
       }
 
@@ -422,20 +422,20 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker,
 
       // require minimal number of points
       if (g_ref->GetN() < (int)cfg->methOGraphMinN() || g_test->GetN() < (int)cfg->methOGraphMinN()) {
-        edm::LogWarning("PPS") << "[x_alignment] " << rpd.name << ": insufficient data, skipping (g_ref "
+        edm::LogWarning("PPS") << "[x_alignment] " << rpd.name_ << ": insufficient data, skipping (g_ref "
                                << g_ref->GetN() << "/" << cfg->methOGraphMinN() << ", g_test " << g_test->GetN() << "/"
                                << cfg->methOGraphMinN() << ")";
         continue;
       }
 
-      iBooker.setCurrentFolder(folder_ + "/harvester/x alignment/" + rpd.name);
+      iBooker.setCurrentFolder(folder_ + "/harvester/x alignment/" + rpd.name_);
       iBooker.book1DD(
           "h_ref",
           getTH1DFromTGraphErrors(
-              g_ref, "ref", ";x (mm);S", rpdp.second.x_slice_n, rpdp.second.x_slice_w, rpdp.second.x_slice_min));
+              g_ref, "ref", ";x (mm);S", rpdp.second.x_slice_n_, rpdp.second.x_slice_w_, rpdp.second.x_slice_min_));
       iBooker.book1DD(
           "h_test",
-          getTH1DFromTGraphErrors(g_test, "test", ";x (mm);S", rpd.x_slice_n, rpd.x_slice_w, rpd.x_slice_min));
+          getTH1DFromTGraphErrors(g_test, "test", ";x (mm);S", rpd.x_slice_n_, rpd.x_slice_w_, rpd.x_slice_min_));
 
       if (debug_) {
         gDirectory = rpDir;
@@ -445,24 +445,24 @@ void PPSAlignmentHarvester::xAlignment(DQMStore::IBooker &iBooker,
         g_test->Write("g_test");
       }
 
-      const auto &shiftRange = cfg_ref->matchingShiftRanges()[rpd.id];
+      const auto &shiftRange = cfg_ref->matchingShiftRanges()[rpd.id_];
       double sh = 0., sh_unc = 0.;
       doMatch(iBooker,
               cfg,
               rpd,
               g_ref,
               g_test,
-              cfg_ref->alignment_x_meth_o_ranges()[rpd.id],
-              shiftRange.x_min,
-              shiftRange.x_max,
+              cfg_ref->alignment_x_meth_o_ranges()[rpd.id_],
+              shiftRange.x_min_,
+              shiftRange.x_max_,
               sh,
               sh_unc);
 
       CTPPSRPAlignmentCorrectionData rpResult(sh, sh_unc, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-      results.setRPCorrection(rpd.id, rpResult);
+      results.setRPCorrection(rpd.id_, rpResult);
       edm::LogInfo("PPS") << std::fixed << std::setprecision(3) << "[x_alignment] "
-                          << "Setting sh_x of " << rpd.name << " to " << sh;
-      sh_x_map[rpd.id] = sh;
+                          << "Setting sh_x of " << rpd.name_ << " to " << sh;
+      sh_x_map[rpd.id_] = sh;
     }
   }
 
@@ -493,28 +493,28 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker,
   for (const auto &sd : {cfg->sectorConfig45(), cfg->sectorConfig56()}) {
     TDirectory *sectorDir = nullptr;
     if (debug_) {
-      sectorDir = xAliRelDir->mkdir(sd.name.c_str());
+      sectorDir = xAliRelDir->mkdir(sd.name_.c_str());
       gDirectory = sectorDir;
     }
 
-    auto *p_x_diffFN_vs_x_N_monitor = iGetter.get(folder_ + "/worker/" + sd.name + "/near_far/p_x_diffFN_vs_x_N");
+    auto *p_x_diffFN_vs_x_N_monitor = iGetter.get(folder_ + "/worker/" + sd.name_ + "/near_far/p_x_diffFN_vs_x_N");
     if (p_x_diffFN_vs_x_N_monitor == nullptr) {
-      edm::LogWarning("PPS") << "[x_alignment_relative] " << sd.name << ": cannot load data, skipping";
+      edm::LogWarning("PPS") << "[x_alignment_relative] " << sd.name_ << ": cannot load data, skipping";
       continue;
     }
     TProfile *p_x_diffFN_vs_x_N = p_x_diffFN_vs_x_N_monitor->getTProfile();
 
     if (p_x_diffFN_vs_x_N->GetEntries() < cfg->nearFarMinEntries()) {
-      edm::LogWarning("PPS") << "[x_alignment_relative] " << sd.name << ": insufficient data, skipping (near_far "
+      edm::LogWarning("PPS") << "[x_alignment_relative] " << sd.name_ << ": insufficient data, skipping (near_far "
                              << p_x_diffFN_vs_x_N->GetEntries() << "/" << cfg->nearFarMinEntries() << ")";
       continue;
     }
 
-    const double xMin = cfg->alignment_x_relative_ranges()[sd.rp_N.id].x_min;
-    const double xMax = cfg->alignment_x_relative_ranges()[sd.rp_N.id].x_max;
+    const double xMin = cfg->alignment_x_relative_ranges()[sd.rp_N_.id_].x_min_;
+    const double xMax = cfg->alignment_x_relative_ranges()[sd.rp_N_.id_].x_max_;
 
-    const double sh_x_N = sh_x_map[sd.rp_N.id];
-    double slope = sd.slope;
+    const double sh_x_N = sh_x_map[sd.rp_N_.id_];
+    double slope = sd.slope_;
 
     ff->SetParameters(0., slope, 0.);
     ff->FixParameter(2, -sh_x_N);
@@ -524,14 +524,14 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker,
     const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
     const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
 
-    edm::LogInfo("PPS") << "[x_alignment_relative] " << sd.name << ":\n"
+    edm::LogInfo("PPS") << "[x_alignment_relative] " << sd.name_ << ":\n"
                         << std::fixed << std::setprecision(3) << "    x_min = " << xMin << ", x_max = " << xMax << "\n"
                         << "    sh_x_N = " << sh_x_N << ", slope (fix) = " << slope << ", slope (fitted) = " << a;
 
     CTPPSRPAlignmentCorrectionData rpResult_N(+b / 2., b_unc / 2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-    results.setRPCorrection(sd.rp_N.id, rpResult_N);
+    results.setRPCorrection(sd.rp_N_.id_, rpResult_N);
     CTPPSRPAlignmentCorrectionData rpResult_F(-b / 2., b_unc / 2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-    results.setRPCorrection(sd.rp_F.id, rpResult_F);
+    results.setRPCorrection(sd.rp_F_.id_, rpResult_F);
 
     ff_sl_fix->SetParameters(0., slope, 0.);
     ff_sl_fix->FixParameter(1, slope);
@@ -542,9 +542,9 @@ void PPSAlignmentHarvester::xAlignmentRelative(DQMStore::IBooker &iBooker,
     const double b_fs = ff_sl_fix->GetParameter(0), b_fs_unc = ff_sl_fix->GetParError(0);
 
     CTPPSRPAlignmentCorrectionData rpResult_sl_fix_N(+b_fs / 2., b_fs_unc / 2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-    results_sl_fix.setRPCorrection(sd.rp_N.id, rpResult_sl_fix_N);
+    results_sl_fix.setRPCorrection(sd.rp_N_.id_, rpResult_sl_fix_N);
     CTPPSRPAlignmentCorrectionData rpResult_sl_fix_F(-b_fs / 2., b_fs_unc / 2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.);
-    results_sl_fix.setRPCorrection(sd.rp_F.id, rpResult_sl_fix_F);
+    results_sl_fix.setRPCorrection(sd.rp_F_.id_, rpResult_sl_fix_F);
 
     edm::LogInfo("PPS") << "[x_alignment_relative] " << std::fixed << std::setprecision(3)
                         << "ff: " << ff->GetParameter(0) << " + " << ff->GetParameter(1) << " * (x - "
@@ -645,13 +645,13 @@ TGraphErrors *PPSAlignmentHarvester::buildModeGraph(DQMStore::IBooker &iBooker,
     ff_fit->SetParameters(conMax, conMax_x, h_y->GetRMS() * 0.75, 0., 0.);
     ff_fit->FixParameter(4, 0.);
 
-    double xMin = rpd.x_min_fit_mode, xMax = rpd.x_max_fit_mode;
+    double xMin = rpd.x_min_fit_mode_, xMax = rpd.x_max_fit_mode_;
     h_y->Fit(ff_fit, "Q", "", xMin, xMax);
 
     ff_fit->ReleaseParameter(4);
     double w = std::min(4., 2. * ff_fit->GetParameter(2));
     xMin = ff_fit->GetParameter(1) - w;
-    xMax = std::min(rpd.y_max_fit_mode, ff_fit->GetParameter(1) + w);
+    xMax = std::min(rpd.y_max_fit_mode_, ff_fit->GetParameter(1) + w);
 
     h_y->Fit(ff_fit, "Q", "", xMin, xMax);
 
@@ -708,35 +708,35 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker,
 
   // processing
   for (const auto &sd : {cfg->sectorConfig45(), cfg->sectorConfig56()}) {
-    for (const auto &rpd : {sd.rp_F, sd.rp_N}) {
+    for (const auto &rpd : {sd.rp_F_, sd.rp_N_}) {
       TDirectory *rpDir = nullptr;
       if (debug_) {
-        rpDir = yAliDir->mkdir(rpd.name.c_str());
+        rpDir = yAliDir->mkdir(rpd.name_.c_str());
         gDirectory = rpDir->mkdir("x");
       }
 
       auto *h2_y_vs_x =
-          iGetter.get(folder_ + "/worker/" + sd.name + "/multiplicity selection/" + rpd.name + "/h2_y_vs_x");
+          iGetter.get(folder_ + "/worker/" + sd.name_ + "/multiplicity selection/" + rpd.name_ + "/h2_y_vs_x");
 
       if (h2_y_vs_x == nullptr) {
-        edm::LogWarning("PPS") << "[y_alignment] " << rpd.name << ": cannot load data, skipping";
+        edm::LogWarning("PPS") << "[y_alignment] " << rpd.name_ << ": cannot load data, skipping";
         continue;
       }
 
-      iBooker.setCurrentFolder(folder_ + "/harvester/y alignment/" + rpd.name);
+      iBooker.setCurrentFolder(folder_ + "/harvester/y alignment/" + rpd.name_);
       auto *g_y_cen_vs_x = buildModeGraph(iBooker, h2_y_vs_x, cfg, rpd);
 
       if ((unsigned int)g_y_cen_vs_x->GetN() < cfg->modeGraphMinN()) {
-        edm::LogWarning("PPS") << "[y_alignment] " << rpd.name << ": insufficient data, skipping (mode graph "
+        edm::LogWarning("PPS") << "[y_alignment] " << rpd.name_ << ": insufficient data, skipping (mode graph "
                                << g_y_cen_vs_x->GetN() << "/" << cfg->modeGraphMinN() << ")";
         continue;
       }
 
-      const double xMin = cfg->alignment_y_ranges()[rpd.id].x_min;
-      const double xMax = cfg->alignment_y_ranges()[rpd.id].x_max;
+      const double xMin = cfg->alignment_y_ranges()[rpd.id_].x_min_;
+      const double xMax = cfg->alignment_y_ranges()[rpd.id_].x_max_;
 
-      const double sh_x = sh_x_map[rpd.id];
-      double slope = rpd.slope;
+      const double sh_x = sh_x_map[rpd.id_];
+      double slope = rpd.slope_;
 
       ff->SetParameters(0., 0., 0.);
       ff->FixParameter(2, -sh_x);
@@ -746,13 +746,13 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker,
       const double a = ff->GetParameter(1), a_unc = ff->GetParError(1);
       const double b = ff->GetParameter(0), b_unc = ff->GetParError(0);
 
-      edm::LogInfo("PPS") << "[y_alignment] " << rpd.name << ":\n"
+      edm::LogInfo("PPS") << "[y_alignment] " << rpd.name_ << ":\n"
                           << std::fixed << std::setprecision(3) << "    x_min = " << xMin << ", x_max = " << xMax
                           << "\n"
                           << "    sh_x = " << sh_x << ", slope (fix) = " << slope << ", slope (fitted) = " << a;
 
       CTPPSRPAlignmentCorrectionData rpResult(0., 0., b, b_unc, 0., 0., 0., 0., 0., 0., 0., 0.);
-      results.setRPCorrection(rpd.id, rpResult);
+      results.setRPCorrection(rpd.id_, rpResult);
 
       ff_sl_fix->SetParameters(0., 0., 0.);
       ff_sl_fix->FixParameter(1, slope);
@@ -763,7 +763,7 @@ void PPSAlignmentHarvester::yAlignment(DQMStore::IBooker &iBooker,
       const double b_fs = ff_sl_fix->GetParameter(0), b_fs_unc = ff_sl_fix->GetParError(0);
 
       CTPPSRPAlignmentCorrectionData rpResult_sl_fix(0., 0., b_fs, b_fs_unc, 0., 0., 0., 0., 0., 0., 0., 0.);
-      results_sl_fix.setRPCorrection(rpd.id, rpResult_sl_fix);
+      results_sl_fix.setRPCorrection(rpd.id_, rpResult_sl_fix);
 
       edm::LogInfo("PPS") << "[y_alignment] " << std::fixed << std::setprecision(3) << "ff: " << ff->GetParameter(0)
                           << " + " << ff->GetParameter(1) << " * (x - " << ff->GetParameter(2)
@@ -849,10 +849,10 @@ void PPSAlignmentHarvester::dqmEndRun(DQMStore::IBooker &iBooker,
 
   // setting default sh_x values from config
   for (const auto sd : {cfg->sectorConfig45(), cfg->sectorConfig56()}) {
-    for (const auto rpd : {sd.rp_N, sd.rp_F}) {
-      edm::LogInfo("PPS") << "[harvester] " << std::fixed << std::setprecision(3) << "Setting sh_x of " << rpd.name
-                          << " to " << rpd.sh_x;
-      sh_x_map[rpd.id] = rpd.sh_x;
+    for (const auto rpd : {sd.rp_N_, sd.rp_F_}) {
+      edm::LogInfo("PPS") << "[harvester] " << std::fixed << std::setprecision(3) << "Setting sh_x of " << rpd.name_
+                          << " to " << rpd.sh_x_;
+      sh_x_map[rpd.id_] = rpd.sh_x_;
     }
   }
 
