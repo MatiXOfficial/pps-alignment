@@ -1,5 +1,16 @@
 # AlignmentGlobal/test
 
+## Files
+### Reference dataset
+ - `config_reference_cff.py` - configuration (Event Setup) for the reference dataset
+ - `input_files_reference_cff.py` - file with vstring of ROOT input files for the reference dataset 
+ - `run_distributions_reference_cfg.py` - process configuration for PPSAlignmentWorker. Produces standard ROOT file with reference histograms for x alignment of the test dataset.
+### Test dataset
+ - `config_cff.py` - configuration (Event Setup) for the test dataset
+ - `input_files_cff.py` - file with vstring of ROOT input files for the test dataset
+ - `run_distributions_cfg.py` - process configuration for PPSAlignmentWorker. Produces DQMIO ROOT file with histograms for the harvester.
+ - `run_analysis_manual_cfg.py` - process configuration for PPSAlignmentHarvester. Produces alignment results.
+
 ## Running instructions
 ```
 cmsRun run_distributions_reference_cfg.py

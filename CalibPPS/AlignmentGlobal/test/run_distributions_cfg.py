@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-from input_files import input_files
-from config import ppsAlignmentConfigESSource
+from input_files_cff import input_files
+from config_cff import ppsAlignmentConfigESSource
 
 process = cms.Process('testDistributions')
 

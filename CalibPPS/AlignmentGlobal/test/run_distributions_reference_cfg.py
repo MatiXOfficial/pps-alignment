@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-from input_files_reference import input_files
-from config_reference import ppsAlignmentConfigESSource
+from input_files_reference_cff import input_files
+from config_reference_cff import ppsAlignmentConfigESSource
 
 process = cms.Process('referenceDistributions')
 

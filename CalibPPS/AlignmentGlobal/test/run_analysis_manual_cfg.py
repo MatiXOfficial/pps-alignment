@@ -2,9 +2,8 @@ import sys
 import os
 import FWCore.ParameterSet.Config as cms
 
-from input_files import input_files
-from config import ppsAlignmentConfigESSource as ppsAlignmentConfigESSourceTest
-from config_reference import ppsAlignmentConfigESSource as ppsAlignmentConfigESSourceReference
+from config_cff import ppsAlignmentConfigESSource as ppsAlignmentConfigESSourceTest
+from config_reference_cff import ppsAlignmentConfigESSource as ppsAlignmentConfigESSourceReference
 ppsAlignmentConfigESSourceReference.matching = cms.PSet(
 	reference_dataset = cms.string("DQM_V0001_CalibPPS_R000314273.root")
 )
